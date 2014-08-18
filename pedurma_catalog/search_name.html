@@ -1,0 +1,19 @@
+﻿<html>
+<script src="sutranames.js"></script>
+<script src="taishonames.js"></script>
+<script src="search_name.js"></script>
+<head>
+<link rel="stylesheet" href="search_name.css"></link>
+</head>
+<body>
+<input id="tofind" value="長"></input>
+<button onclick="dosearch(tofind.value)">search</button>
+中文搜尋範例：<a href="#" onclick="dosearch(this.innerHTML)">慧</a>
+<a href="#" onclick="dosearch(this.innerHTML)">摩提</a>
+藏文搜尋範例：<a href="#" onclick="dosearch(this.innerHTML)">དགེ</a>
+<br><span id="result_num"></span>
+
+<div id="result"></div>
+</body>
+
+</html>
