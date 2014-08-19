@@ -1,19 +1,35 @@
 ﻿<html>
-
+<script src="pedurma-taisho.js"></script>
 <script src="j-pedurma.js"></script>
 <script src="d-pedurma.js"></script>
+<script src="taishonames.js"></script>
+<script src="sutranames.js"></script>
 <script src="rvp2rvp.js"></script>
+
+
 <head>
 <link rel="stylesheet" href="search_name.css"></link>
 </head>
+
 <body>
-	J:<input id="input" value="39.20b2"></input>
-	<button onclick="fromVolpage()">search</button>
-
-	<br>J輸入頁碼所在範圍：<span id="range"></span>
-	<br>D所對應到的範圍：<span id="corresRange"></span>
-	<br>D所對應到的行數：<span id="corresLine"></span>
-
+	<form NAME="form_name" ID="form_name">
+	<label><INPUT TYPE="radio" NAME="version" VALUE="J" CHECKED>J</label>
+	<span id="J_jing"></span>
+	<span id="J_page"></span>	
+	<label><INPUT TYPE="radio" NAME="version" VALUE="D">D</label>
+	<span id="D_jing"></span>
+	<span id="D_page"></span>
+	</form>
+	<input id="input" value="98.245a2"></input><!--39.20b2-->
+	<button onclick="dosearch(input.value)">search</button>
+	<span id="warning"></span>
+	<br>輸入(頁碼)經號：<span id="Jing"></span>
+	<br>Range of input page:<span id="range"></span>
+	<br>對應的經號：<span id="corresJing"></span>
+	<br>Correspond range:<span id="corresRange"></span>
+	<br>Correspond line:<span id="corresLine"></span>
+	<br>Taisho name:<span id="nameCh"></span>
+	<br>Sutra name:<span id="name"></span>
 </body>
 
 </html>
