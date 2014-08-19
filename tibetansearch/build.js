@@ -4303,7 +4303,7 @@ var storeFields=function(fields,json) {
 			}
 			storepoint=storepoint[path[i]];
 		}
-		if (!field.value) {
+		if (typeof field.value=="undefined") {
 			throw "empty field value of "+path;
 		} 
 		storepoint.push(field.value);
@@ -4455,6 +4455,7 @@ var indexstep=function() {
 	if (session.filenow<session.files.length) {
 		status.filename=session.files[session.filenow];
 		status.progress=session.filenow/session.files.length;
+		status.filenow=session.filenow;
 		putFile(status.filename,function(){
 			session.filenow++;
 			setTimeout(indexstep,1); //rest for 1 ms to response status			
@@ -6770,7 +6771,7 @@ var getFilePageOffsets=function(i) {
 var getFilePageNames=function(i) {
 	var range=getFileRange.apply(this,[i]);
 	var pageNames=this.get("pageNames");
-	return pageNames.slice(range.Start,range.end);
+	return pageNames.slice(range.start,range.end);
 }
 var getDocument=function(filename,cb){
 	var engine=this;
@@ -8206,6 +8207,10 @@ var resultlist=function(engine,Q,opts,cb) {
 			var startvpos=files[output[i].file].pageOffsets[output[i].page];
 			var endvpos=files[output[i].file].pageOffsets[output[i].page+1];
 			var hl={};
+
+			if (opts.range && opts.range.start && startvpos<opts.range.start ) {
+				startvpos=opts.range.start;
+			}
 			
 			if (opts.nohighlight) {
 				hl.text=pages[i];
@@ -8214,13 +8219,22 @@ var resultlist=function(engine,Q,opts,cb) {
 				var o={text:pages[i],startvpos:startvpos, endvpos: endvpos, Q:Q,fulltext:opts.fulltext};
 				hl=highlight(Q,o);
 			}
-			output[i].text=hl.text;
-			output[i].hits=hl.hits;
-			output[i].seq=seq;
-			seq+=hl.hits.length;
+			if (hl.text) {
+				output[i].text=hl.text;
+				output[i].hits=hl.hits;
+				output[i].seq=seq;
+				seq+=hl.hits.length;
 
-			output[i].start=startvpos;
+				output[i].start=startvpos;				
+			} else {
+				output[i]=null; //remove item vpos less than opts.range.start
+			}
 			if (opts.range.maxhit && seq>opts.range.maxhit) {
+				while(!output[0]) {
+					output.shift();
+					i--;
+				}
+
 				output.length=i;
 				break;
 			}
@@ -13131,6 +13145,9 @@ var main = React.createClass({displayName: 'main',
 
       React.DOM.div(null, 
       this.state.dialog?this.openFileinstaller():null,
+        pagetext(  {action:this.action,  page:this.state.page, pagename:this.state.pagename, 
+          className:"pagetextarea"} ),
+
         React.DOM.div( {className:"row searcharea"}, 
           React.DOM.div( {className:"col-md-4"}, 
             searchbox( {action:this.action, progress:this.state.progress, wildcard:this.state.wildcard} ),
@@ -13139,9 +13156,7 @@ var main = React.createClass({displayName: 'main',
           React.DOM.div( {className:"col-md-8"}, 
             resultlist( {action:this.action, Q:this.state.Q2}  )
           )
-        ),  
-        pagetext(  {action:this.action,  page:this.state.page, pagename:this.state.pagename, 
-          className:"pagetextarea"} )
+        )  
       )
     );
    }
@@ -13293,6 +13308,7 @@ var resultlist = React.createClass({displayName: 'resultlist',
       return React.DOM.div(null)
     }
     return this.props.Q.excerpt.map(function(r,i){ // excerpt is an array 
+      if (!r) return null;
       return React.DOM.div(null, 
       r.seq+1, " [",React.DOM.a( {href:"#", 'data-file':r.file, 'data-page':r.page,  onClick:that.gopage}, r.pagename),"]",
       React.DOM.div( {className:"result", dangerouslySetInnerHTML:{__html:r.text}})
