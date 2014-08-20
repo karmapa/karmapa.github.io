@@ -6,30 +6,30 @@
 <script src="sutranames.js"></script>
 <script src="rvp2rvp.js"></script>
 
-
 <head>
 <link rel="stylesheet" href="search_name.css"></link>
 </head>
 
-<body>
-	<form NAME="form_name" ID="form_name">
-	<label><INPUT TYPE="radio" NAME="version" VALUE="J" CHECKED>J</label>
-	<span id="J_jing"></span>
-	<span id="J_page"></span>	
-	<label><INPUT TYPE="radio" NAME="version" VALUE="D">D</label>
-	<span id="D_jing"></span>
-	<span id="D_page"></span>
+<body>	
+	<IMG SRC="LOGO.png" width="100" class="mid"/><span id="header">SUTRA CONCORDANCE</span>
+	<HR color="#3799FF" size="10">	
+	<P ALIGN=RIGHT><input id="input" value="98.245a2"></input>
+	<button onclick="dosearch(input.value)">search</button></P>
+	<form NAME="form_name" ID="form_name" align="right">
+	<label><INPUT TYPE="radio" NAME="version" VALUE="J" CHECKED>Lijiang</label>
+	<label><INPUT TYPE="radio" NAME="version" VALUE="D">Derker</label>
 	</form>
-	<input id="input" value="98.245a2"></input><!--39.20b2-->
-	<button onclick="dosearch(input.value)">search</button>
-	<span id="warning"></span>
-	<br>Sutra id of input page：<span id="Jing"></span>
-	<br>Range of input page:<span id="range"></span>
-	<br>Correspond sutra id:<span id="corresJing"></span>
-	<br>Correspond range:<span id="corresRange"></span>
-	<br>Correspond line:<span id="corresLine"></span>
-	<br>Taisho name:<span id="nameCh"></span>
-	<br>Sutra name:<span id="name"></span>
+	<!--<span id="warning"></span>-->
+	<font size=+3><span id="from" class="version"></span></font>
+	<br><br><li>Sutra id:<span id="Jing" class="result"></span></li>
+	<br><li>Range:<span id="range" class="result"></span></li>
+	<br><li>Taisho name:<span id="nameCh" class="result"></span></li>
+	<br><li>Sutra name:<span id="name" class="result"></span></li>
+	<HR NOSHADE color="#3799FF">
+	<br><font size=+3><span id="to" class="version"></span></font>
+	<br><br><li>Sutra id:<span id="corresJing" class="result"></span></li>
+	<br><li>Range:<span id="corresRange" class="result"></span></li>
+	<br><li>Line:<span id="corresLine" class="result"></span></li>
 </body>
 
 </html>

@@ -4,9 +4,13 @@ var dosearch=function(volpage){
 	var form=document.getElementById("form_name");
 		if(form.version.value=="J"){
 			search(volpage,jPedurma,dPedurma);
+			document.getElementById("from").innerHTML="Lijiang";
+			document.getElementById("to").innerHTML="Derker";
 		}
 		if(form.version.value=="D"){
 			search(volpage,dPedurma,jPedurma);
+			document.getElementById("from").innerHTML="Derker";
+			document.getElementById("to").innerHTML="Lijiang";
 		}
 }
 
@@ -239,7 +243,7 @@ var reset=function(){
 	document.getElementById("corresLine").innerHTML="";
 	document.getElementById("name").innerHTML="";
 	document.getElementById("nameCh").innerHTML="";
-	document.getElementById("warning").innerHTML="";
+	//document.getElementById("warning").innerHTML="";
 }
 
 
