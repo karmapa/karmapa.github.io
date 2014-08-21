@@ -5,11 +5,11 @@ var dosearch=function(volpage){
 		if(form.version.value=="J"){
 			search(volpage,jPedurma,dPedurma);
 			document.getElementById("from").innerHTML="Lijiang";
-			document.getElementById("to").innerHTML="Derker";
+			document.getElementById("to").innerHTML="Derge";
 		}
 		if(form.version.value=="D"){
 			search(volpage,dPedurma,jPedurma);
-			document.getElementById("from").innerHTML="Derker";
+			document.getElementById("from").innerHTML="Derge";
 			document.getElementById("to").innerHTML="Lijiang";
 		}
 }
@@ -33,18 +33,23 @@ var search=function(volpage,from,to){
 var showResult_Jing=function(volpage,result){//result=[自己範圍,對照經號,對照範圍]
 	document.getElementById("Jing").innerHTML=volpage;
 	document.getElementById("corresJing").innerHTML=result[0][1];
-	document.getElementById("range").innerHTML=result[0][0];
-	document.getElementById("corresRange").innerHTML=result[0][2];
+	var ran=parseVolPageRange(result[0][0]);
+	document.getElementById("range").innerHTML="volpage:"+ran.vol+", page:"+ran.page+", side:"+ran.side+", line:"+ran.line+" ~ page:"+ran.page2+", side:"+ran.side2+", line:"+ran.line2;
+	var cran=parseVolPageRange(result[0][2]);
+	document.getElementById("corresRange").innerHTML="volpage:"+cran.vol+", page:"+cran.page+", side:"+cran.side+", line:"+cran.line+" ~ page:"+cran.page2+", side:"+cran.side2+", line:"+cran.line2;
 	// document.getElementById("corresLine").innerHTML="";
 
 }
 
 var showResult_Volpage=function(result){//result=[經號],[範圍],[對照經號],[對照範圍],[對照行]
 	document.getElementById("Jing").innerHTML=result[0];
-	document.getElementById("range").innerHTML=result[1];
+	var ran=parseVolPageRange(result[1][0]);
+	document.getElementById("range").innerHTML="volpage:"+ran.vol+", page:"+ran.page+", side:"+ran.side+", line:"+ran.line+" ~ page:"+ran.page2+", side:"+ran.side2+", line:"+ran.line2;
 	document.getElementById("corresJing").innerHTML=result[2];
-	document.getElementById("corresRange").innerHTML=result[3];
-	document.getElementById("corresLine").innerHTML=result[4];
+	var cran=parseVolPageRange(result[3][0]);
+	document.getElementById("corresRange").innerHTML="volpage:"+cran.vol+", page:"+cran.page+", side:"+cran.side+", line:"+cran.line+" ~ page:"+cran.page2+", side:"+cran.side2+", line:"+cran.line2;
+	var res=parseVolPage(result[4][0]);
+	document.getElementById("corresLine").innerHTML="volpage:"+res.vol+", page:"+res.page+", side:"+res.side+", line:"+res.line;
 }
 
 var fromJing=function(Jing,from,to){
@@ -162,6 +167,16 @@ var parseVolPage=function(str){
 	}
 	return {vol:parseInt(s[1]),page:parseInt(s[2]),side:s[3],line:parseInt(s[4]||"1")};
 	//return {vol:parseInt(s[1]),page:parseInt(s[2]),side:s[3],line:parseInt(s[4]||"1"),page2:parseInt(s[5]),side2:s[6],line2:parseInt(s[7]||"1")};
+}
+
+var parseVolPageRange=function(str){
+	var s=str.match(/(\d+)[@.](\d+)([abcd])(\d*)-(\d+)([abcd])(\d*)/);
+	//var s=str.match(/(\d+)[@.](\d+)([abcd])(\d*)-*(\d*)([abcd]*)(\d*)/);
+	if(!s){
+		console.log("error!",str);
+		return null;
+	}
+	return {vol:parseInt(s[1]),page:parseInt(s[2]),side:s[3],line:parseInt(s[4]||"1"),page2:parseInt(s[5]),side2:s[6],line2:parseInt(s[7]||"1")};	
 }
 
 var volpb2vl=function(str){
