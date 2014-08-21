@@ -2,9 +2,15 @@
 <script src="pedurma-taisho.js"></script>
 <script src="j-pedurma.js"></script>
 <script src="d-pedurma.js"></script>
+<script src="c-pedurma.js"></script>
+<script src="k-pedurma.js"></script>
+<script src="n-pedurma.js"></script>
+<script src="h-pedurma.js"></script>
+<script src="u-pedurma.js"></script>
 <script src="taishonames.js"></script>
 <script src="sutranames.js"></script>
 <script src="rvp2rvp.js"></script>
+<script src="showResult.js"></script>
 
 <head>
 <link rel="stylesheet" href="search_name.css"></link>
@@ -13,12 +19,18 @@
 <body>	
 	<IMG SRC="LOGO.jpg" width="100" class="mid"/>
 	<span id="header">SUTRA CONCORDANCE</span>
+	<P style="float: right;" ALIGN=RIGHT><a href="search_name.html">至經文搜尋</a></P>
 	<HR color="#3799FF" size="15">	
 	<P ALIGN=RIGHT><input id="input" value="98.245a2"></input>
 	<button onclick="dosearch(input.value)">search</button></P>
 	<form NAME="form_name" ID="form_name" align="right">
 	<label><INPUT TYPE="radio" NAME="version" VALUE="J" CHECKED>Lijiang</label>
 	<label><INPUT TYPE="radio" NAME="version" VALUE="D">Derge</label>
+	<label><INPUT TYPE="radio" NAME="version" VALUE="C">Cone</label>
+	<!--<label><INPUT TYPE="radio" NAME="version" VALUE="K">CK</label>-->
+	<label><INPUT TYPE="radio" NAME="version" VALUE="N">Narthang</label>
+	<label><INPUT TYPE="radio" NAME="version" VALUE="H">Lhasa</label>
+	<label><INPUT TYPE="radio" NAME="version" VALUE="U">Urga</label>
 	</form>
 	<!--<span id="warning"></span>-->
 	<font size=+3><span id="from" class="version"></span></font>
@@ -27,10 +39,40 @@
 	<br><li>Taisho name:<span id="nameCh" class="result"></span></li>
 	<br><li>Sutra name:<span id="name" class="result"></span></li>
 	<HR NOSHADE color="#3799FF">
-	<font size=+3><span id="to" class="version"></span></font>
-	<br><br><li>Sutra id:<span id="corresJing" class="result"></span></li>
-	<br><li>Range:<span id="corresRange" class="result"></span></li>
-	<br><li>Line:<span id="corresLine" class="result"></span></li>
+	<font size=+3><span id="toD" class="version"></span></font>
+	<br><br><li>Sutra id:<span id="JingD" class="result"></span></li>
+	<br><li>Range:<span id="RangeD" class="result"></span></li>
+	<br><li>Line:<span id="LineD" class="result"></span></li>
+	<HR NOSHADE color="#3799FF">
+	<font size=+3><span id="toC" class="version"></span></font>
+	<br><br><li>Sutra id:<span id="JingC" class="result"></span></li>
+	<br><li>Range:<span id="RangeC" class="result"></span></li>
+	<br><li>Line:<span id="LineC" class="result"></span></li>
+	<HR NOSHADE color="#3799FF">
+	<font size=+3><span id="toJ" class="version"></span></font>
+	<br><br><li>Sutra id:<span id="JingJ" class="result"></span></li>
+	<br><li>Range:<span id="RangeJ" class="result"></span></li>
+	<br><li>Line:<span id="LineJ" class="result"></span></li>
+	<HR NOSHADE color="#3799FF">
+	<font size=+3><span id="toK" class="version"></span></font>
+	<br><br><li>Sutra id:<span id="JingK" class="result"></span></li>
+	<br><li>Range:<span id="RangeK" class="result"></span></li>
+	<br><li>Line:<span id="LineK" class="result"></span></li>
+	<HR NOSHADE color="#3799FF">
+	<font size=+3><span id="toN" class="version"></span></font>
+	<br><br><li>Sutra id:<span id="JingN" class="result"></span></li>
+	<br><li>Range:<span id="RangeN" class="result"></span></li>
+	<br><li>Line:<span id="LineN" class="result"></span></li>
+	<HR NOSHADE color="#3799FF">
+	<font size=+3><span id="toH" class="version"></span></font>
+	<br><br><li>Sutra id:<span id="JingH" class="result"></span></li>
+	<br><li>Range:<span id="RangeH" class="result"></span></li>
+	<br><li>Line:<span id="LineH" class="result"></span></li>
+	<HR NOSHADE color="#3799FF">
+	<font size=+3><span id="toU" class="version"></span></font>
+	<br><br><li>Sutra id:<span id="JingU" class="result"></span></li>
+	<br><li>Range:<span id="RangeU" class="result"></span></li>
+	<br><li>Line:<span id="LineU" class="result"></span></li>
 	<P ALIGN=CENTER><IMG SRC="Treasure.png" width="150"/></P>
 </body>
 
