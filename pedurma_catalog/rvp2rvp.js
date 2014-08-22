@@ -37,7 +37,7 @@ var dosearch=function(volpage){
 		search(volpage,kPedurma,nPedurma);
 		search(volpage,kPedurma,hPedurma);
 		search(volpage,kPedurma,uPedurma);
-		document.getElementById("from").innerHTML="CK";
+		document.getElementById("from").innerHTML="Pedurma";
 	}
 	if(form.version.value=="N"){
 		search(volpage,nPedurma,jPedurma);
@@ -284,5 +284,56 @@ var addLink=function(link,name){
 	return '<a target=_new href="http://tripitaka.cbeta.org/'+link+'">'+name+"</a>";
 }
 
+var linkImage=function(corresline,to){//corresline:對照行(分開成物件的對照行)
+	//去掉行數 把vol page side 湊成檔名
+	var filename=id2imageFileName(corresline);
+	var Line="volpage:"+corresline.vol+", page:"+corresline.page+", side:"+corresline.side+", line:"+corresline.line;
 
+	if(to.length == 1131){//J
+		return '<a target=_new href="'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
+		//連結到該檔
+	}
+	if(to.length == 1138){//D
+		return '<a target=_new href="'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
+	}
+	if(to.length == 1203){//K
+		return '<a target=_new href="'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
+	}
+	if(to.length == 1116){//C
+		return '<a target=_new href="'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
+	}
+	if(to.length == 798){//N
+		return '<a target=_new href="'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
+	}
+	if(to.length == 837){//H
+		return '<a target=_new href="'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
+	}
+	if(to.length == 1125){//U
+		return '<a target=_new href="'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
+	}
+}
+
+var id2imageFileName=function(id){
+	//var id=parseVolPage(corresline);
+	var realpage=snap2realpage(id);
+	var p="00"+realpage.vol;
+	var nameVol=p.substr(p.length-3);
+	var q="00"+realpage.page;
+	var namePageSide=q.substr(q.length-3)+realpage.side;
+	var filename=[nameVol,nameVol+"-"+namePageSide+".jpg"];
+
+	return filename;
+}
+
+var snap2realpage=function(id){
+	if(id.side == "c"){
+		id.side=id.side.replace("c","b");
+	}
+	else if(id.side == "d"){
+		id.page=id.page+1;
+		id.side="a";
+	}
+
+	return id;
+}
 

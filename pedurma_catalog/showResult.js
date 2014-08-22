@@ -23,7 +23,8 @@ var showResult_Volpage=function(result,to){//result=[經號],[範圍],[對照經
 		var cran=parseVolPageRange(result[3][0]);
 		document.getElementById("RangeJ").innerHTML="volpage:"+cran.vol+", page:"+cran.page+", side:"+cran.side+", line:"+cran.line+" ~ page:"+cran.page2+", side:"+cran.side2+", line:"+cran.line2;
 		var res=parseVolPage(result[4][0]);
-		document.getElementById("LineJ").innerHTML="volpage:"+res.vol+", page:"+res.page+", side:"+res.side+", line:"+res.line;
+		var LineJ_wlink=linkImage(res,to);
+		document.getElementById("LineJ").innerHTML=LineJ_wlink;
 	}
 	if(to.length == 1138){//dPedurma
 		document.getElementById("toD").innerHTML="Derge";
@@ -31,23 +32,26 @@ var showResult_Volpage=function(result,to){//result=[經號],[範圍],[對照經
 		var cran=parseVolPageRange(result[3][0]);
 		document.getElementById("RangeD").innerHTML="volpage:"+cran.vol+", page:"+cran.page+", side:"+cran.side+", line:"+cran.line+" ~ page:"+cran.page2+", side:"+cran.side2+", line:"+cran.line2;
 		var res=parseVolPage(result[4][0]);
-		document.getElementById("LineD").innerHTML="volpage:"+res.vol+", page:"+res.page+", side:"+res.side+", line:"+res.line;
+		var LineD_wlink=linkImage(res,to);
+		document.getElementById("LineD").innerHTML=LineD_wlink;	
 	}
 	if(to.length == 1116){//cPedurma
 		document.getElementById("toC").innerHTML="Cone";
 		document.getElementById("JingC").innerHTML=result[2];
 		var cran=parseVolPageRange(result[3][0]);
 		document.getElementById("RangeC").innerHTML="volpage:"+cran.vol+", page:"+cran.page+", side:"+cran.side+", line:"+cran.line+" ~ page:"+cran.page2+", side:"+cran.side2+", line:"+cran.line2;
-		var res=parseVolPage(result[4][0]);
-		document.getElementById("LineC").innerHTML="volpage:"+res.vol+", page:"+res.page+", side:"+res.side+", line:"+res.line;
+		var res=parseVolPage(result[4][0]);		
+		var LineC_wlink=linkImage(res,to);
+		document.getElementById("LineC").innerHTML=LineC_wlink;	
 	}
 	if(to.length == 1203){//kPedurma
-		document.getElementById("toK").innerHTML="CK";
+		document.getElementById("toK").innerHTML="Pedurma";
 		document.getElementById("JingK").innerHTML=result[2];
 		var cran=parseVolPageRange(result[3][0]);
 		document.getElementById("RangeK").innerHTML="volpage:"+cran.vol+", page:"+cran.page+", side:"+cran.side+", line:"+cran.line+" ~ page:"+cran.page2+", side:"+cran.side2+", line:"+cran.line2;
-		var res=parseVolPage(result[4][0]);
-		document.getElementById("LineK").innerHTML="volpage:"+res.vol+", page:"+res.page+", side:"+res.side+", line:"+res.line;
+		var res=parseVolPage(result[4][0]);	
+		var LineK_wlink=linkImage(res,to);
+		document.getElementById("LineK").innerHTML=LineK_wlink;
 	}
 	if(to.length == 798){//nPedurma
 		document.getElementById("toN").innerHTML="Narthang";
@@ -55,7 +59,8 @@ var showResult_Volpage=function(result,to){//result=[經號],[範圍],[對照經
 		var cran=parseVolPageRange(result[3][0]);
 		document.getElementById("RangeN").innerHTML="volpage:"+cran.vol+", page:"+cran.page+", side:"+cran.side+", line:"+cran.line+" ~ page:"+cran.page2+", side:"+cran.side2+", line:"+cran.line2;
 		var res=parseVolPage(result[4][0]);
-		document.getElementById("LineN").innerHTML="volpage:"+res.vol+", page:"+res.page+", side:"+res.side+", line:"+res.line;
+		var LineN_wlink=linkImage(res,to);
+		document.getElementById("LineN").innerHTML=LineN_wlink;
 	}
 	if(to.length == 837){//hPedurma
 		document.getElementById("toH").innerHTML="Lhasa";
@@ -63,7 +68,8 @@ var showResult_Volpage=function(result,to){//result=[經號],[範圍],[對照經
 		var cran=parseVolPageRange(result[3][0]);
 		document.getElementById("RangeH").innerHTML="volpage:"+cran.vol+", page:"+cran.page+", side:"+cran.side+", line:"+cran.line+" ~ page:"+cran.page2+", side:"+cran.side2+", line:"+cran.line2;
 		var res=parseVolPage(result[4][0]);
-		document.getElementById("LineH").innerHTML="volpage:"+res.vol+", page:"+res.page+", side:"+res.side+", line:"+res.line;
+		var LineH_wlink=linkImage(res,to);
+		document.getElementById("LineH").innerHTML=LineH_wlink;
 	}
 	if(to.length == 1125){//uPedurma
 		document.getElementById("toU").innerHTML="Urga";
@@ -71,7 +77,8 @@ var showResult_Volpage=function(result,to){//result=[經號],[範圍],[對照經
 		var cran=parseVolPageRange(result[3][0]);
 		document.getElementById("RangeU").innerHTML="volpage:"+cran.vol+", page:"+cran.page+", side:"+cran.side+", line:"+cran.line+" ~ page:"+cran.page2+", side:"+cran.side2+", line:"+cran.line2;
 		var res=parseVolPage(result[4][0]);
-		document.getElementById("LineU").innerHTML="volpage:"+res.vol+", page:"+res.page+", side:"+res.side+", line:"+res.line;
+		var LineU_wlink=linkImage(res,to);
+		document.getElementById("LineU").innerHTML=LineU_wlink;
 	}
 
 }
