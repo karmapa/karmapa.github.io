@@ -2,22 +2,77 @@
 var dosearch=function(volpage){
 	reset();
 	var form=document.getElementById("form_name");
-		if(form.version.value=="J"){
-			search(volpage,jPedurma,dPedurma);
-			document.getElementById("from").innerHTML="Lijiang";
-			document.getElementById("to").innerHTML="Derge";
-		}
-		if(form.version.value=="D"){
-			search(volpage,dPedurma,jPedurma);
-			document.getElementById("from").innerHTML="Derge";
-			document.getElementById("to").innerHTML="Lijiang";
-		}
+	if(form.version.value=="J"){
+		search(volpage,jPedurma,dPedurma);
+		search(volpage,jPedurma,cPedurma);
+		search(volpage,jPedurma,kPedurma);
+		search(volpage,jPedurma,nPedurma);
+		search(volpage,jPedurma,hPedurma);
+		search(volpage,jPedurma,uPedurma);	
+		document.getElementById("from").innerHTML="Lijiang";
+		
+	}
+	if(form.version.value=="D"){
+		search(volpage,dPedurma,jPedurma);
+		search(volpage,dPedurma,cPedurma);
+		search(volpage,dPedurma,kPedurma);
+		search(volpage,dPedurma,nPedurma);
+		search(volpage,dPedurma,hPedurma);
+		search(volpage,dPedurma,uPedurma);
+		document.getElementById("from").innerHTML="Derge";
+	}
+	if(form.version.value=="C"){
+		search(volpage,cPedurma,jPedurma);
+		search(volpage,cPedurma,dPedurma);
+		search(volpage,cPedurma,kPedurma);
+		search(volpage,cPedurma,nPedurma);
+		search(volpage,cPedurma,hPedurma);
+		search(volpage,cPedurma,uPedurma);
+		document.getElementById("from").innerHTML="Cone";
+	}
+	if(form.version.value=="K"){
+		search(volpage,kPedurma,jPedurma);
+		search(volpage,kPedurma,dPedurma);
+		search(volpage,kPedurma,cPedurma);
+		search(volpage,kPedurma,nPedurma);
+		search(volpage,kPedurma,hPedurma);
+		search(volpage,kPedurma,uPedurma);
+		document.getElementById("from").innerHTML="CK";
+	}
+	if(form.version.value=="N"){
+		search(volpage,nPedurma,jPedurma);
+		search(volpage,nPedurma,dPedurma);
+		search(volpage,nPedurma,kPedurma);
+		search(volpage,nPedurma,cPedurma);
+		search(volpage,nPedurma,hPedurma);
+		search(volpage,nPedurma,uPedurma);
+		document.getElementById("from").innerHTML="Narthang";
+	}
+	if(form.version.value=="H"){
+		search(volpage,hPedurma,jPedurma);
+		search(volpage,hPedurma,dPedurma);
+		search(volpage,hPedurma,kPedurma);
+		search(volpage,hPedurma,cPedurma);
+		search(volpage,hPedurma,nPedurma);
+		search(volpage,hPedurma,uPedurma);
+		document.getElementById("from").innerHTML="Lhasa";
+	}
+	if(form.version.value=="U"){
+		search(volpage,uPedurma,jPedurma);
+		search(volpage,uPedurma,dPedurma);
+		search(volpage,uPedurma,kPedurma);
+		search(volpage,uPedurma,cPedurma);
+		search(volpage,uPedurma,nPedurma);
+		search(volpage,uPedurma,hPedurma);
+		document.getElementById("from").innerHTML="Urga";
+	}
 }
 
 var search=function(volpage,from,to){
 	if(volpage.match("[@.]")){//如果輸入是volpage的話
 		var corresFromVolpage=fromVolpage(volpage,from,to);
-		showResult_Volpage(corresFromVolpage);
+		showResult_Volpage(corresFromVolpage,to);
+		showResult_Volpage_from(corresFromVolpage);
 		//corresFromVolpage= [經號],[範圍],[對照經號],[對照範圍],[對照行],[K經號]
 		searchNameCh(corresFromVolpage[5],from,to);
 		searchName(corresFromVolpage[5]);
@@ -28,28 +83,6 @@ var search=function(volpage,from,to){
 		searchNameCh(corresJing[0][3],from,to);
 		searchName(corresJing[0][3]);
 	}
-}
-
-var showResult_Jing=function(volpage,result){//result=[自己範圍,對照經號,對照範圍]
-	document.getElementById("Jing").innerHTML=volpage;
-	document.getElementById("corresJing").innerHTML=result[0][1];
-	var ran=parseVolPageRange(result[0][0]);
-	document.getElementById("range").innerHTML="volpage:"+ran.vol+", page:"+ran.page+", side:"+ran.side+", line:"+ran.line+" ~ page:"+ran.page2+", side:"+ran.side2+", line:"+ran.line2;
-	var cran=parseVolPageRange(result[0][2]);
-	document.getElementById("corresRange").innerHTML="volpage:"+cran.vol+", page:"+cran.page+", side:"+cran.side+", line:"+cran.line+" ~ page:"+cran.page2+", side:"+cran.side2+", line:"+cran.line2;
-	// document.getElementById("corresLine").innerHTML="";
-
-}
-
-var showResult_Volpage=function(result){//result=[經號],[範圍],[對照經號],[對照範圍],[對照行]
-	document.getElementById("Jing").innerHTML=result[0];
-	var ran=parseVolPageRange(result[1][0]);
-	document.getElementById("range").innerHTML="volpage:"+ran.vol+", page:"+ran.page+", side:"+ran.side+", line:"+ran.line+" ~ page:"+ran.page2+", side:"+ran.side2+", line:"+ran.line2;
-	document.getElementById("corresJing").innerHTML=result[2];
-	var cran=parseVolPageRange(result[3][0]);
-	document.getElementById("corresRange").innerHTML="volpage:"+cran.vol+", page:"+cran.page+", side:"+cran.side+", line:"+cran.line+" ~ page:"+cran.page2+", side:"+cran.side2+", line:"+cran.line2;
-	var res=parseVolPage(result[4][0]);
-	document.getElementById("corresLine").innerHTML="volpage:"+res.vol+", page:"+res.page+", side:"+res.side+", line:"+res.line;
 }
 
 var fromJing=function(Jing,from,to){
@@ -159,24 +192,24 @@ var rvp2Vline=function(){
 }
 
 var parseVolPage=function(str){
-	var s=str.match(/(\d+)[@.](\d+)([abcd])(\d*)/);
+	var s=str.match(/(\d+)[@.](\d+)([abcd]*)(\d*)/);
 	//var s=str.match(/(\d+)[@.](\d+)([abcd])(\d*)-*(\d*)([abcd]*)(\d*)/);
 	if(!s){
 		console.log("error!",str);
 		return null;
 	}
-	return {vol:parseInt(s[1]),page:parseInt(s[2]),side:s[3],line:parseInt(s[4]||"1")};
+	return {vol:parseInt(s[1]),page:parseInt(s[2]),side:s[3] || "x",line:parseInt(s[4]||"1")};
 	//return {vol:parseInt(s[1]),page:parseInt(s[2]),side:s[3],line:parseInt(s[4]||"1"),page2:parseInt(s[5]),side2:s[6],line2:parseInt(s[7]||"1")};
 }
 
 var parseVolPageRange=function(str){
-	var s=str.match(/(\d+)[@.](\d+)([abcd])(\d*)-(\d+)([abcd])(\d*)/);
+	var s=str.match(/(\d+)[@.](\d+)([abcd]*)(\d*)-(\d+)([abcd]*)(\d*)/);
 	//var s=str.match(/(\d+)[@.](\d+)([abcd])(\d*)-*(\d*)([abcd]*)(\d*)/);
 	if(!s){
 		console.log("error!",str);
 		return null;
 	}
-	return {vol:parseInt(s[1]),page:parseInt(s[2]),side:s[3],line:parseInt(s[4]||"1"),page2:parseInt(s[5]),side2:s[6],line2:parseInt(s[7]||"1")};	
+	return {vol:parseInt(s[1]),page:parseInt(s[2]),side:s[3] || "x",line:parseInt(s[4]||"1"),page2:parseInt(s[5]),side2:s[6] || "x",line2:parseInt(s[7]||"1")};	
 }
 
 var volpb2vl=function(str){
@@ -187,6 +220,7 @@ var volpb2vl=function(str){
 	else if(volpage["side"]=="b"){side=2;}
 	else if(volpage["side"]=="c"){side=3;}
 	else if(volpage["side"]=="d"){side=4;}
+	else {side=0;}
 	
 	var vline=volpage["vol"]*500*4*10+volpage["page"]*4*10+side*10+volpage["line"];
 	
@@ -247,18 +281,8 @@ var taisho2taishoName=function(taisho){ //把pedurma_taisho裡的taisho號碼轉
 }
 
 var addLink=function(link,name){
-		return '<a target=_new href="http://tripitaka.cbeta.org/'+link+'">'+name+"</a>";
+	return '<a target=_new href="http://tripitaka.cbeta.org/'+link+'">'+name+"</a>";
 }
 
-var reset=function(){
-	document.getElementById("Jing").innerHTML="";
-	document.getElementById("corresJing").innerHTML="";
-	document.getElementById("range").innerHTML="";
-	document.getElementById("corresRange").innerHTML="";
-	document.getElementById("corresLine").innerHTML="";
-	document.getElementById("name").innerHTML="";
-	document.getElementById("nameCh").innerHTML="";
-	//document.getElementById("warning").innerHTML="";
-}
 
 
