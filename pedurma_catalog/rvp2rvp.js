@@ -283,7 +283,7 @@ var searchName=function(KJing){
 
 var taisho2taishoName=function(taisho){ //把pedurma_taisho裡的taisho號碼轉換為經名
 	for(var i=0;i<taishonames.length;i++){
-		var taishoNum=parseInt(taishonames[i][0].substr(taishonames[i][0].length-4));
+		var taishoNum=parseInt(taishonames[i][0].substr(4,4));//taishonames[i][0].length-4
 		if(parseInt(taisho) == taishoNum){
 			return taishonames[i];//[T01n0001,經名]
 		}
@@ -291,6 +291,9 @@ var taisho2taishoName=function(taisho){ //把pedurma_taisho裡的taisho號碼轉
 }
 
 var addLink=function(link,name){
+	if(link.match(/T0.n0220/)){
+		link=link.substr(0,link.length-1);
+	}
 	return '<a target=_new href="http://tripitaka.cbeta.org/'+link+'">'+name+"</a>";
 }
 
