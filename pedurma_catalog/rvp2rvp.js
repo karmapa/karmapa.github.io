@@ -37,7 +37,7 @@ var dosearch=function(volpage){
 		search(volpage,kPedurma,nPedurma);
 		search(volpage,kPedurma,hPedurma);
 		search(volpage,kPedurma,uPedurma);
-		document.getElementById("from").innerHTML="CK";
+		document.getElementById("from").innerHTML="Pedurma";
 	}
 	if(form.version.value=="N"){
 		search(volpage,nPedurma,jPedurma);
@@ -114,8 +114,8 @@ var fromVolpage=function(volpage,from,to){
 	var range=findRange(volpage,from);//range=[J經號,J範圍,K經號]
 	var corres_range=findCorresRange(range[2],to);//corres_range=[D經號,D範圍]
 	//算J和D的範圍
-	var vRange=countRange(range[1]);//[vStart,vEnd-vStart]
-	var corres_vRange=countRange(corres_range[0][1]);//[vStart,vEnd-vStart]
+	var vRange=countRange(range[1],range[1]);//[vStart,vEnd-vStart]
+	var corres_vRange=countRange(corres_range[0][1],corres_range[corres_range.length-1][1]);//[vStart,vEnd-vStart]
 	var corresLine=countCorresLine(volpage,vRange[1],corres_vRange[1],vRange[0],corres_vRange[0]);
 
 	out.push([range[0]],[range[1]],[corres_range[0][0]],[corres_range[0][1]],[corresLine],[range[2]]);
@@ -131,15 +131,25 @@ var countCorresLine=function(volpage,range,corres_range,start,corres_start){//vo
 	return corresLine;
 }
 
-var countRange=function(range){//range=034@020a1-103b7
-	var p=range.split("-");
-	var start=p[0];
-	var vStart=volpb2vl(start);
-	var end=p[0].substr(0,3)+"."+p[1];
-	var vEnd=volpb2vl(end);
-	//var vRange=vEnd-vStart;
-	var vRange=[vStart,vEnd-vStart];
-
+var countRange=function(startRange,endRange){//range=034@020a1-103b7
+	if(startRange == endRange){  //起始範圍=結束範圍：代表只有對照到一函，沒有跨函
+		var p=startRange.split("-");
+		var start=p[0];
+		var vStart=volpb2vl(start);
+		var end=p[0].substr(0,3)+"."+p[1];
+		var vEnd=volpb2vl(end);
+		//var vRange=vEnd-vStart;
+		var vRange=[vStart,vEnd-vStart];
+	}
+	else if(startRange != endRange){
+		var m=startRange.split("-");
+		var start=m[0];
+		var vStart=volpb2vl(start);
+		var n=endRange.split("-");
+		var end=n[0].substr(0,3)+"."+n[1];
+		var vEnd=volpb2vl(end);
+		var vRange=[vStart,vEnd-vStart];
+	}
 	return vRange;
 }
 
@@ -284,5 +294,56 @@ var addLink=function(link,name){
 	return '<a target=_new href="http://tripitaka.cbeta.org/'+link+'">'+name+"</a>";
 }
 
+var linkImage=function(corresline,to){//corresline:對照行(分開成物件的對照行)
+	//去掉行數 把vol page side 湊成檔名
+	var filename=id2imageFileName(corresline);//[函號(用來進入該函資料夾),檔名]
+	var Line="volpage:"+corresline.vol+", page:"+corresline.page+", side:"+corresline.side+", line:"+corresline.line;
 
+	if(to.length == 1131){//J
+		return '<a target=_new href="http://114.34.239.14/kangyur_images/lijiang/'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
+		//連結到該檔
+	}
+	if(to.length == 1138){//D
+		return '<a target=_new href="'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
+	}
+	if(to.length == 1203){//K
+		return '<a target=_new href="'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
+	}
+	if(to.length == 1116){//C
+		return '<a target=_new href="http://114.34.239.14/kangyur_images/cone/'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
+	}
+	if(to.length == 798){//N
+		return '<a target=_new href="'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
+	}
+	if(to.length == 837){//H
+		return '<a target=_new href="http://114.34.239.14/kangyur_images/lhasa/'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
+	}
+	if(to.length == 1125){//U
+		return '<a target=_new href="'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
+	}
+}
+
+var id2imageFileName=function(id){
+	//var id=parseVolPage(corresline);
+	var realpage=snap2realpage(id);
+	var p="00"+realpage.vol;
+	var nameVol=p.substr(p.length-3);
+	var q="00"+realpage.page;
+	var namePageSide=q.substr(q.length-3)+realpage.side;
+	var filename=[nameVol,nameVol+"-"+namePageSide+".jpg"];
+
+	return filename;
+}
+
+var snap2realpage=function(id){
+	if(id.side == "c"){
+		id.side=id.side.replace("c","b");
+	}
+	else if(id.side == "d"){
+		id.page=id.page+1;
+		id.side="a";
+	}
+
+	return id;
+}
 
