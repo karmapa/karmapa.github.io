@@ -17,7 +17,7 @@ var showResult_Volpage_from=function(result){
 
 var showResult_Volpage=function(result,to){//result=[經號],[範圍],[對照經號],[對照範圍],[對照行]
 
-	if(to.length == 1131){//jPedurma
+	if(to.rcode == "J"){//jPedurma
 		document.getElementById("toJ").innerHTML="Lijiang";
 		document.getElementById("JingJ").innerHTML=result[2];
 		var cran=parseVolPageRange(result[3][0]);
@@ -26,7 +26,7 @@ var showResult_Volpage=function(result,to){//result=[經號],[範圍],[對照經
 		var LineJ_wlink=linkImage(res,to);
 		document.getElementById("LineJ").innerHTML=LineJ_wlink;
 	}
-	if(to.length == 1138){//dPedurma
+	if(to.rcode == "D"){//dPedurma
 		document.getElementById("toD").innerHTML="Derge";
 		document.getElementById("JingD").innerHTML=result[2];
 		var cran=parseVolPageRange(result[3][0]);
@@ -35,7 +35,7 @@ var showResult_Volpage=function(result,to){//result=[經號],[範圍],[對照經
 		var LineD_wlink=linkImage(res,to);
 		document.getElementById("LineD").innerHTML=LineD_wlink;	
 	}
-	if(to.length == 1116){//cPedurma
+	if(to.rcode == "C"){//cPedurma
 		document.getElementById("toC").innerHTML="Cone";
 		document.getElementById("JingC").innerHTML=result[2];
 		var cran=parseVolPageRange(result[3][0]);
@@ -44,7 +44,7 @@ var showResult_Volpage=function(result,to){//result=[經號],[範圍],[對照經
 		var LineC_wlink=linkImage(res,to);
 		document.getElementById("LineC").innerHTML=LineC_wlink;	
 	}
-	if(to.length == 1203){//kPedurma
+	if(to.rcode == "K"){//kPedurma
 		document.getElementById("toK").innerHTML="Pedurma";
 		document.getElementById("JingK").innerHTML=result[2];
 		var cran=parseVolPageRange(result[3][0]);
@@ -53,7 +53,7 @@ var showResult_Volpage=function(result,to){//result=[經號],[範圍],[對照經
 		var LineK_wlink=linkImage(res,to);
 		document.getElementById("LineK").innerHTML=LineK_wlink;
 	}
-	if(to.length == 798){//nPedurma
+	if(to.rcode == "N"){//nPedurma
 		document.getElementById("toN").innerHTML="Narthang";
 		document.getElementById("JingN").innerHTML=result[2];
 		var cran=parseVolPageRange(result[3][0]);
@@ -62,7 +62,7 @@ var showResult_Volpage=function(result,to){//result=[經號],[範圍],[對照經
 		var LineN_wlink=linkImage(res,to);
 		document.getElementById("LineN").innerHTML=LineN_wlink;
 	}
-	if(to.length == 837){//hPedurma
+	if(to.rcode == "H"){//hPedurma
 		document.getElementById("toH").innerHTML="Lhasa";
 		document.getElementById("JingH").innerHTML=result[2];
 		var cran=parseVolPageRange(result[3][0]);
@@ -71,7 +71,7 @@ var showResult_Volpage=function(result,to){//result=[經號],[範圍],[對照經
 		var LineH_wlink=linkImage(res,to);
 		document.getElementById("LineH").innerHTML=LineH_wlink;
 	}
-	if(to.length == 1125){//uPedurma
+	if(to.rcode == "U"){//uPedurma
 		document.getElementById("toU").innerHTML="Urga";
 		document.getElementById("JingU").innerHTML=result[2];
 		var cran=parseVolPageRange(result[3][0]);
