@@ -1,8 +1,6 @@
 body{
 	/*background: rgba(0,0,0,0.6);*/
 	background:url(karmapa3.jpeg);
-	
-
 	background-repeat: no-repeat;
 	background-position: center;
 	background-position: absolute;
@@ -31,5 +29,5 @@ body{
 	/*rgba(187,255,238,0.5) none repeat scroll !important;  #BBFFEE     */
 }
 
-a{color: #CCEEFF;}
+a{color: #BBFFEE;}
 
