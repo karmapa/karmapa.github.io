@@ -11,12 +11,15 @@ input {font-size: 100%;
 		background-color: #3799FF;
 		color: white;
 		border: #3799FF;
+		/*弧形角border-radius: 20;*/
 
 }
 button {font-size: 100%;
 		background-color: #3799FF;
 		color: white;
 		border:none;
+		/*弧形角border-radius: 20;*/
+		
 }
 .mid{vertical-align:middle;}
 

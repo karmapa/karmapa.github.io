@@ -1,0 +1,35 @@
+body{
+	/*background: rgba(0,0,0,0.6);*/
+	background:url(karmapa3.jpeg);
+	
+
+	background-repeat: no-repeat;
+	background-position: center;
+	background-position: absolute;
+	color: #FFFFFF;	
+	text-align: center;
+	font-size: 150%;
+	font-family: avenir, Microsoft JhengHei;
+	margin-top: -10px;
+	margin-bottom: -10px;
+	margin-right: -10px;
+	margin-left: -10px;
+}
+
+#content{
+	padding: 10px;
+	background:rgba(0,0,0,0.3) none repeat scroll !important;	
+	padding-bottom: 160px;
+}
+
+#footer{
+	height: 160px;
+	position: relative;
+	margin-top: -100px;
+	margin-bottom: -10px;
+	background:#BBFFEE;
+	/*rgba(187,255,238,0.5) none repeat scroll !important;  #BBFFEE     */
+}
+
+a{color: #CCEEFF;}
+
