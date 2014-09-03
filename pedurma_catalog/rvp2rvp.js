@@ -1,74 +1,19 @@
 ﻿//var fs=require("fs");
+var longnames={"J":"Lijiang","D":"Derge","C":"Cone","K":"Pedurma","N":"Narthang","H":"Lhasa","U":"Urga"};
+var mappings={"J":jPedurma,"D":dPedurma,"C":cPedurma,"K":kPedurma,"N":nPedurma,"H":hPedurma,"U":uPedurma};
 var dosearch=function(volpage){
 	reset();
 	var form=document.getElementById("form_name");
-	if(form.version.value=="J"){
-		search(volpage,jPedurma,dPedurma);
-		search(volpage,jPedurma,cPedurma);
-		search(volpage,jPedurma,kPedurma);
-		search(volpage,jPedurma,nPedurma);
-		search(volpage,jPedurma,hPedurma);
-		search(volpage,jPedurma,uPedurma);	
-		document.getElementById("from").innerHTML="Lijiang";
-		
+	var rcode=form.version.value;
+	for(var to in mappings){
+		search(volpage,mappings[rcode],mappings[to]);
 	}
-	if(form.version.value=="D"){
-		search(volpage,dPedurma,jPedurma);
-		search(volpage,dPedurma,cPedurma);
-		search(volpage,dPedurma,kPedurma);
-		search(volpage,dPedurma,nPedurma);
-		search(volpage,dPedurma,hPedurma);
-		search(volpage,dPedurma,uPedurma);
-		document.getElementById("from").innerHTML="Derge";
-	}
-	if(form.version.value=="C"){
-		search(volpage,cPedurma,jPedurma);
-		search(volpage,cPedurma,dPedurma);
-		search(volpage,cPedurma,kPedurma);
-		search(volpage,cPedurma,nPedurma);
-		search(volpage,cPedurma,hPedurma);
-		search(volpage,cPedurma,uPedurma);
-		document.getElementById("from").innerHTML="Cone";
-	}
-	if(form.version.value=="K"){
-		search(volpage,kPedurma,jPedurma);
-		search(volpage,kPedurma,dPedurma);
-		search(volpage,kPedurma,cPedurma);
-		search(volpage,kPedurma,nPedurma);
-		search(volpage,kPedurma,hPedurma);
-		search(volpage,kPedurma,uPedurma);
-		document.getElementById("from").innerHTML="Pedurma";
-	}
-	if(form.version.value=="N"){
-		search(volpage,nPedurma,jPedurma);
-		search(volpage,nPedurma,dPedurma);
-		search(volpage,nPedurma,kPedurma);
-		search(volpage,nPedurma,cPedurma);
-		search(volpage,nPedurma,hPedurma);
-		search(volpage,nPedurma,uPedurma);
-		document.getElementById("from").innerHTML="Narthang";
-	}
-	if(form.version.value=="H"){
-		search(volpage,hPedurma,jPedurma);
-		search(volpage,hPedurma,dPedurma);
-		search(volpage,hPedurma,kPedurma);
-		search(volpage,hPedurma,cPedurma);
-		search(volpage,hPedurma,nPedurma);
-		search(volpage,hPedurma,uPedurma);
-		document.getElementById("from").innerHTML="Lhasa";
-	}
-	if(form.version.value=="U"){
-		search(volpage,uPedurma,jPedurma);
-		search(volpage,uPedurma,dPedurma);
-		search(volpage,uPedurma,kPedurma);
-		search(volpage,uPedurma,cPedurma);
-		search(volpage,uPedurma,nPedurma);
-		search(volpage,uPedurma,hPedurma);
-		document.getElementById("from").innerHTML="Urga";
-	}
+	document.getElementById("from").innerHTML=longnames[rcode];
 }
 
 var search=function(volpage,from,to){
+	if(from == to){return;}
+
 	if(volpage.match("[@.]")){//如果輸入是volpage的話
 		var corresFromVolpage=fromVolpage(volpage,from,to);
 		showResult_Volpage(corresFromVolpage,to);
@@ -152,7 +97,6 @@ var countRange=function(startRange,endRange){//range=034@020a1-103b7
 	}
 	return vRange;
 }
-
 
 var findCorresRange=function(KJing,to){
 	var out=[];
@@ -301,29 +245,7 @@ var linkImage=function(corresline,to){//corresline:對照行(分開成物件的�
 	//去掉行數 把vol page side 湊成檔名
 	var filename=id2imageFileName(corresline);//[函號(用來進入該函資料夾),檔名]
 	var Line="volpage:"+corresline.vol+", page:"+corresline.page+", side:"+corresline.side+", line:"+corresline.line;
-
-	if(to.length == 1131){//J
-		return '<a target=_new href="http://114.34.239.14/kangyur_images/lijiang/'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
-		//連結到該檔
-	}
-	if(to.length == 1138){//D
-		return '<a target=_new href="'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
-	}
-	if(to.length == 1203){//K
-		return '<a target=_new href="'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
-	}
-	if(to.length == 1116){//C
-		return '<a target=_new href="http://114.34.239.14/kangyur_images/cone/'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
-	}
-	if(to.length == 798){//N
-		return '<a target=_new href="'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
-	}
-	if(to.length == 837){//H
-		return '<a target=_new href="http://114.34.239.14/kangyur_images/lhasa/'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
-	}
-	if(to.length == 1125){//U
-		return '<a target=_new href="'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
-	}
+	return '<a target=_new href="http://114.34.239.14/kangyur_images/'+longnames[to.rcode].toLowerCase()+'/'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
 }
 
 var id2imageFileName=function(id){
