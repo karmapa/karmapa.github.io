@@ -1,0 +1,36 @@
+body{
+	/*background: rgba(0,0,0,0.6);*/
+	background:url(scene.jpeg);
+	background-attachment: fixed;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-position: absolute;
+	color: #FFFFFF;	
+	text-align: center;
+	font-size: 150%;
+	font-family: lucida, avenir, Microsoft JhengHei;
+	margin: -10px;
+}
+#content img{border-radius: 100%;
+	width: 200px;
+	height: 200px;}
+#headline{letter-spacing:8px;}
+
+#content{
+	/*padding: 10px;*/
+	background:rgba(0,0,0,0.3) none repeat scroll !important;	
+	padding-bottom: 50px;
+	margin-bottom: 100px;
+}
+
+#footer{
+	height: 300px;
+	position: relative;
+	margin-top: -100px;
+	margin-bottom: -100px;
+	background:rgba(187,255,238,0.5) none repeat scroll !important;
+	/*rgba(187,255,238,0.5) none repeat scroll !important;  #BBFFEE     */
+}
+
+a{color: #BBFFEE;}
+
