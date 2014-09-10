@@ -36,7 +36,7 @@ var unique=function(mask){
 }
 var renderSutraList=function(result){
 	var out=[];
-	var link="file:///Users/yu/dev2014/karmapa.github.io/pedurma_catalog/page_map.html?ck=";
+	var link="http://karmapa.github.io/pedurma_catalog/page_map.html?ck=";
 	//"http://karmapa.github.io/pedurma_catalog/page_map.html?ck="
 	for(var i=0; i<result.length; i++){
 			var name=addSutraName(result[i][0]);
