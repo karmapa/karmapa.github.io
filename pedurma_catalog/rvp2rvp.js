@@ -24,6 +24,7 @@ var search=function(volpage,from,to){
 	} else {//如果輸入是經號的話
 		var corresJing=fromJing(volpage,from,to);
 		showResult_Jing(volpage,corresJing);
+		showResult_Jing_from(corresJing);
 		//corresJing=[自己範圍,對照經號,對照範圍,K經號]
 		searchNameCh(corresJing[0][3],from,to);
 		searchName(corresJing[0][3]);

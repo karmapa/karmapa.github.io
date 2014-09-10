@@ -1,3 +1,7 @@
+var showResult_Jing_from=function(result){
+	document.getElementById("Jing").innerHTML=result[0][0];
+}
+
 var showResult_Jing=function(volpage,result){//result=[自己範圍,對照經號,對照範圍]
 	document.getElementById("Jing").innerHTML=volpage;
 	document.getElementById("corresJing").innerHTML=result[0][1];
