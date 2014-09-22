@@ -5,11 +5,13 @@ var jingSearch=function(input){
 		for(var j=0; j<mappings[i].length; j++){
 			if(mappings[i][j][2] == input){
 				var range=mappings[i][j][1];
-				renderJing(i,mappings[i][j][0],range);
+				var l=mappings[i][j][1].split("-");
+				var line=l[0];
+				renderJing(i,mappings[i][j][0],range,line);
 			}
 		}
 	}
-	console.log(out);
+	//console.log(out);
 	return out;
 }
 var renderCKJing=function(input){
@@ -26,36 +28,42 @@ var renderCKJing=function(input){
 	document.getElementById("name").innerHTML=addSutraName(input);
 	document.getElementById("nameCh").innerHTML=searchNameCh(input);
 }
-var renderJing=function(recen,jing,range){
+var renderJing=function(recen,jing,range,line){
 	if(recen == "D"){
 		document.getElementById("toD").innerHTML="Derge";
 		document.getElementById("JingD").innerHTML=jing;
 		document.getElementById("RangeD").innerHTML=range;
+		document.getElementById("LineD").innerHTML=line;
 	}
 	if(recen == "U"){
 		document.getElementById("toU").innerHTML="Urga";
 		document.getElementById("JingU").innerHTML=jing;
 		document.getElementById("RangeU").innerHTML=range;
+		document.getElementById("LineU").innerHTML=line;
 	}
 	if(recen == "N"){
 		document.getElementById("toN").innerHTML="Narthang";
 		document.getElementById("JingN").innerHTML=jing;
 		document.getElementById("RangeN").innerHTML=range;
+		document.getElementById("LineN").innerHTML=line;
 	}
 	if(recen == "H"){
 		document.getElementById("toH").innerHTML="Lhasa";
 		document.getElementById("JingH").innerHTML=jing;
 		document.getElementById("RangeH").innerHTML=range;
+		document.getElementById("LineH").innerHTML=line;
 	}
 	if(recen == "C"){
 		document.getElementById("toC").innerHTML="Cone";
 		document.getElementById("JingC").innerHTML=jing;
 		document.getElementById("RangeC").innerHTML=range;
+		document.getElementById("LineC").innerHTML=line;
 	}
 	if(recen == "J"){
 		document.getElementById("toJ").innerHTML="Lijiang";
 		document.getElementById("JingJ").innerHTML=jing;
 		document.getElementById("RangeJ").innerHTML=range;
+		document.getElementById("LineJ").innerHTML=line;
 	}
 }
 
@@ -95,3 +103,4 @@ var addLink=function(link,name){
 }
 
 jingSearch(window.location.search.substr(4));
+//console.log(window.location.search);
