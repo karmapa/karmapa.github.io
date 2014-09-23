@@ -7122,6 +7122,7 @@ td.visible-print {
 
 .main {}
 .tofind {color:#5DBE00;}
+.text {white-space: pre;}
 a{color:#178918;}
 .comp1 {}
 .results {}
@@ -7136,4 +7137,5 @@ div.current:hover {background:#59E817;}
 div.current span.text:hover{text-decoration:underline;cursor:pointer;}
 div.child span.text:hover {text-decoration:underline;cursor:pointer;color:#85BB65;}
 .badge:hover {color:#59E817;cursor:pointer;}
+.showtext {}
 #main {}
