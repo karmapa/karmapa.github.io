@@ -13634,6 +13634,7 @@ var kde=Require('ksana-document').kde;  // Ksana Database Engine
 var kse=Require('ksana-document').kse; // Ksana Search Engine (run at client side)
 var api=Require("api");
 var stacktoc=Require("stacktoc");  //載入目錄顯示元件
+var showtext=Require("showtext");
 
 var main = React.createClass({displayName: 'main',
   getInitialState: function() {
@@ -13681,24 +13682,48 @@ var main = React.createClass({displayName: 'main',
       this.setState({res:data, tofind:tofind});  
     });
   },
+  showExcerpt:function(n) {
+    var voff=this.state.toc[n].voff;
+    this.dosearch(null,null,voff);
+  }, 
+  showPage:function(f,p,hideResultlist) {
+    kse.highlightPage(this.state.db,f,p,{q:this.state.q},function(data){
+      this.setState({bodytext:data});
+      if (hideResultlist) this.setState({res:[]});
+    });
+  }, 
+  showText:function(n) {
+    var res=kse.vpos2filepage(this.state.db,this.state.toc[n].voff);
+    this.showPage(res.file,res.page,true);
+  },
   render: function() {
     if (!this.state.quota) { // install required db
         return this.openFileinstaller(true);
     } else { 
+      var text="",pagename="";
+      if (this.state.bodytext) {
+        text=this.state.bodytext.text;
+        pagename=this.state.bodytext.pagename;
+    }
       return (
         React.DOM.div(null, 
           React.DOM.div({className: "col-md-4"}, 
-            stacktoc({data: this.state.toc}), " //顯示目錄"
+            stacktoc({showText: this.showText, showExcerpt: this.showExcerpt, hits: this.state.res.rawresult, data: this.state.toc}), "// 顯示目錄"
           ), 
           React.DOM.div({className: "col-md-8"}, 
-            React.DOM.br(null), React.DOM.input({ref: "tofind", defaultValue: "དགེ"}), 
-            React.DOM.button({onClick: this.dosearch, className: "btn btn-success btn-xs"}, "Search"), 
-            "Search Example:   1.", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "བྱས"), 
-            "2. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "གནས"), 
-            "3. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "འགྱུར"), 
-            "4. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "བདག"), 
-            "5. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "དགའ"), 
-            results({res: this.state.res, tofind: this.state.tofind})
+            React.DOM.div({className: "text"}, 
+            showtext({pagename: pagename, text: text})
+            ), 
+            React.DOM.div({className: "search"}, 
+              React.DOM.br(null), React.DOM.input({ref: "tofind", defaultValue: "དགེ"}), 
+              React.DOM.button({onClick: this.dosearch, className: "btn btn-success btn-xs"}, "Search"), 
+              "Search Example:   1.", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "བྱས"), 
+              "2. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "གནས"), 
+              "3. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "འགྱུར"), 
+              "4. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "བདག"), 
+              "5. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "དགའ"), 
+              results({res: this.state.res, tofind: this.state.tofind})
+            )
           )
         )
       );
@@ -14013,10 +14038,51 @@ var stacktoc = React.createClass({displayName: 'stacktoc',
 });
 module.exports=stacktoc;
 });
+require.register("adarsha-showtext/index.js", function(exports, require, module){
+/** @jsx React.DOM */
+
+//var othercomponent=Require("other"); 
+var controls = React.createClass({displayName: 'controls',
+  mixins: [React.addons.LinkedStateMixin],
+     
+    getInitialState: function() {
+      return {value: this.props.pagename};
+    },
+    shouldComponentUpdate:function(nextProps,nextState) {
+      this.state.pagename=nextProps.pagename;
+      return (nextProps.pagename!=this.props.pagename);
+    },
+    render: function() {   
+     return React.DOM.div(null, 
+              React.DOM.button({onClick: this.props.prev}, "←"), 
+               React.DOM.input({type: "text", ref: "pagename", valueLink: this.linkState('pagename')}), 
+              React.DOM.button({onClick: this.props.next}, "→")
+              )
+  }  
+});
+var showtext = React.createClass({displayName: 'showtext',
+  getInitialState: function() {
+    return {bar: "world"};
+  },
+  render: function() {
+    var pn=this.props.pagename;
+    return (
+      React.DOM.div(null, 
+        controls({pagename: this.props.pagename, next: this.props.nextpage, prev: this.props.prevpage}), 
+       
+        React.DOM.div({dangerouslySetInnerHTML: {__html: this.props.text}})
+      )
+    );
+  }
+});
+module.exports=showtext;
+});
 require.register("adarsha/index.js", function(exports, require, module){
 var boot=require("boot");
 boot("adarsha","main","main");
 });
+
+
 
 
 
@@ -14128,6 +14194,10 @@ require.alias("ksanaforge-stacktoc/index.js", "adarsha/deps/stacktoc/index.js");
 require.alias("ksanaforge-stacktoc/index.js", "adarsha/deps/stacktoc/index.js");
 require.alias("ksanaforge-stacktoc/index.js", "stacktoc/index.js");
 require.alias("ksanaforge-stacktoc/index.js", "ksanaforge-stacktoc/index.js");
+require.alias("adarsha-showtext/index.js", "adarsha/deps/showtext/index.js");
+require.alias("adarsha-showtext/index.js", "adarsha/deps/showtext/index.js");
+require.alias("adarsha-showtext/index.js", "showtext/index.js");
+require.alias("adarsha-showtext/index.js", "adarsha-showtext/index.js");
 require.alias("adarsha/index.js", "adarsha/index.js");
 if (typeof exports == 'object') {
   module.exports = require('adarsha');
