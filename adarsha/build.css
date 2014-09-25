@@ -7121,11 +7121,13 @@ td.visible-print {
 
 
 .main {}
-.tofind {color:#5DBE00;}
+.tofind {background:#99E353;}
 .text {white-space: pre;}
 a{color:#178918;}
 .comp1 {}
 .results {}
+.pagename{cursor: pointer;}
+.tofind ,hl{background:#99E353;}
 
 .stacktoc {font-size:150%;}
 
