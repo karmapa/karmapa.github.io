@@ -246,7 +246,7 @@ var linkImage=function(corresline,to){//corresline:對照行(分開成物件的�
 	//去掉行數 把vol page side 湊成檔名
 	var filename=id2imageFileName(corresline);//[函號(用來進入該函資料夾),檔名]
 	var Line="volpage:"+corresline.vol+", page:"+corresline.page+", side:"+corresline.side+", line:"+corresline.line;
-	return '<a target=_new href="http://114.34.239.14/kangyur_images/'+longnames[to.rcode].toLowerCase()+'/'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
+	return '<a target=_new href="http://dharma-treasure.org/kangyur_images/'+longnames[to.rcode].toLowerCase()+'/'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
 }
 
 var id2imageFileName=function(id){

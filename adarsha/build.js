@@ -4303,7 +4303,9 @@ var parseBody=function(body,sep,cb) {
 var pat=/([a-zA-Z:]+)="([^"]+?)"/g;
 var parseAttributesString=function(s) {
 	var out={};
-	s.replace(pat,function(m,m1,m2){out[m1]=m2});
+	//work-around for repeated attribute,
+	//take the first one
+	s.replace(pat,function(m,m1,m2){if (!out[m1]) out[m1]=m2});
 	return out;
 }
 var storeFields=function(fields,json) {
@@ -4334,35 +4336,41 @@ var storeFields=function(fields,json) {
 var tagStack=[];
 var processTags=function(captureTags,tags,texts) {
 	var getTextBetween=function(from,to,startoffset,endoffset) {
-		if (from==to) return texts[from].t.substring(startoffset,endoffset);
-		var first=texts[from].t.substr(startoffset);
+		if (from==to) return texts[from].t.substring(startoffset-1,endoffset-1);
+		var first=texts[from].t.substr(startoffset-1);
 		var middle="";
 		for (var i=from+1;i<to;i++) {
 			middle+=texts[i].t;
 		}
-		var last=texts[to].t.substr(0,endoffset);
+		var last=texts[to].t.substr(0,endoffset-1);
 		return first+middle+last;
 	}
 	for (var i=0;i<tags.length;i++) {
 
 		for (var j=0;j<tags[i].length;j++) {
 			var T=tags[i][j],tagname=T[1],tagoffset=T[0],attributes=T[2],tagvpos=T[3];	
+			var nulltag=attributes[attributes.length-1]=='/';
 			if (captureTags[tagname]) {
-				attr=parseAttributesString(attributes);
-				tagStack.push([tagname,tagoffset,attr,i]);
+				var attr=parseAttributesString(attributes);
+				if (!nulltag) tagStack.push([tagname,tagoffset,attr,i]);
 			}
 			var handler=null;
-			if (tagname[0]=="/") {
-				handler=captureTags[tagname.substr(1)];
-			} 
+			if (tagname[0]=="/") handler=captureTags[tagname.substr(1)];
+			else if (nulltag) handler=captureTags[tagname];
+
 			if (handler) {
 				var prev=tagStack[tagStack.length-1];
-				if (tagname.substr(1)!=prev[0]) {
-					console.error("tag unbalance",tagname,prev[0]);
+				if (!nulltag) {				
+					if (tagname.substr(1)!=prev[0]) {
+						console.error("tag unbalance",tagname,prev[0]);
+					} else {
+						tagStack.pop();
+					}
+					var text=getTextBetween(prev[3],i,prev[1],tagoffset);
 				} else {
-					tagStack.pop();
+					var text="";
 				}
-				var text=getTextBetween(prev[3],i,prev[1],tagoffset);
+				
 				status.vpos=tagvpos; 
 				status.tagStack=tagStack;
 				var fields=handler(text, tagname, attr, status);
@@ -4842,6 +4850,11 @@ var DT={
 	//ydb start with object signature,
 	//type a ydb in command prompt shows nothing
 }
+var verbose=0, readLog=function(){};
+var _readLog=function(readtype,bytes) {
+	console.log(readtype,bytes,"bytes");
+}
+if (verbose) readLog=_readLog;
 
 var Create=function(path,opts,cb) {
 	/* loadxxx functions move file pointer */
@@ -4985,6 +4998,7 @@ var Create=function(path,opts,cb) {
 											o[key]=data; 
 										}
 										opts.blocksize=sz;
+										if (verbose) readLog("key",key);
 										load.apply(that,[opts, taskqueue.shift()]);
 									}
 								);
@@ -5407,11 +5421,12 @@ var Open=function(path,opts,cb) {
 		  
 		  if (html5fs) {
 	  		readLog("stringArray",buffer.byteLength);
-			if (encoding=='utf8') {
-				out=buf2stringarr(buffer,"utf8");
-			} else { //ucs2 is 3 times faster
-				out=buf2stringarr(buffer,"ucs2");
-			}
+
+				if (encoding=='utf8') {
+					out=buf2stringarr(buffer,"utf8");
+				} else { //ucs2 is 3 times faster
+					out=buf2stringarr(buffer,"ucs2");
+				}
 		  } else {
 			readLog("stringArray",buffer.length);
 			out=buffer.toString(encoding).split('\0');
@@ -5461,6 +5476,7 @@ var Open=function(path,opts,cb) {
 		var that=this;
 		var buf=new Buffer(blocksize);
 		fs.read(this.handle,buf,0,blocksize,pos,function(err,len,buffer){
+
 			readLog("buf",len);
 			/*
 			var buff=[];
@@ -6416,19 +6432,19 @@ extension id
 */
 
 var read=function(handle,buffer,offset,length,position,cb) {	 //buffer and offset is not used
-     var xhr = new XMLHttpRequest();
-      xhr.open('GET', handle.url , true);
-      var range=[position,length+position-1];
-      xhr.setRequestHeader('Range', 'bytes='+range[0]+'-'+range[1]);
-      xhr.responseType = 'arraybuffer';
-      xhr.send();
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', handle.url , true);
+  var range=[position,length+position-1];
+  xhr.setRequestHeader('Range', 'bytes='+range[0]+'-'+range[1]);
+  xhr.responseType = 'arraybuffer';
+  xhr.send();
 
-      xhr.onload = function(e) {
-        var that=this;
-        setTimeout(function(){
-          cb(0,that.response.byteLength,that.response);
-        },0);
-      }; 
+  xhr.onload = function(e) {
+    var that=this;
+    setTimeout(function(){
+      cb(0,that.response.byteLength,that.response);
+    },0);
+  }; 
 }
 
 var close=function(handle) {
@@ -13628,13 +13644,14 @@ var require_kdb=[{
 }];  
 //var othercomponent=Require("other"); 
 var bootstrap=Require("bootstrap");  
-var results=Require("results");
+var resultlist=Require("resultlist");
 var fileinstaller=Require("fileinstaller");
 var kde=Require('ksana-document').kde;  // Ksana Database Engine
 var kse=Require('ksana-document').kse; // Ksana Search Engine (run at client side)
 var api=Require("api");
 var stacktoc=Require("stacktoc");  //載入目錄顯示元件
 var showtext=Require("showtext");
+     
 
 var main = React.createClass({displayName: 'main',
   getInitialState: function() {
@@ -13670,9 +13687,10 @@ var main = React.createClass({displayName: 'main',
     return fileinstaller({quota: "512M", autoclose: autoclose, needed: require_kdb, 
                      onReady: this.onReady})
   },
-  dosearch: function() {    
+  dosearch: function(){
+    var start=arguments[2];  
     var tofind=tofind=this.refs.tofind.getDOMNode().value;
-    kse.search(this.state.db,tofind,{range:{maxhit:100}},function(data){ //call search engine          
+    kse.search(this.state.db,tofind,{range:{start:start,maxhit:100}},function(data){ //call search engine          
       this.setState({res:data, tofind:tofind});  
     });
   },
@@ -13687,7 +13705,8 @@ var main = React.createClass({displayName: 'main',
     this.dosearch(null,null,voff);
   }, 
   showPage:function(f,p,hideResultlist) {
-    kse.highlightPage(this.state.db,f,p,{q:this.state.q},function(data){
+
+    kse.highlightPage(this.state.db,f,p,{ q:this.state.tofind},function(data){
       this.setState({bodytext:data});
       if (hideResultlist) this.setState({res:[]});
     });
@@ -13695,6 +13714,10 @@ var main = React.createClass({displayName: 'main',
   showText:function(n) {
     var res=kse.vpos2filepage(this.state.db,this.state.toc[n].voff);
     this.showPage(res.file,res.page,true);
+  },
+  gotopage:function(vpos){
+    var res=kse.vpos2filepage(this.state.db,vpos);
+    this.showPage(res.file,res.page-1,false);
   },
   render: function() {
     if (!this.state.quota) { // install required db
@@ -13722,7 +13745,10 @@ var main = React.createClass({displayName: 'main',
               "3. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "འགྱུར"), 
               "4. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "བདག"), 
               "5. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "དགའ"), 
-              results({res: this.state.res, tofind: this.state.tofind})
+              resultlist({res: this.state.res, tofind: this.state.tofind, gotopage: this.gotopage}), 
+              React.DOM.span(null, this.state.elapse)
+
+
             )
           )
         )
@@ -13753,7 +13779,7 @@ var comp1 = React.createClass({displayName: 'comp1',
 });
 module.exports=comp1;
 });
-require.register("adarsha-results/index.js", function(exports, require, module){
+require.register("adarsha-resultlist/index.js", function(exports, require, module){
 /** @jsx React.DOM */
 
 /* to rename the component, change name of ./component.js and  "dependencies" section of ../../component.js */
@@ -13766,12 +13792,16 @@ var resultlist=React.createClass({displayName: 'resultlist',  //should search re
     return this.props.res.excerpt.map(function(r,i){ // excerpt is an array 
       var t = new RegExp(tofind,"g"); 
       r.text=r.text.replace(t,function(tofind){return "<span class='tofind'>"+tofind+"</span>"});
-      return React.DOM.div(null, 
-      React.DOM.div({className: "pagename"}, r.pagename), 
+      return React.DOM.div({'data-vpos': r.hits[0][0]}, 
+      React.DOM.a({onClick: this.gotopage, className: "pagename"}, r.pagename), 
         React.DOM.div({className: "resultitem", dangerouslySetInnerHTML: {__html:r.text}})
       )
-    }); 
+    },this); 
   }, 
+  gotopage:function(e) {
+    var vpos=parseInt(e.target.parentNode.dataset['vpos']);
+    this.props.gotopage(vpos);
+  },
   render:function() {
     if (this.props.res) {
       if (this.props.res.excerpt&&this.props.res.excerpt.length) {
@@ -14042,9 +14072,7 @@ require.register("adarsha-showtext/index.js", function(exports, require, module)
 /** @jsx React.DOM */
 
 //var othercomponent=Require("other"); 
-var controls = React.createClass({displayName: 'controls',
-  mixins: [React.addons.LinkedStateMixin],
-     
+var controls = React.createClass({displayName: 'controls',  
     getInitialState: function() {
       return {value: this.props.pagename};
     },
@@ -14055,7 +14083,7 @@ var controls = React.createClass({displayName: 'controls',
     render: function() {   
      return React.DOM.div(null, 
               React.DOM.button({onClick: this.props.prev}, "←"), 
-               React.DOM.input({type: "text", ref: "pagename", valueLink: this.linkState('pagename')}), 
+               React.DOM.input({type: "text", ref: "pagename", defaultValue: this.state.pagename}), 
               React.DOM.button({onClick: this.props.next}, "→")
               )
   }  
@@ -14063,6 +14091,9 @@ var controls = React.createClass({displayName: 'controls',
 var showtext = React.createClass({displayName: 'showtext',
   getInitialState: function() {
     return {bar: "world"};
+  },
+  hitClick: function(n){
+    if(this.props.showExcerpt) this.props.showExcerpt(n);
   },
   render: function() {
     var pn=this.props.pagename;
@@ -14181,10 +14212,10 @@ require.alias("adarsha-comp1/index.js", "adarsha/deps/comp1/index.js");
 require.alias("adarsha-comp1/index.js", "adarsha/deps/comp1/index.js");
 require.alias("adarsha-comp1/index.js", "comp1/index.js");
 require.alias("adarsha-comp1/index.js", "adarsha-comp1/index.js");
-require.alias("adarsha-results/index.js", "adarsha/deps/results/index.js");
-require.alias("adarsha-results/index.js", "adarsha/deps/results/index.js");
-require.alias("adarsha-results/index.js", "results/index.js");
-require.alias("adarsha-results/index.js", "adarsha-results/index.js");
+require.alias("adarsha-resultlist/index.js", "adarsha/deps/resultlist/index.js");
+require.alias("adarsha-resultlist/index.js", "adarsha/deps/resultlist/index.js");
+require.alias("adarsha-resultlist/index.js", "resultlist/index.js");
+require.alias("adarsha-resultlist/index.js", "adarsha-resultlist/index.js");
 require.alias("adarsha-api/index.js", "adarsha/deps/api/index.js");
 require.alias("adarsha-api/search.js", "adarsha/deps/api/search.js");
 require.alias("adarsha-api/index.js", "adarsha/deps/api/index.js");
