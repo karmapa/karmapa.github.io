@@ -10,6 +10,7 @@ var dosearch=function(volpage){
 		search(volpage,mappings[rcode],mappings[to]);
 	}
 	document.getElementById("from").innerHTML=longnames[rcode];
+
 }
 
 var search=function(volpage,from,to){
@@ -22,6 +23,10 @@ var search=function(volpage,from,to){
 		//corresFromVolpage= [經號],[範圍],[對照經號],[對照範圍],[對照行],[K經號]
 		searchNameCh(corresFromVolpage[5],from,to);
 		searchName(corresFromVolpage[5]);
+		///add img of from
+		var p=parseVolPage(volpage);
+		var img=showImage(p,from);
+		document.getElementById("Pic").innerHTML=img;
 	} else {//如果輸入是經號的話
 		var corresJing=fromJing(volpage,from,to);
 		showResult_Jing(volpage,corresJing);
