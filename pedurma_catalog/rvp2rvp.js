@@ -4,7 +4,8 @@ var mappings={"J":jPedurma,"D":dPedurma,"C":cPedurma,"K":kPedurma,"N":nPedurma,"
 var dosearch=function(volpage){
 	reset();
 	var form=document.getElementById("form_name");
-	var rcode=form.version.value;
+	//var rcode=form.version.value;
+	var rcode=form.value;
 	for(var to in mappings){
 		search(volpage,mappings[rcode],mappings[to]);
 	}
@@ -242,11 +243,12 @@ var addLink=function(link,name){
 	return '<a target=_new href="http://tripitaka.cbeta.org/'+link+'">'+name+"</a>";
 }
 
-var linkImage=function(corresline,to){//corresline:對照行(分開成物件的對照行)
+var showImage=function(corresline,to){//corresline:對照行(分開成物件的對照行)
 	//去掉行數 把vol page side 湊成檔名
 	var filename=id2imageFileName(corresline);//[函號(用來進入該函資料夾),檔名]
-	var Line="volpage:"+corresline.vol+", page:"+corresline.page+", side:"+corresline.side+", line:"+corresline.line;
-	return '<a target=_new href="http://dharma-treasure.org/kangyur_images/'+longnames[to.rcode].toLowerCase()+'/'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
+	//var Line="volpage:"+corresline.vol+", page:"+corresline.page+", side:"+corresline.side+", line:"+corresline.line;
+	//return '<a target=_new href="http://dharma-treasure.org/kangyur_images/'+longnames[to.rcode].toLowerCase()+'/'+filename[0]+'/'+filename[1]+'">'+Line+"</a>";
+	return '<img src="http://dharma-treasure.org/kangyur_images/'+longnames[to.rcode].toLowerCase()+'/'+filename[0]+'/'+filename[1]+'"></a>';
 }
 
 var id2imageFileName=function(id){

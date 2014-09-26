@@ -11,68 +11,110 @@
 <script src="sutranames.js"></script>
 <script src="rvp2rvp.js"></script>
 <script src="showResult.js"></script>
+<script src="bootstrap.min.css"></script>
 
 <head>
-<link rel="stylesheet" href="search_name.css"></link>
+<link rel="stylesheet" href="page_map.css"></link>
+<link href="bootstrap.min.css" rel="stylesheet"></link>
 </head>
 
 <body>	
 	<IMG SRC="LOGO1/LOGO.jpg" width="100" class="mid"/>
 	<span id="header">SUTRA CONCORDANCE</span>
 	<P style="float: right;" ALIGN=RIGHT><a href="search_name.html">至經名搜尋</a></P>
-	<HR color="#3799FF" size="15">	
-	<P ALIGN=RIGHT><input id="input" value="4.12a2"></input><!--98.245a2, 1.185a5-->
-	<button onclick="dosearch(input.value)">search</button></P>
-	<form NAME="form_name" ID="form_name" align="right">
-	<label><INPUT TYPE="radio" NAME="version" VALUE="J">Lijiang</label>
-	<label><INPUT TYPE="radio" NAME="version" VALUE="D" CHECKED>Derge</label>
-	<label><INPUT TYPE="radio" NAME="version" VALUE="C">Cone</label>
-	<!--<label><INPUT TYPE="radio" NAME="version" VALUE="K">CK</label>-->
-	<label><INPUT TYPE="radio" NAME="version" VALUE="N">Narthang</label>
-	<label><INPUT TYPE="radio" NAME="version" VALUE="H">Lhasa</label>
-	<label><INPUT TYPE="radio" NAME="version" VALUE="U">Urga</label>
-	</form>
+	<br><br>
+	<div class="col-centered">
+		<div class="center-block col-xs-5 col-lg-1">	
+			<select NAME="form_name" ID="form_name" class="form-control">
+			<option NAME="version" VALUE="D">Derge</option>
+			<option NAME="version" VALUE="J">Lijiang</option>			
+			<option NAME="version" VALUE="C">Cone</option>
+			<!--<INPUT TYPE="radio" NAME="version" VALUE="K">CK</INPUT>-->
+			<option NAME="version" VALUE="N">Narthang</option>
+			<option NAME="version" VALUE="H">Lhasa</option>
+			<option NAME="version" VALUE="U">Urga</option>
+			</select>
+		</div>
+		<div class="center-block col-xs-5 col-lg-3">
+			<input class="form-control" id="input" value="4.12a2"></input>
+		</div>
+
+		<button onclick="dosearch(input.value)" class="btn btn-success">search</button>	
+	</div>
+
+	<br>
+
 	<!--<span id="warning"></span>-->
 	<font size=+3><span id="from" class="version"></span></font>
-	<br><br><li>Sutra id:<span id="Jing" class="result"></span></li>
-	<br><li>Range:<span id="range" class="result"></span></li>
-	<br><li>Taisho name:<span id="nameCh" class="result"></span></li>
-	<br><li>Sutra name:<span id="name" class="result"></span></li>
+	<br><br>Sutra:&nbsp;&nbsp;<span id="Jing" class="result"></span>
+	<!--Range:<span id="range" class="result"></span>-->
+	<br>Taisho name:<span id="nameCh" class="result"></span>
+	<br>Sutra name:<span id="name" class="result"></span>
 	<HR NOSHADE color="#3799FF">
+	
 	<font size=+3><span id="toD" class="version"></span></font>
-	<br><br><li>Sutra id:<span id="JingD" class="result"></span></li>
-	<br><li>Range:<span id="RangeD" class="result"></span></li>
-	<br><li>Line:<span id="LineD" class="result"></span></li>
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		Sutra:&nbsp;&nbsp;<span id="JingD" class="result"></span>
+		<!--Range:<span id="RangeD" class="result"></span>-->
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		Line:&nbsp;&nbsp;&nbsp;<span id="LineD" class="result"></span>
+	<span id="PicD" class="result"></span>
 	<HR NOSHADE color="#3799FF">
+	
 	<font size=+3><span id="toC" class="version"></span></font>
-	<br><br><li>Sutra id:<span id="JingC" class="result"></span></li>
-	<br><li>Range:<span id="RangeC" class="result"></span></li>
-	<br><li>Line:<span id="LineC" class="result"></span></li>
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+		Sutra:&nbsp;&nbsp;<span id="JingC" class="result"></span>
+		<!--Range:<span id="RangeC" class="result"></span>-->
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		Line:&nbsp;&nbsp;&nbsp;<span id="LineC" class="result"></span>
+	<span id="PicC" class="result"></span>
 	<HR NOSHADE color="#3799FF">
+	
 	<font size=+3><span id="toJ" class="version"></span></font>
-	<br><br><li>Sutra id:<span id="JingJ" class="result"></span></li>
-	<br><li>Range:<span id="RangeJ" class="result"></span></li>
-	<br><li>Line:<span id="LineJ" class="result"></span></li>
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;	
+		Sutra:&nbsp;&nbsp;<span id="JingJ" class="result"></span>
+		<!--Range:<span id="RangeJ" class="result"></span>-->
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		Line:&nbsp;&nbsp;&nbsp;<span id="LineJ" class="result"></span>
+	<span id="PicJ" class="result"></span>
 	<HR NOSHADE color="#3799FF">
-	<font size=+3><span id="toK" class="version"></span></font>
-	<br><br><li>Sutra id:<span id="JingK" class="result"></span></li>
-	<br><li>Range:<span id="RangeK" class="result"></span></li>
-	<br><li>Line:<span id="LineK" class="result"></span></li>
+	
+	<font size=+3><span id="toK" class="version"></span></font>	
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		Sutra:&nbsp;&nbsp;<span id="JingK" class="result"></span>
+		<!--Range:<span id="RangeK" class="result"></span>-->
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		Line:&nbsp;&nbsp;&nbsp;<span id="LineK" class="result"></span>
+	<span id="PicK" class="result"></span>
 	<HR NOSHADE color="#3799FF">
+	
 	<font size=+3><span id="toN" class="version"></span></font>
-	<br><br><li>Sutra id:<span id="JingN" class="result"></span></li>
-	<br><li>Range:<span id="RangeN" class="result"></span></li>
-	<br><li>Line:<span id="LineN" class="result"></span></li>
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		Sutra:&nbsp;&nbsp;<span id="JingN" class="result"></span>
+		<!--Range:<span id="RangeN" class="result"></span>-->
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		Line:&nbsp;&nbsp;&nbsp;<span id="LineN" class="result"></span>
+	<span id="PicN" class="result"></span>
 	<HR NOSHADE color="#3799FF">
+	
 	<font size=+3><span id="toH" class="version"></span></font>
-	<br><br><li>Sutra id:<span id="JingH" class="result"></span></li>
-	<br><li>Range:<span id="RangeH" class="result"></span></li>
-	<br><li>Line:<span id="LineH" class="result"></span></li>
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;	
+		Sutra:&nbsp;&nbsp;<span id="JingH" class="result"></span>
+		<!--Range:<span id="RangeH" class="result"></span>-->
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		Line:&nbsp;&nbsp;&nbsp;<span id="LineH" class="result"></span>
+	<span id="PicH" class="result"></span>
 	<HR NOSHADE color="#3799FF">
+	
 	<font size=+3><span id="toU" class="version"></span></font>
-	<br><br><li>Sutra id:<span id="JingU" class="result"></span></li>
-	<br><li>Range:<span id="RangeU" class="result"></span></li>
-	<br><li>Line:<span id="LineU" class="result"></span></li>
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		Sutra:&nbsp;&nbsp;<span id="JingU" class="result"></span>
+		<!--Range:<span id="RangeU" class="result"></span>-->
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		Line:&nbsp;&nbsp;&nbsp;<span id="LineU" class="result"></span>
+	<span id="PicU" class="result"></span>
+
+
 	<P ALIGN=CENTER><IMG SRC="Treasure.png" width="150"/></P>
 <script src="urlparam.js"></script>
 </body>
