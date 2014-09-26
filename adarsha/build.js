@@ -3013,7 +3013,7 @@ var createDocument = function(docjson,markupjson) {
 		}
 	}
 	var pageNames=function() {
-		out=[];
+		var out=[];
 		for (var i=1;i<this.pageCount;i++) {
 			var pg=pages[i];
 			if (pg.parentId!=0)  continue; //not a root page, 
@@ -4219,6 +4219,7 @@ var shortFilename=function(fn) {
 var putFileInfo=function(fileContent) {
 	var shortfn=shortFilename(status.filename);
 	//session.json.files.push(fileInfo);
+	//empty or first line empty
 	session.json.fileContents.push(fileContent);
 	session.json.fileNames.push(shortfn);
 	session.json.fileOffsets.push(session.vpos);
@@ -4239,6 +4240,11 @@ var putPages_new=function(parsed,cb) { //25% faster than create a new document
 		session.json.pageOffsets.push(session.vpos);
 	}
 	
+	if (fileContent.length==0 || (fileContent.length==1&&!fileContent[0])) {
+		console.log("no content in"+status.filename);
+		fileContent[0]=" "; //work around to avoid empty string array throw in kdbw
+	}
+
 	cb(parsed);//finish
 }
 
@@ -4362,7 +4368,7 @@ var processTags=function(captureTags,tags,texts) {
 				var prev=tagStack[tagStack.length-1];
 				if (!nulltag) {				
 					if (tagname.substr(1)!=prev[0]) {
-						console.error("tag unbalance",tagname,prev[0]);
+						console.error("tag unbalance",tagname,prev[0],T);
 					} else {
 						tagStack.pop();
 					}
@@ -5718,7 +5724,9 @@ var Kfs=function(path,opts) {
 		
 		var v=value.join('\0');
 		var len=Buffer.byteLength(v, encoding);
-		if (0===len) throw "empty string array " + key_writing;
+		if (0===len) {
+			throw "empty string array " + key_writing;
+		}
 		dbuf.write(v,pos+1,len,encoding);
 		if (pos+len+1>cur) cur=pos+len+1;
 		return len+1;
@@ -5851,7 +5859,11 @@ var Create=function(path,opts) {
 	var saveStringArray = function(arr,key,encoding) {
 		encoding=encoding||stringencoding;
 		key_writing=key;
-		var written=kfs.writeStringArray(arr,cur,encoding);
+		try {
+			var written=kfs.writeStringArray(arr,cur,encoding);
+		} catch(e) {
+			throw e;
+		}
 		cur+=written;
 		pushitem(key,written);
 		return written;
@@ -6824,20 +6836,36 @@ var toDoc=function(pagenames,texts,others) {
 }
 var getFileRange=function(i) {
 	var engine=this;
+	var fileNames=engine.get(["fileNames"]);
 	var fileOffsets=engine.get(["fileOffsets"]);
 	var pageOffsets=engine.get(["pageOffsets"]);
 	var pageNames=engine.get(["pageNames"]);
-	var fileStart=fileOffsets[i],fileEnd=fileOffsets[i+1];
+	var fileStart=fileOffsets[i], fileEnd=fileOffsets[i+1]-1;
 
-	var start=bsearch(pageOffsets,fileStart+1,true);
-	if (i==0) start=0; //work around for first file
-	var end=bsearch(pageOffsets,fileEnd);
+	
+	var start=bsearch(pageOffsets,fileStart+1,true);	
+	//if (pageOffsets[start]==fileStart) start--;
+	
+  //if (i==0) start=0; //work around for first file
+	var end=bsearch(pageOffsets,fileEnd,true);
+
+
 	//in case of items with same value
 	//return the last one
-	while (start && pageOffsets[start-1]==pageOffsets[start]) start--;	
 	
-	while (pageOffsets[end+1]==pageOffsets[end]) end++;
-
+	//while (start && pageOffsets[start]==pageOffsets[start-1]) start--;
+	
+	//while (pageOffsets[end+1]==pageOffsets[end]) end--;
+	/*
+	if (i==0) {
+		var files="", offsets=""
+		for (var i=0;i<33;i++) offsets+=i+"."+fileOffsets[i]+"="+fileNames[i]+"\n";
+		console.log(files);
+		
+		for (var i=0;i<700;i++) offsets+=i+"."+pageOffsets[i]+"="+pageNames[i]+"\n";
+		console.log(offsets);
+	}
+	*/
 	return {start:start,end:end};
 }
 var getFilePageOffsets=function(i) {
@@ -13700,6 +13728,17 @@ var main = React.createClass({displayName: 'main',
       this.setState({res:data, tofind:tofind});  
     });
   },
+  dosearch_toc: function(){
+    var out=[];
+    var tofind_toc=this.refs.tofind_toc.getDOMNode().value;
+    this.state.toc.forEach(function(t){
+      if(t.text.match(tofind_toc)){
+        out.push(t);
+      };
+    });
+    this.setState
+      console.log(out); 
+  },
   showExcerpt:function(n) {
     var voff=this.state.toc[n].voff;
     this.dosearch(null,null,voff);
@@ -13719,6 +13758,17 @@ var main = React.createClass({displayName: 'main',
     var res=kse.vpos2filepage(this.state.db,vpos);
     this.showPage(res.file,res.page-1,false);
   },
+  nextpage:function() {
+    var page=this.state.bodytext.page+1;
+    this.showPage(this.state.bodytext.file,page,false);
+    console.log(this.showPage(this.state.bodytext.file,page),"next");
+  },
+  prevpage:function() {
+    var page=this.state.bodytext.page-1;
+    if (page<0) page=0;
+    this.showPage(this.state.bodytext.file,page,false);
+    console.log(this.showPage(this.state.bodytext.file,page),"prev");
+  },
   render: function() {
     if (!this.state.quota) { // install required db
         return this.openFileinstaller(true);
@@ -13731,11 +13781,12 @@ var main = React.createClass({displayName: 'main',
       return (
         React.DOM.div(null, 
           React.DOM.div({className: "col-md-4"}, 
+            React.DOM.input({onInput: this.dosearch_toc, ref: "tofind_toc"}), 
             stacktoc({showText: this.showText, showExcerpt: this.showExcerpt, hits: this.state.res.rawresult, data: this.state.toc}), "// 顯示目錄"
           ), 
           React.DOM.div({className: "col-md-8"}, 
             React.DOM.div({className: "text"}, 
-            showtext({pagename: pagename, text: text})
+            showtext({pagename: pagename, text: text, nextpage: this.nextpage, prevpage: this.prevpage})
             ), 
             React.DOM.div({className: "search"}, 
               React.DOM.br(null), React.DOM.input({ref: "tofind", defaultValue: "དགེ"}), 
@@ -13993,6 +14044,10 @@ var stacktoc = React.createClass({displayName: 'stacktoc',
     var toc=this.props.data;
     var hits=this.props.hits;
     var getRange=function(n) {
+      if (n+1>=toc.length) {
+        console.error("exceed toc length",n);
+        return;
+      }
       var depth=toc[n].depth , nextdepth=toc[n+1].depth;
       if (n==toc.length-1 || n==0) {
           toc[n].end=Math.pow(2, 48);
@@ -14083,7 +14138,7 @@ var controls = React.createClass({displayName: 'controls',
     render: function() {   
      return React.DOM.div(null, 
               React.DOM.button({onClick: this.props.prev}, "←"), 
-               React.DOM.input({type: "text", ref: "pagename", defaultValue: this.state.pagename}), 
+               React.DOM.input({type: "text", ref: "pagename", value: this.state.pagename}), 
               React.DOM.button({onClick: this.props.next}, "→")
               )
   }  
