@@ -24,7 +24,7 @@ var renderCKJing=function(input){
 	}
 	document.getElementById("from").innerHTML="CK";
 	document.getElementById("Jing").innerHTML=input;
-	document.getElementById("range").innerHTML=r;
+	//document.getElementById("range").innerHTML=r;
 	document.getElementById("name").innerHTML=addSutraName(input);
 	document.getElementById("nameCh").innerHTML=searchNameCh(input);
 }
@@ -32,37 +32,37 @@ var renderJing=function(recen,jing,range,line){
 	if(recen == "D"){
 		document.getElementById("toD").innerHTML="Derge";
 		document.getElementById("JingD").innerHTML=jing;
-		document.getElementById("RangeD").innerHTML=range;
+		//document.getElementById("RangeD").innerHTML=range;
 		document.getElementById("LineD").innerHTML=line;
 	}
 	if(recen == "U"){
 		document.getElementById("toU").innerHTML="Urga";
 		document.getElementById("JingU").innerHTML=jing;
-		document.getElementById("RangeU").innerHTML=range;
+		//document.getElementById("RangeU").innerHTML=range;
 		document.getElementById("LineU").innerHTML=line;
 	}
 	if(recen == "N"){
 		document.getElementById("toN").innerHTML="Narthang";
 		document.getElementById("JingN").innerHTML=jing;
-		document.getElementById("RangeN").innerHTML=range;
+		//document.getElementById("RangeN").innerHTML=range;
 		document.getElementById("LineN").innerHTML=line;
 	}
 	if(recen == "H"){
 		document.getElementById("toH").innerHTML="Lhasa";
 		document.getElementById("JingH").innerHTML=jing;
-		document.getElementById("RangeH").innerHTML=range;
+		//document.getElementById("RangeH").innerHTML=range;
 		document.getElementById("LineH").innerHTML=line;
 	}
 	if(recen == "C"){
 		document.getElementById("toC").innerHTML="Cone";
 		document.getElementById("JingC").innerHTML=jing;
-		document.getElementById("RangeC").innerHTML=range;
+		//document.getElementById("RangeC").innerHTML=range;
 		document.getElementById("LineC").innerHTML=line;
 	}
 	if(recen == "J"){
 		document.getElementById("toJ").innerHTML="Lijiang";
 		document.getElementById("JingJ").innerHTML=jing;
-		document.getElementById("RangeJ").innerHTML=range;
+		//document.getElementById("RangeJ").innerHTML=range;
 		document.getElementById("LineJ").innerHTML=line;
 	}
 }
