@@ -2,12 +2,12 @@
 input{size:10;}
 
 body{letter-spacing:1px;
-	padding-left: 25px;}
+	padding-left: 80px;
+	padding-right: 80px;}
 
-.center-block() {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
+.col-centered{
+    float: none;
+    margin: 0 auto;
 }
 
 
