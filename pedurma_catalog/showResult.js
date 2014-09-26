@@ -16,7 +16,7 @@ var showResult_Jing=function(volpage,result){//result=[自己範圍,對照經號
 var showResult_Volpage_from=function(result){
 	document.getElementById("Jing").innerHTML=result[0][0];
 	var ran=parseVolPageRange(result[1][0]);
-	//document.getElementById("range").innerHTML="volpage:"+ran.vol+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;page:"+ran.page+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;side:"+ran.side+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line:"+ran.line+" ~ page:"+ran.page2+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;side:"+ran.side2+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line:"+ran.line2;
+	//document.getElementById("range").innerHTML="volpage:"+ran.vol+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;page:"+ran.page+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;side:"+ran.side+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line:"+ran.line+" ~ page:"+ran.page2+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;side:"+ran.side2+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line:"+ran.line2;	
 }
 
 var showResult_Volpage=function(result,to){//result=[經號],[範圍],[對照經號],[對照範圍],[對照行]
@@ -108,6 +108,7 @@ var reset=function(){
 	document.getElementById("toH").innerHTML="";
 	document.getElementById("toU").innerHTML="";
 	//document.getElementById("RangeJ").innerHTML="";
+	document.getElementById("Pic").innerHTML="";
 	document.getElementById("PicJ").innerHTML="";	
 	document.getElementById("JingJ").innerHTML="";	
 	//document.getElementById("RangeD").innerHTML="";
