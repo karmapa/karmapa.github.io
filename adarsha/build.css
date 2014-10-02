@@ -7121,7 +7121,7 @@ td.visible-print {
 
 
 .main {}
-
+/*.form-control{border-radius: 0%;}*/
 .text {white-space: pre;}
 a{color:#178918;}
 .comp1 {}
@@ -7140,4 +7140,7 @@ div.current span.text:hover{text-decoration:underline;cursor:pointer;}
 div.child span.text:hover {text-decoration:underline;cursor:pointer;color:#85BB65;}
 .badge:hover {color:#59E817;cursor:pointer;}
 .showtext {}
+.renderItem {}
+.item{cursor: pointer;}
+.renderinputs {}
 #main {}
