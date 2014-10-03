@@ -7122,7 +7122,16 @@ td.visible-print {
 
 .main {}
 /*.form-control{border-radius: 0%;}*/
-.text {white-space: pre;}
+.search{
+	height: 70%;
+	overflow-y:scroll;}
+.text {white-space: pre;
+
+	height: 30%;
+	overflow-y:scroll;}
+.col-md-4{
+	overflow-y:scroll;
+	position: relative;}
 a{color:#178918;}
 .comp1 {}
 .results {}
@@ -7143,4 +7152,5 @@ div.child span.text:hover {text-decoration:underline;cursor:pointer;color:#85BB6
 .renderItem {}
 .item{cursor: pointer;}
 .renderinputs {}
+.page2catalog {}
 #main {}
