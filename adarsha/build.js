@@ -2249,6 +2249,7 @@ require.register("ksana-document/index.js", function(exports, require, module){
 	,plist:require("./plist")
 	,bsearch:require("./bsearch")
 	,persistentmarkup:require("./persistentmarkup_pouchdb")
+	,underlines:require("./underlines")
 }
 if (typeof process!="undefined") {
 	API.persistent=require('./persistent');
@@ -4302,6 +4303,7 @@ var putDocument=function(parsed,cb) {
 }
 
 var parseBody=function(body,sep,cb) {
+	debugger;
 	var res=xml4kdb.parseXML(body, {sep:sep,trim:!!session.config.trim});
 	putDocument(res,cb);
 }
@@ -6843,9 +6845,12 @@ var getFileRange=function(i) {
 	var fileStart=fileOffsets[i], fileEnd=fileOffsets[i+1]-1;
 
 	
-	var start=bsearch(pageOffsets,fileStart+1,true);	
+	var start=bsearch(pageOffsets,fileStart,true);	
 	//if (pageOffsets[start]==fileStart) start--;
 	
+	//work around for jiangkangyur
+	while (pageNames[start+1]=="_") start++;
+
   //if (i==0) start=0; //work around for first file
 	var end=bsearch(pageOffsets,fileEnd,true);
 
@@ -6853,7 +6858,7 @@ var getFileRange=function(i) {
 	//in case of items with same value
 	//return the last one
 	
-	//while (start && pageOffsets[start]==pageOffsets[start-1]) start--;
+	
 	
 	//while (pageOffsets[end+1]==pageOffsets[end]) end--;
 	/*
@@ -13191,6 +13196,239 @@ module.exports={
 	loadMarkup:loadMarkup
 }
 });
+require.register("ksana-document/underlines.js", function(exports, require, module){
+/*
+  input : markups start and len
+  output:
+     each token has an array of 
+			[markup idx , start_middle_end , level ]
+
+			markup idx is the nth markup in markup array
+			start=1, middle=0, end=2, both=3
+
+ for converting to css style
+
+ base on http://codepen.io/anon/pen/fHben by exebook@gmail.com
+*/
+var getTextLen=function(markups) {
+	var textlen=0;
+	markups.map(function(m){
+		if (m[0]+m[1]>textlen) textlen=m[0]+m[1];
+	});
+	return textlen;
+}
+
+var calculateLevels=function(M) {
+	//M = M.sort(function(a, b) { return b.len - a.len } ); // sort longest first
+	var textlen=getTextLen(M);
+	var levels=[],out=[];
+	for (var i = 0; i < textlen; i++) levels[i] = [];
+
+	for (var i = 0; i < M.length; i++) {
+		var max = -1, pos = M[i][0], count = M[i][1];
+		// find how many taken levels are here
+		for (var x = pos; x < pos + count; x++) {
+			if (levels[x].length > max) max = levels[x].length;
+		}
+		// check if there is an empty level
+		var level = max;
+		for (var l = 0; l < max; l++) {
+			var ok = true ;
+			for (var m = pos; m < pos + count; m++) {
+				if (levels[m][l] != undefined) { ok = false; break }
+			}
+			if (ok) { level = l; break }
+		}
+		out.push([i,level]);
+		// fill the level
+		for (var x = pos; x < pos + count; x++)	levels[x][level] = i;
+	}
+	return out;
+}
+
+var TAG_START=0, TAG_END=1;
+var fixOverlaps=function(S) {
+	// insert extra tags because we cannot have overlaps in html
+	var out = [], stack = [] ,lstack=[];
+	for (var i = S.length - 1; i >= 0; i--) {
+		var id=S[i][0], pos=S[i][1],tagtype=S[i][2], level=S[i][3];
+		if (tagtype == TAG_START) { 
+			stack.push(id);
+			lstack.push(level);
+			out.unshift(S[i]);
+		}	else if (tagtype == TAG_END) {
+			if (id == stack[stack.length - 1]) {
+				stack.pop();
+				lstack.pop();
+				out.unshift(S[i]);
+			} else {
+				var z = stack.length - 1;
+				while (z > 0 && stack[z] != id) {
+					out.unshift([stack[z], pos, TAG_END, lstack[z]]);
+					z--;
+				}
+				out.unshift([stack[z], pos, TAG_END, lstack[z]]);
+				stack.splice(z, 1);
+				lstack.splice(z, 1);
+				while (z < stack.length) {
+					out.unshift([stack[z], pos, TAG_START,  lstack[z]]);
+					z++;
+				}
+			} 
+		}
+	}
+	return out
+}
+var levelMarkups=function(M) {
+	var P=calculateLevels(M), S = [];
+	var backward=function(a, b){ 
+		if (b[1] == a[1]) {
+				if (b[2] == TAG_START && a[2] == TAG_END) return 1;
+				if (a[2] == TAG_START && b[2] == TAG_END) return -1;
+			}
+			return b[1] - a[1];
+	};
+	var forward=function(a, b){ 
+				if (b[1] == a[1]) {
+					if (b[2] == TAG_START && a[2] == TAG_END) return -1;
+					if (a[2] == TAG_START && b[2] == TAG_END) return 1;
+				}
+				return a[1] - b[1];
+	};
+
+	for (var p = 0; p < P.length; p++) {
+		S.push([p,M[p][0],TAG_START,P[p][1]]); // id, pos, tagtype, level
+		S.push([p,M[p][0]+M[p][1],TAG_END,P[p][1]]);
+	}
+	S = S.sort(backward);
+			
+	/* s[0] == markup id , s[1]==pos , s[2]==tagtype  */
+	S = fixOverlaps(S);
+	//if (!inverse) S = S.sort(forward);		
+	return S;
+}
+var renderXML=function(tokens, M) {
+	var S=levelMarkups(M,true);
+
+	var idx=0,out="";
+	for (var i=tokens.length;i>0;i--) {
+		while (idx<S.length && S[idx][1]==i) {
+			var id=S[idx][0], tagtype=S[idx][2] ;
+			var tag = M[id][2] , level=S[idx][3] ; //level=P[id][1];
+			if (tagtype==TAG_START) out= '<'+tag+' lv="'+level+'">' +out;
+			if (tagtype==TAG_END) out= '</'+tag+'>' +out;
+			idx++;
+		}
+		out=tokens[i-1]+out;
+	}
+	return out;//return text
+}
+module.exports={calculateLevels:calculateLevels, 
+	levelMarkups:levelMarkups,renderXML:renderXML,
+  TAG_START:TAG_START,TAG_END:TAG_END};
+
+/*
+var indexOfSorted = function (array, obj) {  //taken from ksana-document/bsearch.js
+  var low = 0,
+  high = array.length;
+  while (low < high) {
+    var mid = (low + high) >> 1;
+    if (array[mid]==obj) return mid;
+    array[mid] < obj ? low = mid + 1 : high = mid;
+  }
+	if (array[low]==obj) return low;else return -1;
+};
+
+var getTextLen=function(markups) {
+	var textlen=0;
+	markups.map(function(m){
+		if (m[0]+m[1]>textlen) textlen=m[0]+m[1];
+	});
+	return textlen;
+}
+
+var calculateLevel=function(markups,textlen) {
+	textlen=textlen||getTextLen(markups);
+	var startarr=markups.map(function(m,idx){return [m[0],idx]})
+	              .sort(function(a,b){return a[0]-b[0]});
+
+	var startat =startarr.map(function(m){return m[0]});
+	var startidx=startarr.map(function(m){return m[1]});
+
+	var endarr  =markups.map(function(m,idx){return [m[0]+m[1]-1,idx]})
+	              .sort(function(a,b){return a[0]-b[0]});
+
+	var endat =endarr.map(function(m){return m[0]}); // sort by token offset
+	var endidx=endarr.map(function(m){return m[1]}); //markup index
+	
+	var levels=[],level=0;
+	var out=[];
+	for (var i=0;i<textlen;i++) {
+		var tokenout=[]; 
+		var starts=[],ends=[];
+		var mstart=indexOfSorted(startat,i); //don't need , because one pass
+		while (startat[mstart]==i) {  //find out all markups start at this token
+			starts.push(startidx[mstart]);
+			mstart++;
+		}
+
+		var mend=indexOfSorted(endat,i);
+		while (endat[mend]==i) {  // find out all markups end at this token
+			ends.push(endidx[mend]); //push the idx in markups
+			mend++;
+		}
+
+		//insert new markup
+		starts.map(function(s,idx){
+			var j=0;
+			while (typeof levels[j]!=="undefined") j++;
+			levels[j]=[s,1];
+		});
+		
+		//marked the ended
+		ends.map(function(e,idx){
+			for (var j=0;j<levels.length;j++) {
+				var lv=levels[j];
+				if (!lv) continue;
+				if (lv[0]==e) lv[1]+=2;//mark end
+			}
+		});
+
+		levels.map(function(lv,idx,L){
+			if (!lv) return ;
+			tokenout.push([lv[0],lv[1],idx]);
+			if(lv[1]==1) lv[1]=0;
+			else if (lv[1]>=2) L[idx]=undefined; //remove the ended markup
+		});
+		
+		out[i]=tokenout;
+	}
+	//levels.length , max level 
+
+	return out;
+}
+
+var renderXML=function(tokens,markups,levels) {
+	var out=[];
+	for (var i=0;i<tokens.length;i++) {
+		var s=tokens[i];
+		if (levels[i]) {
+			for (var j=0;j<levels[i].length;j++) {
+				var lv=levels[i][j];
+				var tag=markups[lv[0]][2];
+				if ((lv[1]&1)==1) {
+					s="<"+tag+">"+s;
+				} else if ((lv[1]&2)==2) {
+					s=s+"</"+tag+">";
+				}
+			}
+		}
+		//out+=s;
+	}
+	return out;
+}
+*/
+});
 require.register("ksanaforge-fileinstaller/index.js", function(exports, require, module){
 /** @jsx React.DOM */
 
@@ -13681,65 +13919,30 @@ var stacktoc=Require("stacktoc");  //載入目錄顯示元件
 var showtext=Require("showtext");
 var renderItem=Require("renderItem");
 var tibetan=Require("ksana-document").languages.tibetan; 
+var page2catalog=Require("page2catalog");
 
 var main = React.createClass({displayName: 'main',
+  componentDidMount:function() {
+    var that=this;
+    window.onhashchange = function () {that.goHashTag();}
+    
+  }, 
   getInitialState: function() {
     return {dialog:null,res:{},db:null,toc_result:[]};
   },
-  genToc:function(texts,depths,voffs){
-    var out=[{depth:0,text:"Jiang Kangyur"}];
-    for(var i=0; i<texts.length; i++){
-      out.push({text:texts[i],depth:depths[i],voff:voffs[i]});
-    }
-    return out; 
-  },// 轉換為stacktoc 目錄格式
-  clear:function() {
-    var tofind=this.refs.tofind.getDOMNode();
-    tofind.value="";
-    tofind.focus();
+  encodeHashTag:function(f,p) { //file/page to hash tag
+    var pagename=this.state.db.getFilePageNames(f)[p];
+    return "#"+f+"."+p;
   },
-  renderinputs:function(searcharea) {  // input interface for search
-    if (this.state.db) {
-      if(searcharea == "text"){
-        return (    
-          React.DOM.div(null, React.DOM.input({className: "form-control", onInput: this.dosearch, ref: "tofind", defaultValue: "byang chub"}), 
-          React.DOM.button({onClick: this.clear, className: "btn btn-danger"}, "x"), React.DOM.span({className: "wylie"}, this.state.wylie)
-          )
-          )    
-      }
-      if(searcharea == "title"){
-        return (    
-          React.DOM.div(null, React.DOM.input({className: "form-control", onInput: this.dosearch_toc, ref: "tofind_toc", defaultValue: "byang chub"}), 
-          React.DOM.span({className: "wylie"}, this.state.wylie_toc)
-          )
-          ) 
-      }
-    } else {
-      return React.DOM.span(null, "loading database....")
-    }
-  },   
-  onReady:function(usage,quota) {
-    if (!this.state.db) kde.open("jiangkangyur",function(db){
-        this.setState({db:db});
-    db.get([["fields","head"],["fields","head_depth"],["fields","head_voff"]],function(){
-      var heads=db.get(["fields","head"]);
-      var depths=db.get(["fields","head_depth"]);
-      var voffs=db.get(["fields","head_voff"]);
-      var toc=this.genToc(heads,depths,voffs);
-      this.setState({toc:toc});
-    }); //載入目錄
-    },this);      
-    this.setState({dialog:false,quota:quota,usage:usage});
+  decodeHashTag:function(s) {
+    var fp=s.match(/#(\d+)\.(.*)/);
+    var p=fp[2];
+    var file=fp[1];
+    var pagename=this.state.db.getFilePageNames(file)[p];   
+    this.setPage(pagename,file);
   },
-  openFileinstaller:function(autoclose) {
-    if (window.location.origin.indexOf("http://127.0.0.1")==0) {
-      for (var i=0;i<require_kdb.length;i++) {
-        require_kdb[i].url=window.location.origin+"/"+require_kdb[i].filename;  
-      }
-    }
-
-    return fileinstaller({quota: "512M", autoclose: autoclose, needed: require_kdb, 
-                     onReady: this.onReady})
+  goHashTag:function() {
+    this.decodeHashTag(window.location.hash);
   },
   dosearch: function(){
     var start=arguments[2];  
@@ -13774,16 +13977,75 @@ var main = React.createClass({displayName: 'main',
     this.setState({toc_result:out});  
     console.log(out);
   },
+  clear:function() {
+    var tofind=this.refs.tofind.getDOMNode();
+    tofind.value="";
+    tofind.focus();
+  },
+  renderinputs:function(searcharea) {  // input interface for search
+    if (this.state.db) {
+      if(searcharea == "text"){
+        return (    
+          React.DOM.div(null, React.DOM.input({className: "form-control", onInput: this.dosearch, ref: "tofind", defaultValue: "byang chub"}), 
+          React.DOM.button({onClick: this.clear, className: "btn btn-danger"}, "x"), React.DOM.span({className: "wylie"}, this.state.wylie)
+          )
+          )    
+      }
+      if(searcharea == "title"){
+        return (    
+          React.DOM.div(null, React.DOM.input({className: "form-control", onInput: this.dosearch_toc, ref: "tofind_toc", defaultValue: "byang chub"}), 
+          React.DOM.span({className: "wylie"}, this.state.wylie_toc)
+          )
+          ) 
+      }
+    } else {
+      return React.DOM.span(null, "loading database....")
+    }
+  },   
+  genToc:function(texts,depths,voffs){
+    var out=[{depth:0,text:"Jiang Kangyur"}];
+    for(var i=0; i<texts.length; i++){
+      out.push({text:texts[i],depth:depths[i],voff:voffs[i]});
+    }
+    return out; 
+  },// 轉換為stacktoc 目錄格式
+  onReady:function(usage,quota) {
+    if (!this.state.db) kde.open("jiangkangyur",function(db){
+        this.setState({db:db});
+        db.get([["fields","head"],["fields","head_depth"],["fields","head_voff"]],function(){
+          var heads=db.get(["fields","head"]);
+          var depths=db.get(["fields","head_depth"]);
+          var voffs=db.get(["fields","head_voff"]);
+          var toc=this.genToc(heads,depths,voffs);
+          this.setState({toc:toc});
+          this.goHashTag();
+        }); //載入目錄
+    },this);    
+      
+    this.setState({dialog:false,quota:quota,usage:usage});
+    
+  },
+  openFileinstaller:function(autoclose) {
+    if (window.location.origin.indexOf("http://127.0.0.1")==0) {
+      for (var i=0;i<require_kdb.length;i++) {
+        require_kdb[i].url=window.location.origin+"/"+require_kdb[i].filename;  
+      }
+    }
+
+    return fileinstaller({quota: "512M", autoclose: autoclose, needed: require_kdb, 
+                     onReady: this.onReady})
+  },
   showExcerpt:function(n) {
     var voff=this.state.toc[n].voff;
     this.dosearch(null,null,voff);
   }, 
   showPage:function(f,p,hideResultlist) {
-
+    window.location.hash = this.encodeHashTag(f,p);
     kse.highlightPage(this.state.db,f,p,{ q:this.state.tofind},function(data){
       this.setState({bodytext:data});
-      if (hideResultlist) this.setState({res:[]});
+      if (hideResultlist) this.setState({res:[]});     
     });
+
   }, 
   showText:function(n) {
     var res=kse.vpos2filepage(this.state.db,this.state.toc[n].voff);
@@ -13826,29 +14088,29 @@ var main = React.createClass({displayName: 'main',
     return (
       React.DOM.div(null, 
         React.DOM.div({className: "col-md-4"}, 
-      
-          React.DOM.ul({className: "nav nav-tabs", role: "tablist"}, 
-            React.DOM.li({className: "active"}, React.DOM.a({href: "#Catalog", role: "tab", 'data-toggle': "tab"}, "Catalog")), 
-            React.DOM.li(null, React.DOM.a({href: "#Search", role: "tab", 'data-toggle': "tab"}, "Title Search"))
-          ), 
-
-          React.DOM.div({className: "tab-content"}, 
-            React.DOM.div({className: "tab-pane active", id: "Catalog"}, 
-              stacktoc({showText: this.showText, showExcerpt: this.showExcerpt, hits: this.state.res.rawresult, data: this.state.toc}), "// 顯示目錄"
+            React.DOM.ul({className: "nav nav-tabs", role: "tablist"}, 
+              React.DOM.li({className: "active"}, React.DOM.a({href: "#Catalog", role: "tab", 'data-toggle': "tab"}, "Catalog")), 
+              React.DOM.li(null, React.DOM.a({href: "#Search", role: "tab", 'data-toggle': "tab"}, "Title Search"))
             ), 
 
-            React.DOM.div({className: "tab-pane", id: "Search"}, 
-              this.renderinputs("title"), 
-              renderItem({data: this.state.toc_result, gotopage: this.gotopage})
+            React.DOM.div({className: "tab-content"}, 
+              React.DOM.div({className: "tab-pane active", id: "Catalog"}, 
+                stacktoc({showText: this.showText, showExcerpt: this.showExcerpt, hits: this.state.res.rawresult, data: this.state.toc}), "// 顯示目錄"
+              ), 
+
+              React.DOM.div({className: "tab-pane", id: "Search"}, 
+                this.renderinputs("title"), 
+                renderItem({data: this.state.toc_result, gotopage: this.gotopage})
+              )
             )
-          
-          )
         ), 
 
         React.DOM.div({className: "col-md-8 "}, 
+
           React.DOM.div({className: "text"}, 
-          showtext({pagename: pagename, text: text, nextpage: this.nextpage, prevpage: this.prevpage, setpage: this.setPage})
+          showtext({pagename: pagename, text: text, nextpage: this.nextpage, prevpage: this.prevpage, setpage: this.setPage, db: this.state.db, toc: this.state.toc, genToc: this.genToc})
           ), 
+
           React.DOM.div({className: "search"}, 
             React.DOM.br(null), 
             React.DOM.div({className: "col-lg-3"}, 
@@ -13867,6 +14129,9 @@ var main = React.createClass({displayName: 'main',
 
 
           )
+
+
+
         )
       )
       );
@@ -14104,7 +14369,19 @@ var stacktoc = React.createClass({displayName: 'stacktoc',
     n=parseInt(n);
     this.setState({cur:n});
   },
-
+  findByVoff:function(voff) {
+    for (var i=0;i<this.props.data.length;i++) {
+      var t=this.props.data[i];
+      if (t.voff>voff) return i-1;
+    }
+    return 0; //return root node
+  },
+  shouldComponentUpdate:function(nextProps,nextState) {
+    if (nextProps.goVoff&&nextProps.goVoff !=this.props.goVoff) {
+      nextState.cur=this.findByVoff(this.props.goVoff);
+    }
+    return true;
+  },
   fillHit:function(nodeIds) {
     if (typeof nodeIds=="number") nodeIds=[nodeIds];
     var toc=this.props.data;
@@ -14208,15 +14485,33 @@ var controls = React.createClass({displayName: 'controls',
       newpagename = newpagename+"a";
     }
     this.props.setpage(newpagename);
-  },  
-    render: function() {   
+    },
+    page2catalog: function(e){
+      var s=window.location.hash;
+      var fp=s.match(/#(\d+)\.(.*)/);
+      var page=parseInt(fp[2]);
+      var file=parseInt(fp[1]);
+      var out=[];
+      //var pagename=this.props.db.getFilePageNames(file)[page];
+      var voff=this.props.db.getFilePageOffsets(file)[page];
+      this.props.toc.map(function(item){
+        if(voff<item.voff){
+          out.push(item);
+        }
+      },this);
+      //console.log("pagename:",pagename,"voff:",voff);
+      //this.props.genToc();  
+    },
+    render: function() { 
      return React.DOM.div(null, 
               React.DOM.button({className: "btn btn-success", onClick: this.props.prev}, "←"), 
                 React.DOM.input({type: "text", ref: "pagename", onChange: this.updateValue, value: this.state.pagename}), 
-              React.DOM.button({className: "btn btn-success", onClick: this.props.next}, "→")
+              React.DOM.button({className: "btn btn-success", onClick: this.props.next}, "→"), 
+              React.DOM.button({className: "btn btn-success", onClick: this.page2catalog}, "Catalog")
               )
   }  
 });
+
 var showtext = React.createClass({displayName: 'showtext',
   getInitialState: function() {
     return {bar: "world"};
@@ -14228,8 +14523,8 @@ var showtext = React.createClass({displayName: 'showtext',
     var pn=this.props.pagename;
     return (
       React.DOM.div(null, 
-        controls({pagename: this.props.pagename, next: this.props.nextpage, prev: this.props.prevpage, setpage: this.props.setpage}), 
-       
+        controls({pagename: this.props.pagename, next: this.props.nextpage, prev: this.props.prevpage, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc, genToc: this.props.genToc}), 
+
         React.DOM.div({dangerouslySetInnerHTML: {__html: this.props.text}})
       )
     );
@@ -14249,7 +14544,7 @@ var renderItem = React.createClass({displayName: 'renderItem',
   },
   onItemClick:function(e) {
     var voff=parseInt(e.target.dataset.voff);
-    console.log(voff);
+    React.DOM.span(null, e.target.innerHTML)
     this.props.gotopage(voff);
   },
   renderItem: function(item) {
@@ -14316,10 +14611,32 @@ var renderinputs = React.createClass({displayName: 'renderinputs',
 });
 module.exports=renderinputs;
 });
+require.register("adarsha-page2catalog/index.js", function(exports, require, module){
+/** @jsx React.DOM */
+
+/* to rename the component, change name of ./component.js and  "dependencies" section of ../../component.js */
+
+//var othercomponent=Require("other"); 
+var page2catalog = React.createClass({displayName: 'page2catalog',
+  getInitialState: function() {
+    return {bar: "world"};
+  },
+  render: function() {
+    return (
+      React.DOM.div(null, 
+        "Hello,", this.state.bar
+      )
+    );
+  }
+});
+module.exports=page2catalog;
+});
 require.register("adarsha/index.js", function(exports, require, module){
 var boot=require("boot");
 boot("adarsha","main","main");
 });
+
+
 
 
 
@@ -14395,6 +14712,7 @@ require.alias("ksana-document/concordance.js", "adarsha/deps/ksana-document/conc
 require.alias("ksana-document/regex.js", "adarsha/deps/ksana-document/regex.js");
 require.alias("ksana-document/bsearch.js", "adarsha/deps/ksana-document/bsearch.js");
 require.alias("ksana-document/persistentmarkup_pouchdb.js", "adarsha/deps/ksana-document/persistentmarkup_pouchdb.js");
+require.alias("ksana-document/underlines.js", "adarsha/deps/ksana-document/underlines.js");
 require.alias("ksana-document/index.js", "adarsha/deps/ksana-document/index.js");
 require.alias("ksana-document/index.js", "ksana-document/index.js");
 require.alias("ksana-document/index.js", "ksana-document/index.js");
@@ -14449,6 +14767,10 @@ require.alias("adarsha-renderinputs/index.js", "adarsha/deps/renderinputs/index.
 require.alias("adarsha-renderinputs/index.js", "adarsha/deps/renderinputs/index.js");
 require.alias("adarsha-renderinputs/index.js", "renderinputs/index.js");
 require.alias("adarsha-renderinputs/index.js", "adarsha-renderinputs/index.js");
+require.alias("adarsha-page2catalog/index.js", "adarsha/deps/page2catalog/index.js");
+require.alias("adarsha-page2catalog/index.js", "adarsha/deps/page2catalog/index.js");
+require.alias("adarsha-page2catalog/index.js", "page2catalog/index.js");
+require.alias("adarsha-page2catalog/index.js", "adarsha-page2catalog/index.js");
 require.alias("adarsha/index.js", "adarsha/index.js");
 if (typeof exports == 'object') {
   module.exports = require('adarsha');
