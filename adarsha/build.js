@@ -215,7 +215,8 @@ if (typeof process !="undefined") {
 	ksana.platform="chrome";
 }
 
-if (typeof React=="undefined") window.React=require('../react');
+//if (typeof React=="undefined") window.React=require('../react');
+
 //require("../cortex");
 var Require=function(arg){return require("../"+arg)};
 var boot=function(appId,main,maindiv) {
@@ -13579,8 +13580,7 @@ var filelist = React.createClass({displayName: 'filelist',
 var filemanager = React.createClass({displayName: 'filemanager',
 	getInitialState:function() {
 		var quota=this.getQuota();
-		return {browserReady:false,noupdate:true,
-			requestQuota:quota,remain:0};
+		return {browserReady:false,noupdate:true,	requestQuota:quota,remain:0};
 	},
 	getQuota:function() {
 		var q=this.props.quota||"128M";
@@ -13591,6 +13591,7 @@ var filemanager = React.createClass({displayName: 'filemanager',
 		return parseInt(q) * times;
 	},
 	missingKdb:function() {
+		if (typeof ksanagap!="undefined") return [];
 		var missing=this.props.needed.filter(function(kdb){
 			for (var i in html5fs.files) {
 				if (html5fs.files[i][0]==kdb.filename) return false;
@@ -13625,6 +13626,13 @@ var filemanager = React.createClass({displayName: 'filemanager',
 	  },this);
 	},
 	onQuoteOk:function(quota,usage) {
+		if (typeof ksanagap!="undefined") {
+			//console.log("onquoteok");
+			this.setState({noupdate:true,missing:[],files:[],autoclose:true
+				,quota:quota,remain:quota-usage,usage:usage});
+			return;
+		}
+		//console.log("quote ok");
 		var files=this.genFileList(html5fs.files,this.missingKdb());
 		var that=this;
 		that.checkIfUpdate(files,function(hasupdate) {
@@ -13726,7 +13734,8 @@ require.register("ksanaforge-checkbrowser/index.js", function(exports, require, 
 /** @jsx React.DOM */
 
 var checkfs=function() {
-	return (navigator && navigator.webkitPersistentStorage);
+	return (navigator && navigator.webkitPersistentStorage) || 
+	(typeof ksanagap!="undefined");
 }
 var featurechecks={
 	"fs":checkfs
@@ -13863,9 +13872,13 @@ var htmlfs = React.createClass({displayName: 'htmlfs',
 		},0);
 	},
 	queryQuota:function() {
-		html5fs.queryQuota(function(usage,quota){
-			this.setState({usage:usage,quota:quota,initialized:true});
-		},this);
+		if (typeof ksanagap=="undefined") {
+			html5fs.queryQuota(function(usage,quota){
+				this.setState({usage:usage,quota:quota,initialized:true});
+			},this);			
+		} else {
+			this.setState({usage:333,quota:1000*1000*1024,initialized:true,autoclose:true});
+		}
 	},
 	render:function() {
 		var that=this;
@@ -14075,6 +14088,13 @@ var main = React.createClass({displayName: 'main',
     var p=pagenames.indexOf(newpagename);
     if (p>-1) this.showPage(file,p);
   },
+  // filepage2vpos:function() {
+  //   var offsets=this.state.db.getFilePageOffsets(this.state.bodytext.file);
+  //   return offsets[this.state.bodytext.page];
+  // },
+  syncToc:function(voff) {
+    this.setState({goVoff:voff});
+  },  
   render: function() {
     if (!this.state.quota) { // install required db
         return this.openFileinstaller(true);
@@ -14095,7 +14115,7 @@ var main = React.createClass({displayName: 'main',
 
             React.DOM.div({className: "tab-content"}, 
               React.DOM.div({className: "tab-pane active", id: "Catalog"}, 
-                stacktoc({showText: this.showText, showExcerpt: this.showExcerpt, hits: this.state.res.rawresult, data: this.state.toc}), "// 顯示目錄"
+                stacktoc({showText: this.showText, showExcerpt: this.showExcerpt, hits: this.state.res.rawresult, data: this.state.toc, goVoff: this.state.goVoff}), "// 顯示目錄"
               ), 
 
               React.DOM.div({className: "tab-pane", id: "Search"}, 
@@ -14108,7 +14128,7 @@ var main = React.createClass({displayName: 'main',
         React.DOM.div({className: "col-md-8 "}, 
 
           React.DOM.div({className: "text"}, 
-          showtext({pagename: pagename, text: text, nextpage: this.nextpage, prevpage: this.prevpage, setpage: this.setPage, db: this.state.db, toc: this.state.toc, genToc: this.genToc})
+          showtext({pagename: pagename, text: text, nextpage: this.nextpage, prevpage: this.prevpage, setpage: this.setPage, db: this.state.db, toc: this.state.toc, genToc: this.genToc, syncToc: this.syncToc})
           ), 
 
           React.DOM.div({className: "search"}, 
@@ -14313,45 +14333,45 @@ var stacktoc = React.createClass({displayName: 'stacktoc',
         depths[depth]=i;
         prev=depth;
       } 
-    }, 
-    enumAncestors:function() {
-      var toc=this.props.data;
-      if (!toc || !toc.length) return;
-      var cur=this.state.cur;
-      if (cur==0) return [];
-      var n=cur-1;
-      var depth=toc[cur].depth - 1;
-      var parents=[];
-      while (n>=0 && depth>0) {
-        if (toc[n].depth==depth) {
-          parents.unshift(n);
-          depth--;
-        }
-        n--;
+  }, 
+  enumAncestors:function() {
+    var toc=this.props.data;
+    if (!toc || !toc.length) return;
+    var cur=this.state.cur;
+    if (cur==0) return [];
+    var n=cur-1;
+    var depth=toc[cur].depth - 1;
+    var parents=[];
+    while (n>=0 && depth>0) {
+      if (toc[n].depth==depth) {
+        parents.unshift(n);
+        depth--;
       }
-      parents.unshift(0); //first ancestor is root node
-      return parents;
-    },
-    enumChildren : function() {
-      var cur=this.state.cur;
-      var toc=this.props.data;
-      if (!toc || !toc.length) return;
-      if (toc[cur+1].depth!= 1+toc[cur].depth) return ;  // no children node
-      var n=cur+1;
-      var child=toc[n];
-      var children=[];
-      while (child) {
-        children.push(n);
-        var next=toc[n+1];
-        if (!next) break;
-        if (next.depth==child.depth) {
-          n++;
-        } else if (next.depth>child.depth) {
-          n=child.next;
-        } else break;
-        if (n) child=toc[n];else break;
-      }
-      return children;
+      n--;
+    }
+    parents.unshift(0); //first ancestor is root node
+    return parents;
+  },
+  enumChildren : function() {
+    var cur=this.state.cur;
+    var toc=this.props.data;
+    if (!toc || !toc.length) return;
+    if (toc[cur+1].depth!= 1+toc[cur].depth) return ;  // no children node
+    var n=cur+1;
+    var child=toc[n];
+    var children=[];
+    while (child) {
+      children.push(n);
+      var next=toc[n+1];
+      if (!next) break;
+      if (next.depth==child.depth) {
+        n++;
+      } else if (next.depth>child.depth) {
+        n=child.next;
+      } else break;
+      if (n) child=toc[n];else break;
+    }
+    return children;
   },
   rebuildToc:function() {
     if (!this.state.tocReady && this.props.data) {
@@ -14378,7 +14398,7 @@ var stacktoc = React.createClass({displayName: 'stacktoc',
   },
   shouldComponentUpdate:function(nextProps,nextState) {
     if (nextProps.goVoff&&nextProps.goVoff !=this.props.goVoff) {
-      nextState.cur=this.findByVoff(this.props.goVoff);
+      nextState.cur=this.findByVoff(nextProps.goVoff);
     }
     return true;
   },
@@ -14404,7 +14424,6 @@ var stacktoc = React.createClass({displayName: 'stacktoc',
           if (next==toc.length) toc[n].end=Math.pow(2,48);
           else toc[n].end=toc[next].voff;
         }
-        
       } else { //same level or end of sibling
         toc[n].end=toc[n+1].voff;
       }
@@ -14486,28 +14505,29 @@ var controls = React.createClass({displayName: 'controls',
     }
     this.props.setpage(newpagename);
     },
-    page2catalog: function(e){
+    gotoToc: function(e){
       var s=window.location.hash;
       var fp=s.match(/#(\d+)\.(.*)/);
       var page=parseInt(fp[2]);
       var file=parseInt(fp[1]);
-      var out=[];
-      //var pagename=this.props.db.getFilePageNames(file)[page];
+      // var out=[];
+      // var pagename=this.props.db.getFilePageNames(file)[page];
       var voff=this.props.db.getFilePageOffsets(file)[page];
-      this.props.toc.map(function(item){
-        if(voff<item.voff){
-          out.push(item);
-        }
-      },this);
-      //console.log("pagename:",pagename,"voff:",voff);
-      //this.props.genToc();  
+      // this.props.toc.map(function(item){
+      //   if(voff<item.voff){
+      //     out.push(item);
+      //   }
+      // },this);
+      // console.log("pagename:",pagename,"voff:",voff);
+      this.props.syncToc(voff);
+       
     },
     render: function() { 
      return React.DOM.div(null, 
               React.DOM.button({className: "btn btn-success", onClick: this.props.prev}, "←"), 
                 React.DOM.input({type: "text", ref: "pagename", onChange: this.updateValue, value: this.state.pagename}), 
               React.DOM.button({className: "btn btn-success", onClick: this.props.next}, "→"), 
-              React.DOM.button({className: "btn btn-success", onClick: this.page2catalog}, "Catalog")
+              React.DOM.button({className: "btn btn-success", onClick: this.gotoToc}, "Catalog")
               )
   }  
 });
@@ -14523,7 +14543,7 @@ var showtext = React.createClass({displayName: 'showtext',
     var pn=this.props.pagename;
     return (
       React.DOM.div(null, 
-        controls({pagename: this.props.pagename, next: this.props.nextpage, prev: this.props.prevpage, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc, genToc: this.props.genToc}), 
+        controls({pagename: this.props.pagename, next: this.props.nextpage, prev: this.props.prevpage, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc, genToc: this.props.genToc, syncToc: this.props.syncToc}), 
 
         React.DOM.div({dangerouslySetInnerHTML: {__html: this.props.text}})
       )
