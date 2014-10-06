@@ -13937,20 +13937,21 @@ var page2catalog=Require("page2catalog");
 var main = React.createClass({displayName: 'main',
   componentDidMount:function() {
     var that=this;
-    window.onhashchange = function () {that.goHashTag();}
+    //window.onhashchange = function () {that.goHashTag();}
     
   }, 
   getInitialState: function() {
-    return {dialog:null,res:{},db:null,toc_result:[]};
+    return {dialog:null,res:{},bodytext:{file:0,page:0},db:null,toc_result:[]};
   },
-  encodeHashTag:function(f,p) { //file/page to hash tag
+  encodeHashTag:function(file,p) { //file/page to hash tag
+    var f=parseInt(file)+1;
     var pagename=this.state.db.getFilePageNames(f)[p];
     return "#"+f+"."+p;
   },
   decodeHashTag:function(s) {
     var fp=s.match(/#(\d+)\.(.*)/);
-    var p=fp[2];
-    var file=fp[1];
+    var p=parseInt(fp[2]);
+    var file=parseInt(fp[1])-1;
     var pagename=this.state.db.getFilePageNames(file)[p];   
     this.setPage(pagename,file);
   },
@@ -14068,8 +14069,6 @@ var main = React.createClass({displayName: 'main',
   gotopage:function(vpos){
     var res=kse.vpos2filepage(this.state.db,vpos);
     this.showPage(res.file,res.page-1,false);
-    console.log("res:",res);
-    console.log("vpos:",vpos);
   },
   nextpage:function() {
     var page=this.state.bodytext.page+1;
@@ -14088,13 +14087,13 @@ var main = React.createClass({displayName: 'main',
     var p=pagenames.indexOf(newpagename);
     if (p>-1) this.showPage(file,p);
   },
-  // filepage2vpos:function() {
-  //   var offsets=this.state.db.getFilePageOffsets(this.state.bodytext.file);
-  //   return offsets[this.state.bodytext.page];
-  // },
-  syncToc:function(voff) {
-    this.setState({goVoff:voff});
-  },  
+  filepage2vpos:function() {
+    var offsets=this.state.db.getFilePageOffsets(this.state.bodytext.file);
+    return offsets[this.state.bodytext.page];
+  },
+  syncToc:function() {
+    this.setState({goVoff:this.filepage2vpos()});
+  }, 
   render: function() {
     if (!this.state.quota) { // install required db
         return this.openFileinstaller(true);
@@ -14355,11 +14354,11 @@ var stacktoc = React.createClass({displayName: 'stacktoc',
   enumChildren : function() {
     var cur=this.state.cur;
     var toc=this.props.data;
-    if (!toc || !toc.length) return;
-    if (toc[cur+1].depth!= 1+toc[cur].depth) return ;  // no children node
+    var children=[];
+    if (!toc || !toc.length) return children;
+    if (toc[cur+1].depth!= 1+toc[cur].depth) return children;  // no children node
     var n=cur+1;
     var child=toc[n];
-    var children=[];
     while (child) {
       children.push(n);
       var next=toc[n+1];
@@ -14403,6 +14402,7 @@ var stacktoc = React.createClass({displayName: 'stacktoc',
     return true;
   },
   fillHit:function(nodeIds) {
+    if (typeof nodeIds=="undefined") return;
     if (typeof nodeIds=="number") nodeIds=[nodeIds];
     var toc=this.props.data;
     var hits=this.props.hits;
@@ -14505,22 +14505,13 @@ var controls = React.createClass({displayName: 'controls',
     }
     this.props.setpage(newpagename);
     },
-    gotoToc: function(e){
-      var s=window.location.hash;
-      var fp=s.match(/#(\d+)\.(.*)/);
-      var page=parseInt(fp[2]);
-      var file=parseInt(fp[1]);
-      // var out=[];
-      // var pagename=this.props.db.getFilePageNames(file)[page];
-      var voff=this.props.db.getFilePageOffsets(file)[page];
-      // this.props.toc.map(function(item){
-      //   if(voff<item.voff){
-      //     out.push(item);
-      //   }
-      // },this);
-      // console.log("pagename:",pagename,"voff:",voff);
-      this.props.syncToc(voff);
-       
+    gotoToc: function(){
+      // var s=window.location.hash;
+      // var fp=s.match(/#(\d+)\.(.*)/);
+      // var page=parseInt(fp[2]);
+      // var file=parseInt(fp[1]);
+      // var voff=this.props.db.getFilePageOffsets(file)[page];
+      this.props.syncToc();       
     },
     render: function() { 
      return React.DOM.div(null, 

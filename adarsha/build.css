@@ -7120,18 +7120,25 @@ td.visible-print {
 
 
 
-.main {}
+.main {position: fixed;}
 /*.form-control{border-radius: 0%;}*/
+
 .search{
 	height: 70%;
-	overflow-y:scroll;}
-.text {white-space: pre;
+	overflow-y:scroll;
+	 display: block;
+	}
 
+.text {white-space: pre;
 	height: 30%;
-	overflow-y:scroll;}
+	overflow-y:scroll;
+	}
+
 .col-md-4{
 	overflow-y:scroll;
-	position: relative;}
+	float: left;
+	}
+
 a{color:#178918;}
 .comp1 {}
 .results {}
