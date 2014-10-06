@@ -13937,21 +13937,21 @@ var page2catalog=Require("page2catalog");
 var main = React.createClass({displayName: 'main',
   componentDidMount:function() {
     var that=this;
-    window.onhashchange = function () {that.goHashTag();}
+    //window.onhashchange = function () {that.goHashTag();}
     
   }, 
   getInitialState: function() {
-    return {dialog:null,res:{},db:null,toc_result:[]};
+    return {dialog:null,res:{},bodytext:{file:0,page:0},db:null,toc_result:[]};
   },
-  encodeHashTag:function(f,p) { //file/page to hash tag
-    //var file=parseInt(f)+1;
+  encodeHashTag:function(file,p) { //file/page to hash tag
+    var f=parseInt(file)+1;
     var pagename=this.state.db.getFilePageNames(f)[p];
     return "#"+f+"."+p;
   },
   decodeHashTag:function(s) {
     var fp=s.match(/#(\d+)\.(.*)/);
-    var p=fp[2];
-    var file=fp[1];
+    var p=parseInt(fp[2]);
+    var file=parseInt(fp[1])-1;
     var pagename=this.state.db.getFilePageNames(file)[p];   
     this.setPage(pagename,file);
   },
@@ -14054,7 +14054,6 @@ var main = React.createClass({displayName: 'main',
     this.dosearch(null,null,voff);
   }, 
   showPage:function(f,p,hideResultlist) {
-    //f++;
     window.location.hash = this.encodeHashTag(f,p);
     kse.highlightPage(this.state.db,f,p,{ q:this.state.tofind},function(data){
       this.setState({bodytext:data});
