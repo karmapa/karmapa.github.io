@@ -1,0 +1,38 @@
+{
+  "name": "pedurmacat",
+  "repo": "https://github.com/ahsyuyu/pedurmacat.git",
+  "description": "hello world",
+  "version": "0.0.1",
+  "keywords": [],
+  "dependencies": {
+    "ksanaforge/boot": "*",
+    "brighthas/bootstrap": "*",
+    "ksana/document": "*",
+    "ksanaforge/fileinstaller": "*",
+    "ksanaforge/checkbrowser": "*",
+    "ksanaforge/htmlfs": "*",
+    "pedurmacat/main": "*",
+    "pedurmacat/comp1": "*",
+    "pedurmacat/fromsutra": "*",
+    "pedurmacat/searchbar": "*",
+    "pedurmacat/corressutras": "*",
+    "pedurmacat/dataset": "*",
+    "pedurmacat/sutraimage": "*"
+  },
+  "development": {},
+  "paths": [
+    "components",
+    "../components",
+    "../../components",
+    "../node_modules/",
+    "../../node_modules/"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": [
+    "index.js"
+  ],
+  "styles": [
+    "index.css"
+  ]
+}

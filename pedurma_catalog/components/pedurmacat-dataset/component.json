@@ -1,0 +1,13 @@
+{
+  "name": "dataset",
+  "repo": "pedurmacat/dataset",
+  "description": "non visual module",
+  "version": "0.0.1",
+  "keywords": [],
+  "dependencies": {},
+  "development": {},
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": ["index.js","dPedurma.js","cPedurma.js","jPedurma.js","hPedurma.js","nPedurma.js","uPedurma.js","kPedurma.js","sutranames.js","taishonames.js","api.js"],
+  "styles": []
+}
