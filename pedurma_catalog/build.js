@@ -13924,10 +13924,16 @@ var api=Require("dataset").api;
 var sutraimage=Require("sutraimage");
 var longnames={"J":"Lijiang","D":"Derge","C":"Cone","K":"Pedurma","N":"Narthang","H":"Lhasa","U":"Urga"};
 var mappings={"J":dataset.jPedurma,"D":dataset.dPedurma,"C":dataset.cPedurma,"K":dataset.kPedurma,"N":dataset.nPedurma,"H":dataset.hPedurma,"U":dataset.uPedurma};
-
 var main = React.createClass({displayName: 'main',
   getInitialState: function() {
     return {corres:[],res:[]};
+  },
+  componentDidMount: function() {
+    if(window.location.hash){
+      var v=window.location.hash.substr(1);
+      console.log(v);
+      {this.search(v,"J")}
+    }
   },
   search: function(volpage,from){
     var out=[];
@@ -14074,7 +14080,13 @@ require.register("pedurmacat-searchbar/index.js", function(exports, require, mod
 //var othercomponent=Require("other"); 
 var searchbar = React.createClass({displayName: 'searchbar',
   getInitialState: function() {
-    return {recen:"D"};
+    return {recen:"J"};
+  },
+  componentDidMount: function() {
+    if(window.location.hash){
+      var v=window.location.hash.substr(1);
+      this.refs.volpage.getDOMNode().value=v;
+    }
   },
   search: function() {
     var volpage=this.refs.volpage.getDOMNode().value;
@@ -14089,8 +14101,8 @@ var searchbar = React.createClass({displayName: 'searchbar',
       React.DOM.div({className: "row col-lg-offset-4"}, 
         React.DOM.div({className: "col-lg-2"}, 
           React.DOM.select({onChange: this.getRecen, className: "form-control"}, 
-            React.DOM.option({value: "D"}, "Derge"), 
             React.DOM.option({value: "J"}, "Lijiang"), 
+            React.DOM.option({value: "D"}, "Derge"), 
             React.DOM.option({value: "C"}, "Cone"), 
             React.DOM.option({value: "N"}, "Narthang"), 
             React.DOM.option({value: "H"}, "Lhasa"), 
