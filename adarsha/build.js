@@ -13933,7 +13933,7 @@ var showtext=Require("showtext");
 var renderItem=Require("renderItem");
 var tibetan=Require("ksana-document").languages.tibetan; 
 var page2catalog=Require("page2catalog");
-
+var version="v1.0.0"
 var main = React.createClass({displayName: 'main',
   componentDidMount:function() {
     var that=this;
@@ -13941,6 +13941,7 @@ var main = React.createClass({displayName: 'main',
     
   }, 
   getInitialState: function() {
+    document.title=version+"-PNCDEMO";
     return {dialog:null,res:{},bodytext:{file:0,page:0},db:null,toc_result:[]};
   },
   encodeHashTag:function(file,p) { //file/page to hash tag
@@ -13991,17 +13992,11 @@ var main = React.createClass({displayName: 'main',
     this.setState({toc_result:out});  
     console.log(out);
   },
-  clear:function() {
-    var tofind=this.refs.tofind.getDOMNode();
-    tofind.value="";
-    tofind.focus();
-  },
   renderinputs:function(searcharea) {  // input interface for search
     if (this.state.db) {
       if(searcharea == "text"){
         return (    
-          React.DOM.div(null, React.DOM.input({className: "form-control", onInput: this.dosearch, ref: "tofind", defaultValue: "byang chub"}), 
-          React.DOM.button({onClick: this.clear, className: "btn btn-danger"}, "x"), React.DOM.span({className: "wylie"}, this.state.wylie)
+          React.DOM.div(null, React.DOM.input({className: "form-control", onInput: this.dosearch, ref: "tofind", defaultValue: "byang chub"})
           )
           )    
       }
@@ -14113,12 +14108,18 @@ var main = React.createClass({displayName: 'main',
             ), 
 
             React.DOM.div({className: "tab-content"}, 
-              React.DOM.div({className: "tab-pane active", id: "Catalog"}, 
+              React.DOM.div({className: "tab-pane fade in active", id: "Catalog"}, 
                 stacktoc({showText: this.showText, showExcerpt: this.showExcerpt, hits: this.state.res.rawresult, data: this.state.toc, goVoff: this.state.goVoff}), "// 顯示目錄"
               ), 
 
-              React.DOM.div({className: "tab-pane", id: "Search"}, 
+              React.DOM.div({className: "tab-pane fade", id: "Search"}, 
                 this.renderinputs("title"), 
+                React.DOM.label({className: "checkbox-inline"}, 
+                  React.DOM.input({type: "checkbox", id: "head1", value: "head1"}, "Sutra Name")
+                ), 
+                React.DOM.label({className: "checkbox-inline"}, 
+                  React.DOM.input({type: "checkbox", id: "head2", value: "head2"}, "Kacha")
+                ), 
                 renderItem({data: this.state.toc_result, gotopage: this.gotopage})
               )
             )
@@ -14490,36 +14491,35 @@ require.register("adarsha-showtext/index.js", function(exports, require, module)
 
 //var othercomponent=Require("other"); 
 var controls = React.createClass({displayName: 'controls',  
-    getInitialState: function() {
-      return {value: this.props.pagename};
-    },
-    shouldComponentUpdate:function(nextProps,nextState) {
-      this.state.pagename=nextProps.pagename;
-      return (nextProps.pagename!=this.props.pagename);
-    },
-    updateValue:function(e){
+  getInitialState: function() {
+    return {value: this.props.pagename};
+  },
+  shouldComponentUpdate:function(nextProps,nextState) {
+    this.state.pagename=nextProps.pagename;
+    this.refs.pagename.getDOMNode().value=nextProps.pagename;
+    return (nextProps.pagename!=this.props.pagename);
+  },
+  updateValue:function(e){
+    if(e.key!="Enter") return;
     var newpagename=this.refs.pagename.getDOMNode().value;
     var n=newpagename.substr(newpagename.length-1);
     if(!n.match(/[ab]/)){
       newpagename = newpagename+"a";
     }
     this.props.setpage(newpagename);
-    },
-    gotoToc: function(){
-      // var s=window.location.hash;
-      // var fp=s.match(/#(\d+)\.(.*)/);
-      // var page=parseInt(fp[2]);
-      // var file=parseInt(fp[1]);
-      // var voff=this.props.db.getFilePageOffsets(file)[page];
-      this.props.syncToc();       
-    },
-    render: function() { 
-     return React.DOM.div(null, 
-              React.DOM.button({className: "btn btn-success", onClick: this.props.prev}, "←"), 
-                React.DOM.input({type: "text", ref: "pagename", onChange: this.updateValue, value: this.state.pagename}), 
-              React.DOM.button({className: "btn btn-success", onClick: this.props.next}, "→"), 
-              React.DOM.button({className: "btn btn-success", onClick: this.gotoToc}, "Catalog")
-              )
+  },
+  gotoToc: function(){
+    this.props.syncToc();       
+  },
+  render: function() { 
+   
+   return React.DOM.div(null, 
+            React.DOM.button({className: "btn btn-success", onClick: this.props.prev}, "←"), 
+            React.DOM.input({type: "text", ref: "pagename", onKeyUp: this.updateValue}), 
+            React.DOM.button({className: "btn btn-success", onClick: this.props.next}, "→"), 
+            React.DOM.button({className: "btn btn-success", onClick: this.gotoToc}, "Catalog"), 
+            React.DOM.a({target: "_new", href: "../pedurma_catalog/index.html#"+this.props.pagename}, "Compare")
+          )
   }  
 });
 
@@ -14562,7 +14562,7 @@ var renderItem = React.createClass({displayName: 'renderItem',
     return (
       React.DOM.div(null, 
         React.DOM.a({herf: "#", className: "item", 'data-voff': item.voff, onClick: this.onItemClick}, item.text)
-      )
+      ) 
       )
   },
   render: function() {
@@ -14603,8 +14603,8 @@ var renderinputs = React.createClass({displayName: 'renderinputs',
     if (this.props.db) {
       if(this.props.searcharea == "text"){
         return (    
-          React.DOM.div(null, React.DOM.input({className: "form-control", onInput: this.props.dosearch, ref: "tofind", defaultValue: "byang chub"}), 
-          React.DOM.button({onClick: this.clear, className: "btn btn-danger"}, "x"), React.DOM.span({className: "wylie"}, this.state.wylie)
+          React.DOM.div(null, React.DOM.input({className: "form-control", onInput: this.props.dosearch, ref: "tofind", defaultValue: "byang chub m"}), 
+          React.DOM.button({onClick: this.clear, title: "clear input box", className: "btn btn-danger"}, "xl"), React.DOM.span({className: "wylie"}, this.state.wylie)
           )
           )    
       }
