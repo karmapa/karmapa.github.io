@@ -14346,7 +14346,7 @@ var main = React.createClass({displayName: 'main',
   },
   gotopage:function(vpos){
     var res=kse.vpos2filepage(this.state.db,vpos);
-    this.showPage(res.file,res.page-1,false);
+    this.showPage(res.file,res.page,false);
   },
   nextpage:function() {
     var page=this.state.bodytext.page+1;
@@ -14844,7 +14844,7 @@ var renderItem = React.createClass({displayName: 'renderItem',
   renderItem: function(item) {
     return (
       React.DOM.div(null, 
-        React.DOM.a({herf: "#", className: "item", 'data-voff': item.voff, onClick: this.onItemClick}, item.text)
+        React.DOM.li(null, React.DOM.a({herf: "#", className: "item", 'data-voff': item.voff, onClick: this.onItemClick}, item.text))
       ) 
       )
   },
