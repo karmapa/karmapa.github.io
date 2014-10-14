@@ -4371,7 +4371,8 @@ var processTags=function(captureTags,tags,texts) {
 				var prev=tagStack[tagStack.length-1];
 				if (!nulltag) {				
 					if (tagname.substr(1)!=prev[0]) {
-						console.error("tag unbalance",tagname,prev[0],T);
+						console.error("tag unbalance",tagname,prev[0],status.filename);
+						
 					} else {
 						tagStack.pop();
 					}
@@ -4838,7 +4839,19 @@ require.register("ksana-document/kdb.js", function(exports, require, module){
 
   
 */
-var Kfs=require('./kdbfs');	
+var Kfs=null;
+
+if (typeof ksanagap=="undefined") {
+	Kfs=require('./kdbfs');		
+} else {
+	if (ksanagap.platform=="ios") {
+		Kfs=require("./kdbfs_ios");
+	} else {
+		Kfs=require("./kdbfs_android");
+	}
+		
+}
+
 
 var DT={
 	uint8:'1', //unsigned 1 byte integer
@@ -4864,7 +4877,7 @@ var _readLog=function(readtype,bytes) {
 	console.log(readtype,bytes,"bytes");
 }
 if (verbose) readLog=_readLog;
-
+var strsep="\uffff";
 var Create=function(path,opts,cb) {
 	/* loadxxx functions move file pointer */
 	// load variable length int
@@ -4872,11 +4885,13 @@ var Create=function(path,opts,cb) {
 		cb=opts;
 		opts={};
 	}
+
 	
 	var loadVInt =function(opts,blocksize,count,cb) {
 		//if (count==0) return [];
 		var that=this;
 		this.fs.readBuf_packedint(opts.cur,blocksize,count,true,function(o){
+			//console.log("vint");
 			opts.cur+=o.adv;
 			cb.apply(that,[o.data]);
 		});
@@ -4884,6 +4899,7 @@ var Create=function(path,opts,cb) {
 	var loadVInt1=function(opts,cb) {
 		var that=this;
 		loadVInt.apply(this,[opts,6,1,function(data){
+			//console.log("vint1");
 			cb.apply(that,[data[0]]);
 		}])
 	}
@@ -4891,6 +4907,7 @@ var Create=function(path,opts,cb) {
 	var loadPInt =function(opts,blocksize,count,cb) {
 		var that=this;
 		this.fs.readBuf_packedint(opts.cur,blocksize,count,false,function(o){
+			//console.log("pint");
 			opts.cur+=o.adv;
 			cb.apply(that,[o.data]);
 		});
@@ -4932,8 +4949,8 @@ var Create=function(path,opts,cb) {
 				if (opts.lazy) { 
 						var offset=L.offset;
 						L.sz.map(function(sz){
-							o[o.length]="\0"+offset.toString(16)
-								   +"\0"+sz.toString(16);
+							o[o.length]=strsep+offset.toString(16)
+								   +strsep+sz.toString(16);
 							offset+=sz;
 						})
 				} else {
@@ -4990,8 +5007,8 @@ var Create=function(path,opts,cb) {
 					var offset=L.offset;
 					for (var i=0;i<L.sz.length;i++) {
 						//prefix with a \0, impossible for normal string
-						o[keys[i]]="\0"+offset.toString(16)
-							   +"\0"+L.sz[i].toString(16);
+						o[keys[i]]=strsep+offset.toString(16)
+							   +strsep+L.sz[i].toString(16);
 						offset+=L.sz[i];
 					}
 				} else {
@@ -5136,8 +5153,8 @@ var Create=function(path,opts,cb) {
 		var key=path.pop();
 		var that=this;
 		get.apply(this,[path,false,function(data){
-			if (!path.join('\0')) return (!!KEY[key]);
-			var keys=KEY[path.join('\0')];
+			if (!path.join(strsep)) return (!!KEY[key]);
+			var keys=KEY[path.join(strsep)];
 			path.push(key);//put it back
 			if (keys) cb.apply(that,[keys.indexOf(key)>-1]);
 			else cb.apply(that,[false]);
@@ -5148,8 +5165,8 @@ var Create=function(path,opts,cb) {
 		if (!CACHE) return undefined;	
 		var o=CACHE;
 		for (var i=0;i<path.length;i++) {
-			var r=o[path[i]] ;
-			if (r===undefined) return undefined;
+			var r=o[path[i]];
+			if (typeof r=="undefined") return null;
 			o=r;
 		}
 		return o;
@@ -5166,9 +5183,7 @@ var Create=function(path,opts,cb) {
 		if (typeof cb!='function') return getSync(path);
 
 		reset.apply(this,[function(){
-
 			var o=CACHE;
-
 			if (path.length==0) {
 				cb(Object.keys(CACHE));
 				return;
@@ -5177,13 +5192,12 @@ var Create=function(path,opts,cb) {
 			var pathnow="",taskqueue=[],opts={},r=null;
 			var lastkey="";
 
-
 			for (var i=0;i<path.length;i++) {
 				var task=(function(key,k){
 
 					return (function(data){
 						if (!(typeof data=='object' && data.__empty)) {
-							if (typeof o[lastkey]=='string' && o[lastkey][0]=="\0") o[lastkey]={};
+							if (typeof o[lastkey]=='string' && o[lastkey][0]==strsep) o[lastkey]={};
 							o[lastkey]=data; 
 							o=o[lastkey];
 							r=data[key];
@@ -5197,15 +5211,15 @@ var Create=function(path,opts,cb) {
 							taskqueue=null;
 							cb.apply(that,[r]); //return empty value
 						} else {							
-							if (parseInt(k)) pathnow+="\0";
+							if (parseInt(k)) pathnow+=strsep;
 							pathnow+=key;
-							if (typeof r=='string' && r[0]=="\0") { //offset of data to be loaded
-								var p=r.substring(1).split("\0").map(function(item){return parseInt(item,16)});
+							if (typeof r=='string' && r[0]==strsep) { //offset of data to be loaded
+								var p=r.substring(1).split(strsep).map(function(item){return parseInt(item,16)});
 								var cur=p[0],sz=p[1];
 								opts.lazy=!recursive || (k<path.length-1) ;
 								opts.blocksize=sz;opts.cur=cur,opts.keys=[];
+								lastkey=key; //load is sync in android
 								load.apply(that,[opts, taskqueue.shift()]);
-								lastkey=key;
 							} else {
 								var next=taskqueue.shift();
 								next.apply(that,[r]);
@@ -5238,7 +5252,7 @@ var Create=function(path,opts,cb) {
 		var that=this;
 		get.apply(this,[path,false,function(){
 			if (path && path.length) {
-				cb.apply(that,[KEY[path.join("\0")]]);
+				cb.apply(that,[KEY[path.join(strsep)]]);
 			} else {
 				cb.apply(that,[Object.keys(CACHE)]); 
 				//top level, normally it is very small
@@ -5402,12 +5416,12 @@ var Open=function(path,opts,cb) {
 	var buf2stringarr=function(buf,enc) {
 		if (enc=="utf8") 	var arr=new Uint8Array(buf);
 		else var arr=new Uint16Array(buf);
-		var i=0,codes=[],out=[];
+		var i=0,codes=[],out=[],s="";
 		while (i<arr.length) {
 			if (arr[i]) {
 				codes[codes.length]=arr[i];
 			} else {
-				var s=String.fromCharCode.apply(null,codes);
+				s=String.fromCharCode.apply(null,codes);
 				if (enc=="utf8") out[out.length]=decodeutf8(s);
 				else out[out.length]=s;
 				codes=[];				
@@ -6714,6 +6728,216 @@ var API={
 
   module.exports=API;
 });
+require.register("ksana-document/kdbfs_android.js", function(exports, require, module){
+/*
+  JAVA can only return Number and String
+	array and buffer return in string format
+	need JSON.parse
+*/
+var verbose=1;
+
+var readSignature=function(pos,cb) {
+	//console.debug("read signature");
+	var signature=kfs.readUTF8String(this.handle,pos,1);
+	//console.debug(signature,signature.charCodeAt(0));
+	cb.apply(this,[signature]);
+}
+var readI32=function(pos,cb) {
+	//console.debug("read i32");
+	var i32=kfs.readInt32(this.handle,pos);
+	//console.debug(i32);
+	cb.apply(this,[i32]);	
+}
+var readUI32=function(pos,cb) {
+	//console.debug("read ui32");
+	var ui32=kfs.readUInt32(this.handle,pos);
+	//console.debug(ui32);
+	cb.apply(this,[ui32]);
+}
+var readUI8=function(pos,cb) {
+	//console.debug("read ui8"); 
+	var ui8=kfs.readUInt8(this.handle,pos);
+	//console.debug(ui8);
+	cb.apply(this,[ui8]);
+}
+var readBuf=function(pos,blocksize,cb) {
+	//console.debug("read buffer");
+	var buf=kfs.readBuf(this.handle,pos,blocksize);
+	var buff=JSON.parse(buf);
+	//console.debug("buffer length"+buff.length);
+	cb.apply(this,[buff]);	
+}
+var readBuf_packedint=function(pos,blocksize,count,reset,cb) {
+	//console.debug("read packed int, blocksize "+blocksize);
+	var buf=kfs.readBuf_packedint(this.handle,pos,blocksize,count,reset);
+	var adv=parseInt(buf);
+	var buff=JSON.parse(buf.substr(buf.indexOf("[")));
+	//console.debug("packedInt length "+buff.length+" first item="+buff[0]);
+	cb.apply(this,[{data:buff,adv:adv}]);	
+}
+
+
+var readString= function(pos,blocksize,encoding,cb) {
+	//console.debug("readstring"+blocksize+" "+encoding);
+	if (encoding=="ucs2") {
+		var str=kfs.readULE16String(this.handle,pos,blocksize);
+	} else {
+		var str=kfs.readUTF8String(this.handle,pos,blocksize);	
+	}	 
+	//console.debug(str);
+	cb.apply(this,[str]);	
+}
+
+var readFixedArray = function(pos ,count, unitsize,cb) {
+	//console.debug("read fixed array"); 
+	var buf=kfs.readFixedArray(this.handle,pos,count,unitsize);
+	var buff=JSON.parse(buf);
+	//console.debug("array length"+buff.length);
+	cb.apply(this,[buff]);	
+}
+var readStringArray = function(pos,blocksize,encoding,cb) {
+	//console.log("read String array "+blocksize +" "+encoding); 
+	encoding = encoding||"utf8";
+	var buf=kfs.readStringArray(this.handle,pos,blocksize,encoding);
+	//var buff=JSON.parse(buf);
+	//console.debug("read string array");
+	var buff=buf.split("\uffff"); //cannot return string with 0
+	//console.debug("array length"+buff.length);
+	cb.apply(this,[buff]);	
+}
+var free=function() {
+	////console.log('closing ',handle);
+	kfs.close(this.handle);
+}
+var Open=function(path,opts,cb) {
+	opts=opts||{};
+	var signature_size=1;
+	var setupapi=function() { 
+		this.readSignature=readSignature;
+		this.readI32=readI32;
+		this.readUI32=readUI32;
+		this.readUI8=readUI8;
+		this.readBuf=readBuf;
+		this.readBuf_packedint=readBuf_packedint;
+		this.readFixedArray=readFixedArray;
+		this.readString=readString;
+		this.readStringArray=readStringArray;
+		this.signature_size=signature_size;
+		this.free=free;
+		this.size=kfs.getFileSize(this.handle);
+		//console.log("filesize  "+this.size);
+		if (cb)	cb.call(this);
+	}
+
+	this.handle=kfs.open(path);
+	this.opened=true;
+	setupapi.call(this);
+	return this;
+}
+
+module.exports=Open;
+});
+require.register("ksana-document/kdbfs_ios.js", function(exports, require, module){
+/*
+  JSContext can return all Javascript types.
+*/
+var verbose=1;
+
+var readSignature=function(pos,cb) {
+	//console.debug("read signature");
+	var signature=kfs.readUTF8String(this.handle,pos,1);
+	//console.debug(signature,signature.charCodeAt(0));
+	cb.apply(this,[signature]);
+}
+var readI32=function(pos,cb) {
+	//console.debug("read i32");
+	var i32=kfs.readInt32(this.handle,pos);
+	//console.debug(i32);
+	cb.apply(this,[i32]);	
+}
+var readUI32=function(pos,cb) {
+	//console.debug("read ui32");
+	var ui32=kfs.readUInt32(this.handle,pos);
+	//console.debug(ui32);
+	cb.apply(this,[ui32]);
+}
+var readUI8=function(pos,cb) {
+	//console.debug("read ui8"); 
+	var ui8=kfs.readUInt8(this.handle,pos);
+	//console.debug(ui8);
+	cb.apply(this,[ui8]);
+}
+var readBuf=function(pos,blocksize,cb) {
+	//console.debug("read buffer");
+	var buf=kfs.readBuf(this.handle,pos,blocksize);
+	//console.debug("buffer length"+buff.length);
+	cb.apply(this,[buf]);	
+}
+var readBuf_packedint=function(pos,blocksize,count,reset,cb) {
+	//console.debug("read packed int, blocksize "+blocksize);
+	var buf=kfs.readBuf_packedint(this.handle,pos,blocksize,count,reset);
+	cb.apply(this,[buf]);
+}
+
+
+var readString= function(pos,blocksize,encoding,cb) {
+	//console.debug("readstring"+blocksize+" "+encoding);
+	if (encoding=="ucs2") {
+		var str=kfs.readULE16String(this.handle,pos,blocksize);
+	} else {
+		var str=kfs.readUTF8String(this.handle,pos,blocksize);	
+	}
+	//console.debug(str);
+	cb.apply(this,[str]);	
+}
+
+var readFixedArray = function(pos ,count, unitsize,cb) {
+	//console.debug("read fixed array"); 
+	var buf=kfs.readFixedArray(this.handle,pos,count,unitsize);
+	cb.apply(this,[buf]);	
+}
+var readStringArray = function(pos,blocksize,encoding,cb) {
+	//console.log("read String array "+blocksize +" "+encoding); 
+	encoding = encoding||"utf8";
+	var buf=kfs.readStringArray(this.handle,pos,blocksize,encoding);
+	//var buff=JSON.parse(buf);
+	//console.debug("read string array");
+	//var buff=buf.split("\uffff"); //cannot return string with 0
+	//console.debug("array length"+buff.length);
+	cb.apply(this,[buf]);	
+}
+var free=function() {
+	////console.log('closing ',handle);
+	kfs.close(this.handle);
+}
+var Open=function(path,opts,cb) {
+	opts=opts||{};
+	var signature_size=1;
+	var setupapi=function() { 
+		this.readSignature=readSignature;
+		this.readI32=readI32;
+		this.readUI32=readUI32;
+		this.readUI8=readUI8;
+		this.readBuf=readBuf;
+		this.readBuf_packedint=readBuf_packedint;
+		this.readFixedArray=readFixedArray;
+		this.readString=readString;
+		this.readStringArray=readStringArray;
+		this.signature_size=signature_size;
+		this.free=free;
+		this.size=kfs.getFileSize(this.handle);
+		//console.log("filesize  "+this.size);
+		if (cb)	cb.call(this);
+	}
+
+	this.handle=kfs.open(path);
+	this.opened=true;
+	setupapi.call(this);
+	return this;
+}
+
+module.exports=Open;
+});
 require.register("ksana-document/kse.js", function(exports, require, module){
 /*
   Ksana Search Engine.
@@ -6732,7 +6956,8 @@ var _search=function(engine,q,opts,cb) {
 		opts.q=q;
 		$kse.search(opts,cb);
 	} else {//nw or brower
-		return require("./search")(engine,q,opts,cb);		
+		var dosearch=require("./search");
+		return dosearch(engine,q,opts,cb);		
 	}
 }
 
@@ -6781,6 +7006,7 @@ if (typeof nodeRequire=='undefined')var nodeRequire=require;
 var pool={},localPool={};
 var apppath="";
 var bsearch=require("./bsearch");
+var strsep="\uffff";
 var _getSync=function(keys,recursive) {
 	var out=[];
 	for (var i in keys) {
@@ -6874,6 +7100,32 @@ var getFileRange=function(i) {
 	*/
 	return {start:start,end:end};
 }
+
+var getfp=function(npage) {
+	var fileOffsets=this.get(["fileOffsets"]);
+	var pageOffsets=this.get(["pageOffsets"]);
+	var pageoffset=pageOffsets[npage];
+	var file=bsearch(fileOffsets,pageoffset,true)-1;
+
+	var fileStart=fileOffsets[file];
+	var start=bsearch(pageOffsets,fileStart,true);	
+
+	var page=npage-start-1;
+	return {file:file,page:page};
+}
+//return array of object of nfile npage given pagename
+var findPage=function(pagename) {
+	var pagenames=this.get("pageNames");
+	var out=[];
+	for (var i=0;i<pagenames.length;i++) {
+		if (pagenames[i]==pagename) {
+			var fp=getfp.apply(this,[i]);
+			out.push({file:fp.file,page:fp.page,abspage:i});
+		}
+	}
+
+	return out;
+}
 var getFilePageOffsets=function(i) {
 	var pageOffsets=this.get("pageOffsets");
 	var range=getFileRange.apply(this,[i]);
@@ -6912,16 +7164,15 @@ var getDocument=function(filename,markups,cb){
 	}
 }
 var createLocalEngine=function(kdb,cb,context) {
-	var engine={lastAccess:new Date(), kdb:kdb, queryCache:{}, postingCache:{}, cache:{}};
-
-	if (kdb.fs.html5fs) {
+	var engine={kdb:kdb, queryCache:{}, postingCache:{}, cache:{}};
+	if ((kdb.fs && kdb.fs.html5fs) || typeof ksanagap!="undefined") {
 		var customfunc=Require("ksana-document").customfunc;
 	} else {
-		var customfunc=nodeRequire("ksana-document").customfunc;	
+		var customfunc=nodeRequire("ksana-document").customfunc;		
 	}	
+
 	if (typeof context=="object") engine.context=context;
 	engine.get=function(key,recursive,cb) {
-
 		if (typeof recursive=="function") {
 			cb=recursive;
 			recursive=false;
@@ -6930,13 +7181,8 @@ var createLocalEngine=function(kdb,cb,context) {
 			if (cb) cb(null);
 			return null;
 		}
-
 		if (typeof cb!="function") {
-			if (kdb.fs.html5fs) {
-				return engine.kdb.get(key,recursive,cb);
-			} else {
-				return engine.kdb.getSync(key,recursive);
-			}
+			return engine.kdb.get(key,recursive);
 		}
 
 		if (typeof key=="string") {
@@ -6949,14 +7195,18 @@ var createLocalEngine=function(kdb,cb,context) {
 			cb(null);	
 		}
 	};	
+
 	engine.fileOffset=fileOffset;
 	engine.folderOffset=folderOffset;
 	engine.pageOffset=pageOffset;
 	engine.getDocument=getDocument;
 	engine.getFilePageNames=getFilePageNames;
 	engine.getFilePageOffsets=getFilePageOffsets;
+	engine.findPage=findPage;
 	//only local engine allow getSync
-	if (!kdb.fs.html5fs)	engine.getSync=engine.kdb.getSync;
+	if (kdb.fs.getSync) {
+		engine.getSync=engine.kdb.getSync;
+	}
 	var preload=[["meta"],["fileNames"],["fileOffsets"],
 	["tokens"],["postingslen"],["pageNames"],["pageOffsets"]];
 
@@ -6993,7 +7243,7 @@ var getRemote=function(key,recursive,cb) {
 	if (key[0] instanceof Array) { //multiple keys
 		var keys=[],output=[];
 		for (var i=0;i<key.length;i++) {
-			var cachekey=key[i].join("\0");
+			var cachekey=key[i].join(strsep);
 			var data=engine.cache[cachekey];
 			if (typeof data!="undefined") {
 				keys.push(null);//  place holder for LINE 28
@@ -7011,7 +7261,7 @@ var getRemote=function(key,recursive,cb) {
 			//merge the server result with cached 
 			for (var i=0;i<output.length;i++) {
 				if (datum[i] && keys[i]) {
-					var cachekey=keys[i].join("\0");
+					var cachekey=keys[i].join(strsep);
 					engine.cache[cachekey]=datum[i];
 					output[i]=datum[i];
 				}
@@ -7019,7 +7269,7 @@ var getRemote=function(key,recursive,cb) {
 			cb.apply(engine.context,[output]);	
 		});
 	} else { //single key
-		var cachekey=key.join("\0");
+		var cachekey=key.join(strsep);
 		var data=engine.cache[cachekey];
 		if (typeof data!="undefined") {
 			if (cb) cb.apply(engine.context,[data]);
@@ -7075,7 +7325,7 @@ var createEngine=function(kdbid,context,cb) {
 	//var link=Require("./link");
 	var customfunc=Require("ksana-document").customfunc;
 	var $kse=Require("ksanaforge-kse").$ksana; 
-	var engine={lastAccess:new Date(), kdbid:kdbid, cache:{} , 
+	var engine={kdbid:kdbid, cache:{} , 
 	postingCache:{}, queryCache:{}, traffic:0,fetched:0};
 	engine.setContext=function(ctx) {this.context=ctx};
 	engine.get=getRemote;
@@ -7085,6 +7335,7 @@ var createEngine=function(kdbid,context,cb) {
 	engine.getDocument=getDocument;
 	engine.getFilePageNames=getFilePageNames;
 	engine.getFilePageOffsets=getFilePageOffsets;
+	engine.findPage=findPage;
 
 	if (typeof context=="object") engine.context=context;
 
@@ -7145,19 +7396,8 @@ var open=function(kdbid,cb,context) {
 	pool[kdbid]=engine;
 	return engine;
 }
-var openLocalNode=function(kdbid,cb,context) {
-	var fs=nodeRequire('fs');
-	var Kdb=nodeRequire('ksana-document').kdb;
-	var engine=localPool[kdbid];
-	if (engine) {
-		if (cb) cb(engine);
-		return engine;
-	}
-
-	var kdbfn=kdbid;
-	if (kdbfn.indexOf(".kdb")==-1) kdbfn+=".kdb";
-
-	var tries=["./"+kdbfn  //TODO , allow any depth
+var getLocalTries=function(kdbfn) {
+	return ["./"+kdbfn  //TODO , allow any depth
 	           ,apppath+"/"+kdbfn,
 	           ,apppath+"/ksana_databases/"+kdbfn
 	           ,apppath+"/"+kdbfn,
@@ -7169,6 +7409,48 @@ var openLocalNode=function(kdbid,cb,context) {
 	           ,"../../../"+kdbfn
 	           ,"../../../ksana_databases/"+kdbfn
 	           ];
+}
+var openLocalKsanagap=function(kdbid,cb,context) {
+	var engine=localPool[kdbid];
+	if (engine) {
+		if (cb) cb.apply(context||engine.context,[engine]);
+		return engine;
+	}
+
+	var Kdb=Require('ksana-document').kdb;
+	var kdbfn=kdbid;
+	if (kdbfn.indexOf(".kdb")==-1) kdbfn+=".kdb";
+
+	var tries=getLocalTries(kdbfn);
+
+	for (var i=0;i<tries.length;i++) {
+		if (fs.existsSync(tries[i])) {
+			//console.log("kdb path: "+nodeRequire('path').resolve(tries[i]));
+			var kdb=new Kdb(tries[i]);
+			createLocalEngine(kdb,function(engine){
+				localPool[kdbid]=engine;
+				cb.apply(context||engine.context,[engine]);
+			},context);
+			return null;
+		}
+	}
+	if (cb) cb(null);
+	return null;
+
+}
+var openLocalNode=function(kdbid,cb,context) {
+	var fs=nodeRequire('fs');
+	var engine=localPool[kdbid];
+	if (engine) {
+		if (cb) cb.apply(context||engine.context,[engine]);
+		return engine;
+	}
+
+	var Kdb=nodeRequire('ksana-document').kdb;
+	var kdbfn=kdbid;
+	if (kdbfn.indexOf(".kdb")==-1) kdbfn+=".kdb";
+
+	var tries=getLocalTries(kdbfn);
 
 	for (var i=0;i<tries.length;i++) {
 		if (fs.existsSync(tries[i])) {
@@ -7206,10 +7488,14 @@ var openLocalHtml5=function(kdbid,cb,context) {
 }
 //omit cb for syncronize open
 var openLocal=function(kdbid,cb,context)  {
-	if (kdbid.indexOf("filesystem:")>-1 || typeof process=="undefined") {
-		openLocalHtml5(kdbid,cb,context);
+	if (typeof ksanagap=="undefined") {
+		if (kdbid.indexOf("filesystem:")>-1 || typeof process=="undefined") {
+			openLocalHtml5(kdbid,cb,context);
+		} else {
+			openLocalNode(kdbid,cb,context);
+		}		
 	} else {
-		openLocalNode(kdbid,cb,context);
+		openLocalKsanagap(kdbid,cb,context);
 	}
 }
 var setPath=function(path) {
@@ -7577,10 +7863,8 @@ var newQuery =function(engine,query,opts) {
 	return Q;
 }
 var loadPostings=function(engine,terms,cb) {
-	//
 	var tokens=engine.get("tokens");
 	   //var tokenIds=terms.map(function(t){return tokens[t.key]});
-
 	var tokenIds=terms.map(function(t){ return 1+tokens.indexOf(t.key)});
 	var postingid=[];
 	for (var i=0;i<tokenIds.length;i++) {
@@ -7656,7 +7940,7 @@ var phrase_intersect=function(engine,Q) {
 	}
 	Q.rawresult=out;
 	countFolderFile(Q);
-	console.log(emptycount,hashit);
+	//console.log(emptycount,hashit);
 }
 var countFolderFile=function(Q) {
 	Q.fileWithHitCount=0;
@@ -7668,7 +7952,6 @@ var countFolderFile=function(Q) {
 var main=function(engine,q,opts,cb){
 	if (typeof opts=="function") cb=opts;
 	opts=opts||{};
-	
 	var Q=engine.queryCache[q];
 	if (!Q) Q=newQuery(engine,q,opts);
 	if (!Q) {
@@ -7676,15 +7959,13 @@ var main=function(engine,q,opts,cb){
 		else cb({rawresult:[]});
 		return;
 	};
-
 	engine.queryCache[q]=Q;
-	
 	loadPostings(engine,Q.terms,function(){
-	
 		if (!Q.phrases[0].posting) {
 			cb.apply(engine.context,[{rawresult:[]}]);
 			return;			
 		}
+		
 		if (!Q.phrases[0].posting.length) { //
 			Q.phrases.forEach(loadPhrase.bind(Q));
 		}
@@ -7694,7 +7975,8 @@ var main=function(engine,q,opts,cb){
 			phrase_intersect(engine,Q);
 		}
 		var fileOffsets=Q.engine.get("fileOffsets");
-		
+		//console.log("search opts "+JSON.stringify(opts));
+
 		if (!Q.byFile && Q.rawresult && !opts.nogroup) {
 			Q.byFile=plist.groupbyposting2(Q.rawresult, fileOffsets);
 			Q.byFile.shift();Q.byFile.pop();
@@ -7702,15 +7984,15 @@ var main=function(engine,q,opts,cb){
 
 			countFolderFile(Q);
 		}
+
 		if (opts.range) {
-			excerpt.resultlist(engine,Q,opts,function(data) {
+			excerpt.resultlist(engine,Q,opts,function(data) { 
+				//console.log("excerpt ok");
 				Q.excerpt=data;
-				if (engine.context) cb.apply(engine.context,[Q]);
-				else cb(Q);
+				cb.apply(engine.context,[Q]);
 			});
 		} else {
-			if (engine.context) cb.apply(engine.context,[Q]);
-			else cb(Q);
+			cb.apply(engine.context,[Q]);
 		}		
 	});
 }
@@ -8271,7 +8553,9 @@ var resultlist=function(engine,Q,opts,cb) {
 		var pageNames=engine.getFilePageNames(nfile);
 		files[nfile]={pageOffsets:pageOffsets};
 		var pagewithhit=plist.groupbyposting2(Q.byFile[ nfile ],  pageOffsets);
-		pagewithhit.shift(); //the first item is not used (0~Q.byFile[0] )
+		//if (pageOffsets[0]==1)
+		//pagewithhit.shift(); //the first item is not used (0~Q.byFile[0] )
+
 		for (var j=0; j<pagewithhit.length;j++) {
 			if (!pagewithhit[j].length) continue;
 			//var offsets=pagewithhit[j].map(function(p){return p- fileOffsets[i]});
@@ -8280,14 +8564,14 @@ var resultlist=function(engine,Q,opts,cb) {
 	}
 
 	var pagekeys=output.map(function(p){
-		return ["fileContents",p.file,p.page+1];
+		return ["fileContents",p.file,p.page];
 	});
 	//prepare the text
 	engine.get(pagekeys,function(pages){
 		var seq=0;
 		if (pages) for (var i=0;i<pages.length;i++) {
-			var startvpos=files[output[i].file].pageOffsets[output[i].page];
-			var endvpos=files[output[i].file].pageOffsets[output[i].page+1];
+			var startvpos=files[output[i].file].pageOffsets[output[i].page-1];
+			var endvpos=files[output[i].file].pageOffsets[output[i].page];
 			var hl={};
 
 			if (opts.range && opts.range.start && startvpos<opts.range.start ) {
@@ -13941,6 +14225,7 @@ var main = React.createClass({displayName: 'main',
       if(mappings[from].rcode != mappings[to].rcode){
         var res = api.dosearch(volpage,mappings[from],mappings[to]);
         //res = [版本縮寫,[[經號],[範圍],[對照經號],[對照範圍],[對照行],[K經號]]]
+        res[1]=res[1] || [[0],[0],[0],[0],[0],[0]];
         out.push({
           toRecen:longnames[to],
           toJing:res[1][0][0],
@@ -14018,26 +14303,24 @@ var fromBar = React.createClass({displayName: 'fromBar',
       if(KJing==pedurma_taisho[i][0]){
         var taisho=pedurma_taisho[i][1].split(",");  ////對照到中有多個經時
 
-        for(var j=0;j<taisho.length;j++){
-          //回去taishonames找到該項，得到中文經名
-          var taishoNumName=this.taisho2taishoName(taisho[j]);//[T01n0001,經名]
-          //將中文經名加上超連結
-          result.push(this.addLink(taishoNumName[0],taishoNumName[1]));
-        }
+        //回去taishonames找到該項，得到中文經名
+        var result=taisho.map(this.taisho2taishoName);//[T01n0001,經名]
+        //將中文經名加上超連結
         return result;
       }
     }
   },
-
   taisho2taishoName: function(taisho){ //把pedurma_taisho裡的taisho號碼轉換為經名
     for(var i=0;i<taishonames.length;i++){
       var taishoNum=parseInt(taishonames[i][0].substr(4,4));//taishonames[i][0].length-4
       if(parseInt(taisho) == taishoNum){
-        return taishonames[i];//[T01n0001,經名]
+        return this.addLink(taishonames[i]);//[T01n0001,經名]
       }
     }
   },
-  addLink: function(link,name){
+  addLink: function(taisho){
+    var link= taisho[0];
+    var name= taisho[1];
     if(link.match(/T0.n0220/)){
       link=link.substr(0,link.length-1);
     }
@@ -25535,13 +25818,15 @@ var fromVolpage=function(volpage,from,to){
 	var range=findRange(volpage,from);//range=[J經號,J範圍,K經號]
 	var corres_range=findCorresRange(range[2],to);//corres_range=[D經號,D範圍]
 	//算J和D的範圍
-	var vRange=countRange(range[1],range[1]);//[vStart,vEnd-vStart]
-	var corres_vRange=countRange(corres_range[0][1],corres_range[corres_range.length-1][1]);//[vStart,vEnd-vStart]
-	var corresLine=countCorresLine(volpage,vRange[1],corres_vRange[1],vRange[0],corres_vRange[0]);
+	if(corres_range.length != 0){
+		var vRange=countRange(range[1],range[1]);//[vStart,vEnd-vStart]
+		var corres_vRange=countRange(corres_range[0][1],corres_range[corres_range.length-1][1]);//[vStart,vEnd-vStart]
+		var corresLine=countCorresLine(volpage,vRange[1],corres_vRange[1],vRange[0],corres_vRange[0]);
 
-	out.push([range[0]],[range[1]],[corres_range[0][0]],[corres_range[0][1]],[corresLine],[range[2]]);
-				// [經號],[範圍],[對照經號],[對照範圍],[對照行],[K經號]
-	return out;
+		out.push([range[0]],[range[1]],[corres_range[0][0]],[corres_range[0][1]],[corresLine],[range[2]]);
+					// [經號],[範圍],[對照經號],[對照範圍],[對照行],[K經號]
+		return out;
+	}
 }
 
 var countCorresLine=function(volpage,range,corres_range,start,corres_start){//volpage=使用者輸入的volpage
@@ -25853,6 +26138,8 @@ require.alias("ksana-document/kdbw.js", "pedurmacat/deps/ksana-document/kdbw.js"
 require.alias("ksana-document/kdb_sync.js", "pedurmacat/deps/ksana-document/kdb_sync.js");
 require.alias("ksana-document/kdbfs_sync.js", "pedurmacat/deps/ksana-document/kdbfs_sync.js");
 require.alias("ksana-document/html5fs.js", "pedurmacat/deps/ksana-document/html5fs.js");
+require.alias("ksana-document/kdbfs_android.js", "pedurmacat/deps/ksana-document/kdbfs_android.js");
+require.alias("ksana-document/kdbfs_ios.js", "pedurmacat/deps/ksana-document/kdbfs_ios.js");
 require.alias("ksana-document/kse.js", "pedurmacat/deps/ksana-document/kse.js");
 require.alias("ksana-document/kde.js", "pedurmacat/deps/ksana-document/kde.js");
 require.alias("ksana-document/boolsearch.js", "pedurmacat/deps/ksana-document/boolsearch.js");
