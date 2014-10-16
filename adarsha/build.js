@@ -4499,7 +4499,6 @@ var start=function(mkdbconfig) {
 }
 
 var indexstep=function() {
-	
 	if (session.filenow<session.files.length) {
 		status.filename=session.files[session.filenow];
 		status.progress=session.filenow/session.files.length;
@@ -6737,76 +6736,76 @@ require.register("ksana-document/kdbfs_android.js", function(exports, require, m
 var verbose=1;
 
 var readSignature=function(pos,cb) {
-	//console.debug("read signature");
+	console.debug("read signature");
 	var signature=kfs.readUTF8String(this.handle,pos,1);
-	//console.debug(signature,signature.charCodeAt(0));
+	console.debug(signature,signature.charCodeAt(0));
 	cb.apply(this,[signature]);
 }
 var readI32=function(pos,cb) {
-	//console.debug("read i32");
+	console.debug("read i32 at "+pos);
 	var i32=kfs.readInt32(this.handle,pos);
-	//console.debug(i32);
+	console.debug(i32);
 	cb.apply(this,[i32]);	
 }
 var readUI32=function(pos,cb) {
-	//console.debug("read ui32");
+	console.debug("read ui32 at "+pos);
 	var ui32=kfs.readUInt32(this.handle,pos);
-	//console.debug(ui32);
+	console.debug(ui32);
 	cb.apply(this,[ui32]);
 }
 var readUI8=function(pos,cb) {
-	//console.debug("read ui8"); 
+	console.debug("read ui8 at "+pos); 
 	var ui8=kfs.readUInt8(this.handle,pos);
-	//console.debug(ui8);
+	console.debug(ui8);
 	cb.apply(this,[ui8]);
 }
 var readBuf=function(pos,blocksize,cb) {
-	//console.debug("read buffer");
+	console.debug("read buffer at "+pos+ " blocksize "+blocksize);
 	var buf=kfs.readBuf(this.handle,pos,blocksize);
 	var buff=JSON.parse(buf);
-	//console.debug("buffer length"+buff.length);
+	console.debug("buffer length"+buff.length);
 	cb.apply(this,[buff]);	
 }
 var readBuf_packedint=function(pos,blocksize,count,reset,cb) {
-	//console.debug("read packed int, blocksize "+blocksize);
+	console.debug("read packed int at "+pos+" blocksize "+blocksize+" count "+count);
 	var buf=kfs.readBuf_packedint(this.handle,pos,blocksize,count,reset);
 	var adv=parseInt(buf);
 	var buff=JSON.parse(buf.substr(buf.indexOf("[")));
-	//console.debug("packedInt length "+buff.length+" first item="+buff[0]);
+	console.debug("packedInt length "+buff.length+" first item="+buff[0]);
 	cb.apply(this,[{data:buff,adv:adv}]);	
 }
 
 
 var readString= function(pos,blocksize,encoding,cb) {
-	//console.debug("readstring"+blocksize+" "+encoding);
+	console.debug("readstring at "+pos+" blocksize " +blocksize+" enc:"+encoding);
 	if (encoding=="ucs2") {
 		var str=kfs.readULE16String(this.handle,pos,blocksize);
 	} else {
 		var str=kfs.readUTF8String(this.handle,pos,blocksize);	
 	}	 
-	//console.debug(str);
+	console.debug(str);
 	cb.apply(this,[str]);	
 }
 
 var readFixedArray = function(pos ,count, unitsize,cb) {
-	//console.debug("read fixed array"); 
+	console.debug("read fixed array at "+pos+" count "+count+" unitsize "+unitsize); 
 	var buf=kfs.readFixedArray(this.handle,pos,count,unitsize);
 	var buff=JSON.parse(buf);
-	//console.debug("array length"+buff.length);
+	console.debug("array length"+buff.length);
 	cb.apply(this,[buff]);	
 }
 var readStringArray = function(pos,blocksize,encoding,cb) {
-	//console.log("read String array "+blocksize +" "+encoding); 
+	console.log("read String array at "+pos+" blocksize "+blocksize +" enc "+encoding); 
 	encoding = encoding||"utf8";
 	var buf=kfs.readStringArray(this.handle,pos,blocksize,encoding);
 	//var buff=JSON.parse(buf);
-	//console.debug("read string array");
+	console.debug("read string array");
 	var buff=buf.split("\uffff"); //cannot return string with 0
-	//console.debug("array length"+buff.length);
+	console.debug("array length"+buff.length);
 	cb.apply(this,[buff]);	
 }
 var free=function() {
-	////console.log('closing ',handle);
+	//console.log('closing ',handle);
 	kfs.close(this.handle);
 }
 var Open=function(path,opts,cb) {
@@ -6825,7 +6824,7 @@ var Open=function(path,opts,cb) {
 		this.signature_size=signature_size;
 		this.free=free;
 		this.size=kfs.getFileSize(this.handle);
-		//console.log("filesize  "+this.size);
+		console.log("filesize  "+this.size);
 		if (cb)	cb.call(this);
 	}
 
@@ -6844,70 +6843,79 @@ require.register("ksana-document/kdbfs_ios.js", function(exports, require, modul
 var verbose=1;
 
 var readSignature=function(pos,cb) {
-	//console.debug("read signature");
+	if (verbose)  ksanagap.log("read signature at "+pos);
 	var signature=kfs.readUTF8String(this.handle,pos,1);
-	//console.debug(signature,signature.charCodeAt(0));
+	if (verbose)  ksanagap.log(signature+" "+signature.charCodeAt(0));
 	cb.apply(this,[signature]);
 }
 var readI32=function(pos,cb) {
-	//console.debug("read i32");
+	if (verbose)  ksanagap.log("read i32 at "+pos);
 	var i32=kfs.readInt32(this.handle,pos);
-	//console.debug(i32);
+	if (verbose)  ksanagap.log(i32);
 	cb.apply(this,[i32]);	
 }
 var readUI32=function(pos,cb) {
-	//console.debug("read ui32");
+	if (verbose)  ksanagap.log("read ui32 at "+pos);
 	var ui32=kfs.readUInt32(this.handle,pos);
-	//console.debug(ui32);
+	if (verbose)  ksanagap.log(ui32);
 	cb.apply(this,[ui32]);
 }
 var readUI8=function(pos,cb) {
-	//console.debug("read ui8"); 
+	if (verbose)  ksanagap.log("read ui8 at "+pos); 
 	var ui8=kfs.readUInt8(this.handle,pos);
-	//console.debug(ui8);
+	if (verbose)  ksanagap.log(ui8);
 	cb.apply(this,[ui8]);
 }
 var readBuf=function(pos,blocksize,cb) {
-	//console.debug("read buffer");
+	if (verbose)  ksanagap.log("read buffer at "+pos);
 	var buf=kfs.readBuf(this.handle,pos,blocksize);
-	//console.debug("buffer length"+buff.length);
+	if (verbose)  ksanagap.log("buffer length"+buf.length);
 	cb.apply(this,[buf]);	
 }
 var readBuf_packedint=function(pos,blocksize,count,reset,cb) {
-	//console.debug("read packed int, blocksize "+blocksize);
+	if (verbose)  ksanagap.log("read packed int fast, blocksize "+blocksize+" at "+pos);var t=new Date();
 	var buf=kfs.readBuf_packedint(this.handle,pos,blocksize,count,reset);
+	if (verbose)  ksanagap.log("return from packedint, time" + (new Date()-t));
+	if (typeof buf.data=="string") {
+		buf.data=eval("["+buf.data.substr(0,buf.data.length-1)+"]");
+	}
+	if (verbose)  ksanagap.log("unpacked length"+buf.data.length+" time" + (new Date()-t) );
 	cb.apply(this,[buf]);
 }
 
 
 var readString= function(pos,blocksize,encoding,cb) {
-	//console.debug("readstring"+blocksize+" "+encoding);
+
+	if (verbose)  ksanagap.log("readstring at "+pos+" blocksize "+blocksize+" "+encoding);var t=new Date();
 	if (encoding=="ucs2") {
 		var str=kfs.readULE16String(this.handle,pos,blocksize);
 	} else {
 		var str=kfs.readUTF8String(this.handle,pos,blocksize);	
 	}
-	//console.debug(str);
+	if (verbose)  ksanagap.log(str+" time"+(new Date()-t));
 	cb.apply(this,[str]);	
 }
 
 var readFixedArray = function(pos ,count, unitsize,cb) {
-	//console.debug("read fixed array"); 
+	if (verbose)  ksanagap.log("read fixed array at "+pos); var t=new Date();
 	var buf=kfs.readFixedArray(this.handle,pos,count,unitsize);
+	if (verbose)  ksanagap.log("array length "+buf.length+" time"+(new Date()-t));
 	cb.apply(this,[buf]);	
 }
 var readStringArray = function(pos,blocksize,encoding,cb) {
-	//console.log("read String array "+blocksize +" "+encoding); 
+	//if (verbose)  ksanagap.log("read String array "+blocksize +" "+encoding); 
 	encoding = encoding||"utf8";
+	if (verbose)  ksanagap.log("read string array at "+pos);var t=new Date();
 	var buf=kfs.readStringArray(this.handle,pos,blocksize,encoding);
+	if (typeof buf=="string") buf=buf.split("\0");
 	//var buff=JSON.parse(buf);
-	//console.debug("read string array");
 	//var buff=buf.split("\uffff"); //cannot return string with 0
-	//console.debug("array length"+buff.length);
-	cb.apply(this,[buf]);	
+	if (verbose)  ksanagap.log("string array length"+buf.length+" time"+(new Date()-t));
+	+cb.apply(this,[buf]);	
 }
+
 var free=function() {
-	////console.log('closing ',handle);
+	////if (verbose)  ksanagap.log('closing ',handle);
 	kfs.close(this.handle);
 }
 var Open=function(path,opts,cb) {
@@ -6926,7 +6934,7 @@ var Open=function(path,opts,cb) {
 		this.signature_size=signature_size;
 		this.free=free;
 		this.size=kfs.getFileSize(this.handle);
-		//console.log("filesize  "+this.size);
+		if (verbose)  ksanagap.log("filesize  "+this.size);
 		if (cb)	cb.call(this);
 	}
 
@@ -12956,43 +12964,57 @@ var movefile=function(sourcefn,targetfolder) {
 	return targetfn;
 }
 var mkdbjs="mkdb.js";
+var starttime=0;
+var startindexer=function(mkdbconfig) {
+  var indexer=require("ksana-document").indexer;
+  var session=indexer.start(mkdbconfig);
+  if (!session) {
+      console.log("No file to index");
+      return;
+  }
+  var getstatus=function() {
+    var status=indexer.status();
+    outback((Math.floor(status.progress*1000)/10)+'%'+status.message);
+    if (status.done) {
+      var endtime=new Date();
+      console.log("END",endtime, "elapse",(endtime-starttime) /1000,"seconds") ;
+      //status.outputfn=movefile(status.outputfn,"..");
+      clearInterval(timer);
+    }
+  }  
+  timer=setInterval( getstatus, 1000);
+
+}
+
 var build=function(path){
   var fs=require("fs");
 
   if (!fs.existsSync(mkdbjs)) {
       throw "no "+mkdbjs  ;
   }
-  var starttime=new Date();
+  starttime=new Date();
   console.log("START",starttime);
   if (!path) path=".";
-  var fn=require("path").resolve(path,mkdbjs);
-  var mkdbconfig=require(fn);
+  
   var glob = require("glob");
-  var indexer=require("ksana-document").indexer;
+  
   var timer=null;
-
-  glob(mkdbconfig.glob, function (err, files) {
-    if (err) {
-      throw err;
-    }
-    mkdbconfig.files=files.sort();
-    var session=indexer.start(mkdbconfig);
-    if (!session) {
-      console.log("No file to index");
-      return;
-    }
-    timer=setInterval( getstatus, 1000);
-  });
-  var getstatus=function() {
-    var status=indexer.status();
-    outback((Math.floor(status.progress*1000)/10)+'%'+status.message);
-    if (status.done) {
-    	var endtime=new Date();
-    	console.log("END",endtime, "elapse",(endtime-starttime) /1000,"seconds") ;
-      //status.outputfn=movefile(status.outputfn,"..");
-      clearInterval(timer);
-    }
+  var fn=require("path").resolve(path,mkdbjs);  
+  var mkdbconfig=require(fn);
+  
+  if (typeof mkdbconfig.glob=="string") {
+    glob(mkdbconfig.glob, function (err, files) {
+      if (err) throw err;
+      mkdbconfig.files=files.sort();
+      startindexer(mkdbconfig);
+    });    
+  } else {
+    mkdbconfig.files=mkdbconfig.glob;
+    startindexer(mkdbconfig);
   }
+
+
+
 }
 
 module.exports=build;
@@ -14018,8 +14040,13 @@ require.register("ksanaforge-checkbrowser/index.js", function(exports, require, 
 /** @jsx React.DOM */
 
 var checkfs=function() {
+	var hasksanagap=typeof ksanagap!="undefined";
+	if (hasksanagap && typeof console=="undefined") {
+		window.console={log:ksanagap.log,error:ksanagap.error,debug:ksanagap.debug,warn:ksanagap.warn};
+		console.log("install console output funciton");
+	}
 	return (navigator && navigator.webkitPersistentStorage) || 
-	(typeof ksanagap!="undefined");
+	(hasksanagap);
 }
 var featurechecks={
 	"fs":checkfs
@@ -14217,7 +14244,7 @@ var showtext=Require("showtext");
 var renderItem=Require("renderItem");
 var tibetan=Require("ksana-document").languages.tibetan; 
 var page2catalog=Require("page2catalog");
-var version="v1.0.0"
+var version="v1.0.01"
 var main = React.createClass({displayName: 'main',
   componentDidMount:function() {
     var that=this;
@@ -14319,11 +14346,8 @@ var main = React.createClass({displayName: 'main',
   },
   openFileinstaller:function(autoclose) {
     if (window.location.origin.indexOf("http://127.0.0.1")==0) {
-      for (var i=0;i<require_kdb.length;i++) {
-        require_kdb[i].url=window.location.origin+"/"+require_kdb[i].filename;  
-      }
+      require_kdb[0].url=window.location.origin+window.location.pathname+"jiangkangyur.kdb";
     }
-
     return fileinstaller({quota: "512M", autoclose: autoclose, needed: require_kdb, 
                      onReady: this.onReady})
   },
