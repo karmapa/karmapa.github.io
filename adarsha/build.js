@@ -4304,7 +4304,6 @@ var putDocument=function(parsed,cb) {
 }
 
 var parseBody=function(body,sep,cb) {
-	debugger;
 	var res=xml4kdb.parseXML(body, {sep:sep,trim:!!session.config.trim});
 	putDocument(res,cb);
 }
@@ -6679,6 +6678,9 @@ var rmURL=function(filename,cb,context) {
       if (cb) cb.apply(context,[false]);//no such file
     });
 }
+function errorHandler(e) {
+  console.error('Error: ' +e.name+ " "+e.message);
+}
 var initfs=function(grantedBytes,cb,context) {
       webkitRequestFileSystem(PERSISTENT, grantedBytes,  function(fs) {
       API.fs=fs;
@@ -6687,7 +6689,7 @@ var initfs=function(grantedBytes,cb,context) {
         API.initialized=true;
         cb.apply(context,[grantedBytes,fs]);
       },context);
-    }, console.error);
+    }, errorHandler);
 }
 var init=function(quota,cb,context) {
   navigator.webkitPersistentStorage.requestQuota(quota, 
@@ -6987,6 +6989,10 @@ var vpos2filepage=function(engine,vpos) {
     fileid--;
     var pageid=bsearch(pageOffsets,vpos+1,true);
     pageid--;
+    while (pageid&&pageid<pageOffsets.length-1&&
+    	pageOffsets[pageid-1]==pageOffsets[pageid]) {
+    	pageid++;
+    }
 
     var fileOffset=fileOffsets[fileid];
     var pageOffset=bsearch(pageOffsets,fileOffset+1,true);
@@ -13038,35 +13044,45 @@ var ontext=function(e) {
 	context.text+=e;
 }
 var onopentag=function(e) {
-	context.paths.push(e.name);
+	if (context.parents.length) {
+		context.paths.push(e.name);
+	}
 	context.parents.push(e);
 	context.now=e;	
 	context.path=context.paths.join("/");
 	if (!context.handler) {
 		var handler=context.handlers[context.path];
-		if (handler) 	context.handler=handler;
+		if (handler) {
+			context.handler=handler;
+			context.rootpath=context.path;
+		}
 		var close_handler=context.close_handlers[context.path];
 		if (close_handler) 	context.close_handler=close_handler;
 	}
 
-	if (context.handler)  context.handler(true);
+	if (context.handler) {
+		var root=context.path==context.rootpath;
+		context.handler(root);
+	} 
 }
 
 var onclosetag=function(e) {
 	context.now=context.parents[context.parents.length-1];
-
 	var handler=context.close_handlers[context.path];
 	if (handler) {
 		var res=null;
-		if (context.close_handler) res=context.close_handler(true);
+		var root=context.path==context.rootpath;
+		if (context.close_handler) res=context.close_handler(root);
 		context.handler=null;//stop handling
+		context.rootpath=null;
 		context.close_handler=null;//stop handling
 		context.text="";
 		if (res && context.status.storeFields) {
 			context.status.storeFields(res, context.status.json);
 		}
 	} else if (context.close_handler) {
-		context.close_handler();
+		var root=context.path==context.rootpath;
+		context.close_handler(root);
 	}
 	
 	context.paths.pop();
@@ -13154,7 +13170,11 @@ var parseP5=function(xml,parsed,fn,_config,_status) {
 	tagmodules=[];
 	context.addHandler=addHandler;
 	if (_config.setupHandlers) config.setupHandlers.apply(context);
+	if (config.callbacks && config.callbacks.beforeParseTag) {
+		xml=config.callbacks.beforeParseTag(xml);
+	}
 	parser.write(xml);
+	debugger;
 	context=null;
 	parser=null;
 	if (parsed) return createMarkups(parsed);
@@ -14500,7 +14520,7 @@ var resultlist=React.createClass({displayName: 'resultlist',  //should search re
     var tofind=this.props.tofind;
     return this.props.res.excerpt.map(function(r,i){ // excerpt is an array 
       var t = new RegExp(tofind,"g"); 
-      r.text=r.text.replace(t,function(tofind){return "<span class='tofind'>"+tofind+"</span>"});
+      r.text=r.text.replace(t,function(tofind){return "<hl>"+tofind+"</hl>"});
       return React.DOM.div({'data-vpos': r.hits[0][0]}, 
       React.DOM.a({onClick: this.gotopage, className: "pagename"}, r.pagename), 
         React.DOM.div({className: "resultitem", dangerouslySetInnerHTML: {__html:r.text}})

@@ -7141,7 +7141,9 @@ a{color:#178918;}
 .comp1 {}
 .results {}
 .pagename{cursor: pointer;}
-.tofind ,hl{background:#99E353;}
+hl{color:red;}
+hl[n="1"]{color: blue;}
+hl[n="2"]{color: green;}
 
 .stacktoc {font-size:150%;}
 
