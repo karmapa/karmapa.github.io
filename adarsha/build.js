@@ -207,8 +207,10 @@ require.register("ksanaforge-boot/index.js", function(exports, require, module){
 var ksana={"platform":"remote"};
 
 if (typeof process !="undefined") {
+
 	if (process.versions["node-webkit"]) {
-  	ksana.platform="node-webkit"
+  	ksana.platform="node-webkit";
+  	window.ksanagap={platform:"node-webkit"};
   	if (typeof nodeRequire!="undefined") ksana.require=nodeRequire;
   }
 } else if (typeof chrome!="undefined" && chrome.fileSystem){
@@ -14138,20 +14140,21 @@ module.exports=filemanager;
 require.register("ksanaforge-checkbrowser/index.js", function(exports, require, module){
 /** @jsx React.DOM */
 
-var checkfs=function() {
-	var hasksanagap=typeof ksanagap!="undefined";
-	if (hasksanagap && typeof console=="undefined") {
+var hasksanagap=(typeof ksanagap!="undefined");
+if (hasksanagap && (typeof console=="undefined" || typeof console.log=="undefined")) {
 		window.console={log:ksanagap.log,error:ksanagap.error,debug:ksanagap.debug,warn:ksanagap.warn};
 		console.log("install console output funciton");
-	}
-	return (navigator && navigator.webkitPersistentStorage) || 
-	(hasksanagap);
+}
+
+var checkfs=function() {
+	return (navigator && navigator.webkitPersistentStorage) || hasksanagap;
 }
 var featurechecks={
 	"fs":checkfs
 }
 var checkbrowser = React.createClass({displayName: 'checkbrowser',
 	getInitialState:function() {
+
 		var missingFeatures=this.getMissingFeatures();
 		return {ready:false, missing:missingFeatures};
 	},
@@ -14343,7 +14346,7 @@ var showtext=Require("showtext");
 var renderItem=Require("renderItem");
 var tibetan=Require("ksana-document").languages.tibetan; 
 var page2catalog=Require("page2catalog");
-var version="v1.0.01"
+var version="v1.0.02"
 var main = React.createClass({displayName: 'main',
   componentDidMount:function() {
     var that=this;
@@ -14692,9 +14695,9 @@ var Children=React.createClass({displayName: 'Children',
   }, 
   openNode:function(haschild) {
     if (haschild) {
-      return React.DOM.button({className: "btn btn-xs btn-success", onClick: this.open}, "＋")
+      return React.DOM.button({className: "btn btn-xs btn-link", onClick: this.open}, "＋")
     } else {
-      return React.DOM.button({className: "btn btn-xs btn-default disabled"}, "－")
+      return React.DOM.button({className: "btn btn-xs btn-link disabled"}, "－")
     }    
   },
   renderChild:function(n) {
@@ -14707,8 +14710,8 @@ var Children=React.createClass({displayName: 'Children',
      
     return React.DOM.div({className: classes, 'data-n': n}, 
     this.openNode(haschild), 
-    React.DOM.span({className: "text", onClick: this.showText}, this.props.toc[n].text), this.showHit(hit))
-  }, 
+    React.DOM.a({className: "tocitem text", onClick: this.showText}, this.props.toc[n].text), this.showHit(hit))
+  },
   showText:function(e) {
     var n=e.target.dataset["n"];
     if (typeof n=="undefined") n=e.target.parentNode.dataset["n"];
