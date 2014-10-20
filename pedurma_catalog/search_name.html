@@ -1,0 +1,24 @@
+﻿<html>
+<script src="pedurma-taisho.js"></script>
+<script src="sutranames.js"></script>
+<script src="taishonames.js"></script>
+<script src="search_name.js"></script>
+<head>
+<link rel="stylesheet" href="search_name.css"></link>
+</head>
+<body>
+<IMG SRC="LOGO1/LOGO_S.jpg" width="60" class="mid"/>
+<span id="header">SUTRA SEARCH</span>
+<P style="float: right;" ALIGN=RIGHT><a href="page_map.html">至經文對照</a></P>
+<br><HR color="#3799FF" size="15">
+<P ALIGN=RIGHT><input id="tofind" value="長"></input>
+<button onclick="dosearch(tofind.value)">search</button>
+<br>中文搜尋範例：<a href="#" onclick="dosearch(this.innerHTML)">慧</a>
+<a href="#" onclick="dosearch(this.innerHTML)">摩提</a>
+藏文搜尋範例：<a href="#" onclick="dosearch(this.innerHTML)">དགེ</a></P>
+<br><span id="result_num"></span>
+<div id="result"></div>
+<P ALIGN=CENTER><IMG SRC="Treasure.png" width="150"/></P>
+</body>
+
+</html>
