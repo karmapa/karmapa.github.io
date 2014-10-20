@@ -14369,7 +14369,7 @@ var main = React.createClass({displayName: 'main',
     this.setPage(pagename,file);
   },
   goHashTag:function() {
-    this.decodeHashTag(window.location.hash);
+    this.decodeHashTag(window.location.hash || "#1.1");
   },
   dosearch: function(){
     var start=arguments[2];  
