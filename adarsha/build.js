@@ -4358,13 +4358,14 @@ var processTags=function(captureTags,tags,texts) {
 		return first+middle+last;
 	}
 	for (var i=0;i<tags.length;i++) {
-
 		for (var j=0;j<tags[i].length;j++) {
 			var T=tags[i][j],tagname=T[1],tagoffset=T[0],attributes=T[2],tagvpos=T[3];	
 			var nulltag=attributes[attributes.length-1]=='/';
 			if (captureTags[tagname]) {
 				var attr=parseAttributesString(attributes);
-				if (!nulltag) tagStack.push([tagname,tagoffset,attr,i]);
+				if (!nulltag) {
+					tagStack.push([tagname,tagoffset,attr,i]);
+				}
 			}
 			var handler=null;
 			if (tagname[0]=="/") handler=captureTags[tagname.substr(1)];
@@ -4372,16 +4373,15 @@ var processTags=function(captureTags,tags,texts) {
 
 			if (handler) {
 				var prev=tagStack[tagStack.length-1];
-				if (!nulltag) {				
-					if (tagname.substr(1)!=prev[0]) {
-						console.error("tag unbalance",tagname,prev[0],status.filename);
-						
+				var text="";
+				if (!nulltag) {
+					if (typeof prev=="undefined" || tagname.substr(1)!=prev[0]) {
+						console.error("tag unbalance",tagname,prev,status.filename);						
+						throw "tag unbalance"
 					} else {
 						tagStack.pop();
+						text=getTextBetween(prev[3],i,prev[1],tagoffset);
 					}
-					var text=getTextBetween(prev[3],i,prev[1],tagoffset);
-				} else {
-					var text="";
 				}
 				
 				status.vpos=tagvpos; 
@@ -14332,8 +14332,8 @@ require.register("adarsha-main/index.js", function(exports, require, module){
  change name of ./component.js and  "dependencies" section of ../../component.js */
 var require_kdb=[{ 
   filename:"jiangkangyur.kdb"  , 
-  url:"http://www.dharma-treasure.org/kdb/jiangkangyur.kdb" , desc:"jiangkangyur"
-}];  
+  url:"http://ya.ksana.tw/kdb/jiangkangyur.kdb" , desc:"jiangkangyur"
+}];
 //var othercomponent=Require("other"); 
 var bootstrap=Require("bootstrap");  
 var resultlist=Require("resultlist");
@@ -14346,7 +14346,7 @@ var showtext=Require("showtext");
 var renderItem=Require("renderItem");
 var tibetan=Require("ksana-document").languages.tibetan; 
 var page2catalog=Require("page2catalog");
-var version="v1.0.02"
+var version="v1.0.03"
 var main = React.createClass({displayName: 'main',
   componentDidMount:function() {
     var that=this;
@@ -14513,7 +14513,8 @@ var main = React.createClass({displayName: 'main',
         React.DOM.div({className: "col-md-4"}, 
             React.DOM.ul({className: "nav nav-tabs", role: "tablist"}, 
               React.DOM.li({className: "active"}, React.DOM.a({href: "#Catalog", role: "tab", 'data-toggle': "tab"}, "Catalog")), 
-              React.DOM.li(null, React.DOM.a({href: "#Search", role: "tab", 'data-toggle': "tab"}, "Title Search"))
+              React.DOM.li(null, React.DOM.a({href: "#SearchTitle", role: "tab", 'data-toggle': "tab"}, "Title Search")), 
+              React.DOM.li(null, React.DOM.a({href: "#SearchText", role: "tab", 'data-toggle': "tab"}, "Texts Search"))
             ), 
 
             React.DOM.div({className: "tab-content"}, 
@@ -14521,7 +14522,7 @@ var main = React.createClass({displayName: 'main',
                 stacktoc({showText: this.showText, showExcerpt: this.showExcerpt, hits: this.state.res.rawresult, data: this.state.toc, goVoff: this.state.goVoff}), "// 顯示目錄"
               ), 
 
-              React.DOM.div({className: "tab-pane fade", id: "Search"}, 
+              React.DOM.div({className: "tab-pane fade", id: "SearchTitle"}, 
                 this.renderinputs("title"), 
                 React.DOM.label({className: "checkbox-inline"}, 
                   React.DOM.input({type: "checkbox", id: "head1", value: "head1"}, "Sutra Name")
@@ -14530,37 +14531,27 @@ var main = React.createClass({displayName: 'main',
                   React.DOM.input({type: "checkbox", id: "head2", value: "head2"}, "Kacha")
                 ), 
                 renderItem({data: this.state.toc_result, gotopage: this.gotopage})
+              ), 
+
+              React.DOM.div({className: "tab-pane fade", id: "SearchText"}, 
+                this.renderinputs("text"), 
+                
+                     "Search Example:   1.", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "བྱས"), 
+                "2. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "གནས"), 
+                "3. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "འགྱུར"), 
+                "4. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "བདག"), 
+                "5. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "དགེ"), 
+                React.DOM.br(null), React.DOM.br(null), React.DOM.br(null), 
+                resultlist({res: this.state.res, tofind: this.state.tofind, gotopage: this.gotopage}), 
+                React.DOM.span(null, this.state.elapse)
               )
             )
         ), 
 
         React.DOM.div({className: "col-md-8 "}, 
-
           React.DOM.div({className: "text"}, 
           showtext({pagename: pagename, text: text, nextpage: this.nextpage, prevpage: this.prevpage, setpage: this.setPage, db: this.state.db, toc: this.state.toc, genToc: this.genToc, syncToc: this.syncToc})
-          ), 
-
-          React.DOM.div({className: "search"}, 
-            React.DOM.br(null), 
-            React.DOM.div({className: "col-lg-3"}, 
-            
-            this.renderinputs("text")
-            ), 
-            
-                 "Search Example:   1.", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "བྱས"), 
-            "2. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "གནས"), 
-            "3. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "འགྱུར"), 
-            "4. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "བདག"), 
-            "5. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "དགེ"), 
-            React.DOM.br(null), React.DOM.br(null), React.DOM.br(null), 
-            resultlist({res: this.state.res, tofind: this.state.tofind, gotopage: this.gotopage}), 
-            React.DOM.span(null, this.state.elapse)
-
-
           )
-
-
-
         )
       )
       );
