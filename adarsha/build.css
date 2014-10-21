@@ -7156,8 +7156,11 @@ div.current span.text:hover{text-decoration:underline;cursor:pointer;}
 div.child span.text:hover {text-decoration:underline;cursor:pointer;color:#85BB65;}
 .tocitem {text-decoration: none;cursor:pointer;}
 .badge:hover {color:#59E817;cursor:pointer;}
-.showtext {}
-pb:after{content: attr(n)}
+.showtext {font-family: ctrc-uchen;}
+.text {line-height: 26px;
+}
+pb:after{content: attr(n);
+	}
 .renderItem {}
 .item{cursor: pointer;}
 .renderinputs {}
