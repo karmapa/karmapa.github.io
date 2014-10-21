@@ -14462,13 +14462,14 @@ var main = React.createClass({displayName: 'main',
       this.setState({wylie_toc:tofind_toc});
     }    
     var toc=this.state.toc;
-    out=toc.filter(function(t){
-      if(t["text"].indexOf(tofind_toc)>-1){
-        return t;
+    out=toc.filter(function(te){
+      if(te["text"].indexOf(tofind_toc)>-1 && te["text"].match(tofind_toc)!=""){
+        return te;
       }
     },this);
-    this.setState({toc_result:out});  
-    console.log(out);
+
+    this.setState({toc_result:out});
+
   },
   renderinputs:function(searcharea) {  // input interface for search
     if (this.state.db) {
@@ -14528,7 +14529,7 @@ var main = React.createClass({displayName: 'main',
     var that=this;
     kse.highlightFile(this.state.db,f,{q:this.state.tofind},function(data){
       that.setState({bodytext:data});
-      if (hideResultlist) this.setState({res:[]});     
+      if (hideResultlist) that.setState({res:[]});     
     });
 
   }, 
