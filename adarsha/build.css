@@ -7128,7 +7128,7 @@ td.visible-print {
 .search{
 	}
 
-.text {white-space: pre;
+.text {
 	font-family: ctrc-uchen;
 	}
 
@@ -7157,6 +7157,7 @@ div.child span.text:hover {text-decoration:underline;cursor:pointer;color:#85BB6
 .tocitem {text-decoration: none;cursor:pointer;}
 .badge:hover {color:#59E817;cursor:pointer;}
 .showtext {}
+pb:after{content: attr(n)}
 .renderItem {}
 .item{cursor: pointer;}
 .renderinputs {}

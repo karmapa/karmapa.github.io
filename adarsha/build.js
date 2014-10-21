@@ -4377,7 +4377,7 @@ var processTags=function(captureTags,tags,texts) {
 				if (!nulltag) {
 					if (typeof prev=="undefined" || tagname.substr(1)!=prev[0]) {
 						console.error("tag unbalance",tagname,prev,status.filename);						
-						throw "tag unbalance"
+						throw "tag unbalance";
 					} else {
 						tagStack.pop();
 						text=getTextBetween(prev[3],i,prev[1],tagoffset);
@@ -7019,6 +7019,24 @@ var _highlightPage=function(engine,fileid,pageid,opts,cb){
 		api.excerpt.getPage(engine,fileid,pageid,cb);
 	}
 }
+var _highlightRange=function(engine,start,end,opts,cb){
+	if (opts.q) {
+		_search(engine,opts.q,opts,function(Q){
+			api.excerpt.highlightRange(Q,start,end,opts,cb);
+		});
+	} else {
+		api.excerpt.getRange(engine,start,end,cb);
+	}
+}
+var _highlightFile=function(engine,fileid,opts,cb){
+	if (opts.q) {
+		_search(engine,opts.q,opts,function(Q){
+			api.excerpt.highlightFile(Q,fileid,opts,cb);
+		});
+	} else {
+		api.excerpt.getFile(engine,fileid,cb);
+	}
+}
 
 var vpos2filepage=function(engine,vpos) {
     var pageOffsets=engine.get("pageOffsets");
@@ -7044,6 +7062,8 @@ var api={
 	,concordance:require("./concordance")
 	,regex:require("./regex")
 	,highlightPage:_highlightPage
+	,highlightFile:_highlightFile
+//	,highlightRange:_highlightRange
 	,excerpt:require("./excerpt")
 	,vpos2filepage:vpos2filepage
 }
@@ -7060,39 +7080,39 @@ var pool={},localPool={};
 var apppath="";
 var bsearch=require("./bsearch");
 var strsep="\uffff";
-var _getSync=function(keys,opts) {
+var _getSync=function(paths,opts) {
 	var out=[];
-	for (var i in keys) {
-		out.push(this.getSync(keys[i],opts));	
+	for (var i in paths) {
+		out.push(this.getSync(paths[i],opts));	
 	}
 	return out;
 }
-var _gets=function(keys,opts,cb) { //get many data with one call
-	if (!keys) return ;
-	if (typeof keys=='string') {
-		keys=[keys];
+var _gets=function(paths,opts,cb) { //get many data with one call
+	if (!paths) return ;
+	if (typeof paths=='string') {
+		paths=[paths];
 	}
 	var engine=this, output=[];
 
-	var makecb=function(key){
+	var makecb=function(path){
 		return function(data){
 				if (!(data && typeof data =='object' && data.__empty)) output.push(data);
-				engine.get(key,opts,taskqueue.shift());
+				engine.get(path,opts,taskqueue.shift());
 		};
 	};
 
 	var taskqueue=[];
-	for (var i=0;i<keys.length;i++) {
-		if (typeof keys[i]=="null") { //this is only a place holder for key data already in client cache
+	for (var i=0;i<paths.length;i++) {
+		if (typeof paths[i]=="null") { //this is only a place holder for key data already in client cache
 			output.push(null);
 		} else {
-			taskqueue.push(makecb(keys[i]));
+			taskqueue.push(makecb(paths[i]));
 		}
 	};
 
 	taskqueue.push(function(data){
 		output.push(data);
-		cb.apply(engine.context||engine,[output,keys]); //return to caller
+		cb.apply(engine.context||engine,[output,paths]); //return to caller
 	});
 
 	taskqueue.shift()({__empty:true}); //run the task
@@ -7154,16 +7174,16 @@ var getFileRange=function(i) {
 	return {start:start,end:end};
 }
 
-var getfp=function(npage) {
+var getfp=function(absolutepage) {
 	var fileOffsets=this.get(["fileOffsets"]);
 	var pageOffsets=this.get(["pageOffsets"]);
-	var pageoffset=pageOffsets[npage];
+	var pageoffset=pageOffsets[absolutepage];
 	var file=bsearch(fileOffsets,pageoffset,true)-1;
 
 	var fileStart=fileOffsets[file];
 	var start=bsearch(pageOffsets,fileStart,true);	
 
-	var page=npage-start-1;
+	var page=absolutepage-start-1;
 	return {file:file,page:page};
 }
 //return array of object of nfile npage given pagename
@@ -7225,25 +7245,25 @@ var createLocalEngine=function(kdb,cb,context) {
 	}	
 
 	if (typeof context=="object") engine.context=context;
-	engine.get=function(key,opts,cb) {
+	engine.get=function(path,opts,cb) {
 		if (typeof opts=="function") {
 			cb=opts;
 			opts={recursive:false};
 		}
-		if (!key) {
+		if (!path) {
 			if (cb) cb(null);
 			return null;
 		}
 		if (typeof cb!="function") {
-			return engine.kdb.get(key,opts);
+			return engine.kdb.get(path,opts);
 		}
 
-		if (typeof key=="string") {
-			return engine.kdb.get([key],opts,cb);
-		} else if (typeof key[0] =="string") {
-			return engine.kdb.get(key,opts,cb);
-		} else if (typeof key[0] =="object") {
-			return _gets.apply(engine,[key,opts,cb]);
+		if (typeof path=="string") {
+			return engine.kdb.get([path],opts,cb);
+		} else if (typeof path[0] =="string") {
+			return engine.kdb.get(path,opts,cb);
+		} else if (typeof path[0] =="object") {
+			return _gets.apply(engine,[path,opts,cb]);
 		} else {
 			cb(null);	
 		}
@@ -7284,7 +7304,7 @@ var createLocalEngine=function(kdb,cb,context) {
 	return engine;
 }
 
-var getRemote=function(key,opts,cb) {
+var getRemote=function(path,opts,cb) {
 	var $kse=Require("ksanaforge-kse").$ksana; 
 	var engine=this;
 	if (!engine.ready) {
@@ -7296,49 +7316,49 @@ var getRemote=function(key,opts,cb) {
 		opts={recursive:false};
 	}
 	opts.recursive=opts.recursive||false;
-	if (typeof key=="string") key=[key];
+	if (typeof path=="string") path=[path];
 
-	if (key[0] instanceof Array) { //multiple keys
-		var keys=[],output=[];
-		for (var i=0;i<key.length;i++) {
-			var cachekey=key[i].join(strsep);
-			var data=engine.cache[cachekey];
+	if (path[0] instanceof Array) { //multiple paths
+		var paths=[],output=[];
+		for (var i=0;i<path.length;i++) {
+			var cachepath=path[i].join(strsep);
+			var data=engine.cache[cachepath];
 			if (typeof data!="undefined") {
-				keys.push(null);//  place holder for LINE 28
+				paths.push(null);//  place holder for LINE 28
 				output.push(data); //put cached data into output
 			} else{
 				engine.fetched++;
-				keys.push(key[i]); //need to ask server
+				paths.push(path[i]); //need to ask server
 				output.push(null); //data is unknown yet
 			}
 		}
 		//now ask server for unknown datum
 		engine.traffic++;
 		var newopts={recursive:!!opts.recursive, address:opts.address,
-			key:keys,db:engine.kdbid};
+			key:paths,db:engine.kdbid};
 		$kse("get",newopts).done(function(datum){
 			//merge the server result with cached 
 			for (var i=0;i<output.length;i++) {
-				if (datum[i] && keys[i]) {
-					var cachekey=keys[i].join(strsep);
-					engine.cache[cachekey]=datum[i];
+				if (datum[i] && paths[i]) {
+					var cachekey=paths[i].join(strsep);
+					engine.cache[cachepath]=datum[i];
 					output[i]=datum[i];
 				}
 			}
 			cb.apply(engine.context,[output]);	
 		});
-	} else { //single key
-		var cachekey=key.join(strsep);
-		var data=engine.cache[cachekey];
+	} else { //single path
+		var cachepath=path.join(strsep);
+		var data=engine.cache[cachepath];
 		if (typeof data!="undefined") {
 			if (cb) cb.apply(engine.context,[data]);
 			return data;//in cache , return immediately
 		} else {
 			engine.traffic++;
 			engine.fetched++;
-			var opts={key:key,recursive:recursive,db:engine.kdbid};
+			var opts={key:path,recursive:recursive,db:engine.kdbid};
 			$kse("get",opts).done(function(data){
-				engine.cache[cachekey]=data;
+				engine.cache[cachepath]=data;
 				if (cb) cb.apply(engine.context,[data]);	
 			});
 		}
@@ -8658,11 +8678,11 @@ var resultlist=function(engine,Q,opts,cb) {
 		}
 	}
 
-	var pagekeys=output.map(function(p){
+	var pagepaths=output.map(function(p){
 		return ["fileContents",p.file,p.page];
 	});
 	//prepare the text
-	engine.get(pagekeys,function(pages){
+	engine.get(pagepaths,function(pages){
 		var seq=0;
 		if (pages) for (var i=0;i<pages.length;i++) {
 			var startvpos=files[output[i].file].pageOffsets[output[i].page-1];
@@ -8765,14 +8785,55 @@ var highlight=function(Q,opts) {
 
 var getPage=function(engine,fileid,pageid,cb) {
 	var fileOffsets=engine.get("fileOffsets");
-	var pagekeys=["fileContents",fileid,pageid];
+	var pagepaths=["fileContents",fileid,pageid];
 	var pagenames=engine.getFilePageNames(fileid);
 
-	engine.get(pagekeys,function(text){
+	engine.get(pagepaths,function(text){
 		cb.apply(engine.context,[{text:text,file:fileid,page:pageid,pagename:pagenames[pageid]}]);
 	});
 }
 
+var getRange=function(engine,start,end,cb) {
+	var fileOffsets=engine.get("fileOffsets");
+	//var pagepaths=["fileContents",];
+	//find first page and last page
+	//create get paths
+
+}
+
+var getFile=function(engine,fileid,cb) {
+	var filename=engine.get("fileNames")[fileid];
+	var pagenames=engine.getFilePageNames(fileid);
+	var pc=0;
+	engine.get(["fileContents",fileid],true,function(data){
+		var text=data.join("<pb>").replace(/<pb>/g,function(m){
+			return '\n<pb n="'+pagenames[++pc]+'"></pb>'; // skip _
+		})
+		cb({text:text,file:fileid,filename:filename}); //force different token
+	});
+}
+
+var highlightRange=function(Q,startvpos,endvpos,opts,cb){
+	//not implement yet
+}
+
+var highlightFile=function(Q,fileid,opts,cb) {
+	console.log("higlight")
+	if (typeof opts=="function") {
+		cb=opts;
+	}
+	if (!Q || !Q.engine) return cb(null);
+	var fileOffsets=Q.engine.get("fileOffsets");
+	var startvpos=fileOffsets[fileid];
+	var endvpos=fileOffsets[fileid+1];
+	//console.log(startvpos,endvpos)
+	this.getFile(Q.engine,fileid,function(res){
+		//console.log(res.text)
+		var opt={text:res.text,hits:null,tag:'hl',voff:startvpos,fulltext:true};
+		opt.hits=hitInRange(Q,startvpos,endvpos);
+		cb.apply(Q.engine.context,[{text:injectTag(Q,opt),file:fileid,hits:opt.hits}]);
+	})
+}
 var highlightPage=function(Q,fileid,pageid,opts,cb) {
 	if (typeof opts=="function") {
 		cb=opts;
@@ -8794,7 +8855,12 @@ var highlightPage=function(Q,fileid,pageid,opts,cb) {
 module.exports={resultlist:resultlist, 
 	hitInRange:hitInRange, 
 	highlightPage:highlightPage,
-	getPage:getPage};
+	getPage:getPage,
+	highlightFile:highlightFile,
+	getFile:getFile
+	//highlightRange:highlightRange,
+  //getRange:getRange,
+};
 });
 require.register("ksana-document/link.js", function(exports, require, module){
 var findLinkBy=function(page,start,len,cb) {
@@ -14346,14 +14412,14 @@ var showtext=Require("showtext");
 var renderItem=Require("renderItem");
 var tibetan=Require("ksana-document").languages.tibetan; 
 var page2catalog=Require("page2catalog");
-var version="v1.0.03"
+var version="v0.0.21"
 var main = React.createClass({displayName: 'main',
   componentDidMount:function() {
     var that=this;
     //window.onhashchange = function () {that.goHashTag();}   
   }, 
   getInitialState: function() {
-    document.title=version+"-PNCDEMO";
+    document.title=version+"-adarsha";
     return {dialog:null,res:{},bodytext:{file:0,page:0},db:null,toc_result:[]};
   },
   encodeHashTag:function(file,p) { //file/page to hash tag
@@ -14369,7 +14435,7 @@ var main = React.createClass({displayName: 'main',
     this.setPage(pagename,file);
   },
   goHashTag:function() {
-    this.decodeHashTag(window.location.hash);
+    this.decodeHashTag(window.location.hash || "#1.1");
   },
   dosearch: function(){
     var start=arguments[2];  
@@ -14457,10 +14523,11 @@ var main = React.createClass({displayName: 'main',
     var voff=this.state.toc[n].voff;
     this.dosearch(null,null,voff);
   }, 
-  showPage:function(f,p,hideResultlist) {
+  showPage:function(f,p,hideResultlist) {    
     window.location.hash = this.encodeHashTag(f,p);
-    kse.highlightPage(this.state.db,f,p,{ q:this.state.tofind},function(data){
-      this.setState({bodytext:data});
+    var that=this;
+    kse.highlightFile(this.state.db,f,{q:this.state.tofind},function(data){
+      that.setState({bodytext:data});
       if (hideResultlist) this.setState({res:[]});     
     });
 
@@ -14930,13 +14997,22 @@ var showtext = React.createClass({displayName: 'showtext',
   hitClick: function(n){
     if(this.props.showExcerpt) this.props.showExcerpt(n);
   },
+  renderpb: function(s){
+    if(typeof s == "undefined") return "";
+    s= s.replace(/<pb/g,function(m){
+      return "<br></br>"+m;
+    });
+    
+  return s;
+  },
   render: function() {
     var pn=this.props.pagename;
+    var text=this.renderpb(this.props.text);
     return (
       React.DOM.div(null, 
         controls({pagename: this.props.pagename, next: this.props.nextpage, prev: this.props.prevpage, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc, genToc: this.props.genToc, syncToc: this.props.syncToc}), 
 
-        React.DOM.div({dangerouslySetInnerHTML: {__html: this.props.text}})
+        React.DOM.div({dangerouslySetInnerHTML: {__html: text}})
       )
     );
   }
