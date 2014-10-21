@@ -15000,7 +15000,7 @@ var showtext = React.createClass({displayName: 'showtext',
   },
   renderpb: function(s){
     if(typeof s == "undefined") return "";
-    s= s.replace(/<pb/g,function(m){
+    s= s.replace(/<pb n="(.*?)"/g,function(m,m1){
       return "<br></br>"+m;
     });
     
@@ -15013,7 +15013,7 @@ var showtext = React.createClass({displayName: 'showtext',
       React.DOM.div(null, 
         controls({pagename: this.props.pagename, next: this.props.nextpage, prev: this.props.prevpage, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc, genToc: this.props.genToc, syncToc: this.props.syncToc}), 
 
-        React.DOM.div({dangerouslySetInnerHTML: {__html: text}})
+        React.DOM.div({className: "text", dangerouslySetInnerHTML: {__html: text}})
       )
     );
   }
