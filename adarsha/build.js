@@ -14558,6 +14558,8 @@ var main = React.createClass({displayName: 'main',
   nextfile:function() {
     var file=this.state.bodytext.file+1;
     var page=this.state.bodytext.page || 1;
+    var han=parseInt(this.state.bodytext.filename.substr(0,3));
+
     this.showPage(file,page,false);
     console.log(file,"next");
   },
@@ -14567,6 +14569,9 @@ var main = React.createClass({displayName: 'main',
     if (file<0) file=0;
     this.showPage(file,page,false);
     console.log(file,"prev");
+  },
+  stopfile:function(file) {
+
   },
   setPage:function(newpagename,file) {
     var fp=this.state.db.findPage(newpagename);
@@ -14628,7 +14633,7 @@ var main = React.createClass({displayName: 'main',
 
         React.DOM.div({className: "col-md-8 "}, 
           React.DOM.div({className: "text"}, 
-          showtext({pagename: pagename, text: text, nextpage: this.nextpage, prevpage: this.prevpage, nextfile: this.nextfile, prevfile: this.prevfile, setpage: this.setPage, db: this.state.db, toc: this.state.toc, genToc: this.genToc, syncToc: this.syncToc})
+          showtext({filename: this.state.bodytext.filename, pagename: pagename, text: text, nextpage: this.nextpage, prevpage: this.prevpage, nextfile: this.nextfile, prevfile: this.prevfile, setpage: this.setPage, db: this.state.db, toc: this.state.toc, genToc: this.genToc, syncToc: this.syncToc})
           )
         )
       )
@@ -14972,29 +14977,13 @@ var controls = React.createClass({displayName: 'controls',
   getInitialState: function() {
     return {value: this.props.pagename};
   },
-  shouldComponentUpdate:function(nextProps,nextState) {
-    this.state.pagename=nextProps.pagename;
-    this.refs.pagename.getDOMNode().value=nextProps.pagename;
-    return (nextProps.pagename!=this.props.pagename);
-  },
-  updateValue:function(e){
-    if(e.key!="Enter") return;
-    var newpagename=this.refs.pagename.getDOMNode().value;
-    var n=newpagename.substr(newpagename.length-1);
-    if(!n.match(/[ab]/)){
-      newpagename = newpagename+"a";
-    }
-    this.props.setpage(newpagename);
-  },
+
   gotoToc: function(){
     this.props.syncToc();       
   },
   render: function() { 
    
    return React.DOM.div(null, 
-            React.DOM.button({className: "btn btn-success", onClick: this.props.prev}, "←"), 
-            React.DOM.input({type: "text", ref: "pagename", onKeyUp: this.updateValue}), 
-            React.DOM.button({className: "btn btn-success", onClick: this.props.next}, "→"), 
             React.DOM.button({className: "btn btn-success", onClick: this.gotoToc}, "Catalog"), 
             React.DOM.a({target: "_new", href: "http://127.0.0.1:2556/pedurmacat/#"+this.props.pagename}, "Compare")
           )
@@ -15002,14 +14991,17 @@ var controls = React.createClass({displayName: 'controls',
 });
 
 var controlsFile = React.createClass({displayName: 'controlsFile',
+ 
   getInitialState: function() {
     return {value: this.props.pagename};
   },
   render: function() { 
+   console.log(this.props.filename);
    
    return React.DOM.div(null, 
             "Bampo:", 
             React.DOM.button({className: "btn btn-success", onClick: this.props.prev}, "←"), 
+           
             React.DOM.button({className: "btn btn-success", onClick: this.props.next}, "→")
           )
   }  
@@ -15031,12 +15023,13 @@ var showtext = React.createClass({displayName: 'showtext',
   return s;
   },
   render: function() {
+
     var pn=this.props.pagename;
     var text=this.renderpb(this.props.text);
     return (
       React.DOM.div(null, 
         controls({pagename: this.props.pagename, next: this.props.nextpage, prev: this.props.prevpage, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc, genToc: this.props.genToc, syncToc: this.props.syncToc}), 
-        controlsFile({pagename: this.props.pagename, next: this.props.nextfile, prev: this.props.prevfile, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc, genToc: this.props.genToc, syncToc: this.props.syncToc}), 
+        controlsFile({filename: this.props.filename, pagename: this.props.pagename, next: this.props.nextfile, prev: this.props.prevfile, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc, genToc: this.props.genToc, syncToc: this.props.syncToc}), 
 
         React.DOM.div({className: "text", dangerouslySetInnerHTML: {__html: text}})
       )
