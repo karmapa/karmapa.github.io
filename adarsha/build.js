@@ -14412,7 +14412,7 @@ var showtext=Require("showtext");
 var renderItem=Require("renderItem");
 var tibetan=Require("ksana-document").languages.tibetan; 
 var page2catalog=Require("page2catalog");
-var version="v0.0.21"
+var version="v0.0.23"
 var main = React.createClass({displayName: 'main',
   componentDidMount:function() {
     var that=this;
@@ -14443,6 +14443,8 @@ var main = React.createClass({displayName: 'main',
     var tofind=tibetan.romanize.fromWylie(w);
     if (w!=tofind) {
       this.setState({wylie:tofind});
+    } else if(w.indexOf(" ")>-1){
+      tofind=tofind+"་";
     }
     kse.search(this.state.db,tofind,{range:{start:start,maxhit:100}},function(data){ //call search engine          
       this.setState({res:data, tofind:tofind});  
@@ -14592,12 +14594,7 @@ var main = React.createClass({displayName: 'main',
 
               React.DOM.div({className: "tab-pane fade", id: "SearchTitle"}, 
                 this.renderinputs("title"), 
-                React.DOM.label({className: "checkbox-inline"}, 
-                  React.DOM.input({type: "checkbox", id: "head1", value: "head1"}, "Sutra Name")
-                ), 
-                React.DOM.label({className: "checkbox-inline"}, 
-                  React.DOM.input({type: "checkbox", id: "head2", value: "head2"}, "Kacha")
-                ), 
+                
                 renderItem({data: this.state.toc_result, gotopage: this.gotopage})
               ), 
 
@@ -14666,7 +14663,7 @@ var resultlist=React.createClass({displayName: 'resultlist',  //should search re
       React.DOM.a({onClick: this.gotopage, className: "pagename"}, r.pagename), 
         React.DOM.div({className: "resultitem", dangerouslySetInnerHTML: {__html:r.text}})
       )
-    },this); 
+    },this);
   }, 
   gotopage:function(e) {
     var vpos=parseInt(e.target.parentNode.dataset['vpos']);
@@ -14675,7 +14672,7 @@ var resultlist=React.createClass({displayName: 'resultlist',  //should search re
   render:function() {
     if (this.props.res) {
       if (this.props.res.excerpt&&this.props.res.excerpt.length) {
-          return React.DOM.div(null, this.show())
+          return React.DOM.div({className: "results"}, this.show())
           debugger;
       } else {
         return React.DOM.div(null, "Not found")
