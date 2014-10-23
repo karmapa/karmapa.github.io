@@ -14450,7 +14450,7 @@ var main = React.createClass({displayName: 'main',
       this.setState({res:data, tofind:tofind});  
     });
   },
-  dosearch_ex: function(e) {    
+  dosearch_ex: function(e) {
     var tofind=e.target.innerHTML;
     kse.search(this.state.db,tofind,{range:{maxhit:100}},function(data){ //call search engine          
       this.setState({res:data, tofind:tofind});  
@@ -14555,6 +14555,19 @@ var main = React.createClass({displayName: 'main',
     this.showPage(this.state.bodytext.file,page,false);
     console.log(this.showPage(this.state.bodytext.file,page),"prev");
   },
+  nextfile:function() {
+    var file=this.state.bodytext.file+1;
+    var page=this.state.bodytext.page || 1;
+    this.showPage(file,page,false);
+    console.log(file,"next");
+  },
+  prevfile:function() {
+    var file=this.state.bodytext.file-1;
+    var page=this.state.bodytext.page || 1;
+    if (file<0) file=0;
+    this.showPage(file,page,false);
+    console.log(file,"prev");
+  },
   setPage:function(newpagename,file) {
     var fp=this.state.db.findPage(newpagename);
     if (fp.length){
@@ -14615,7 +14628,7 @@ var main = React.createClass({displayName: 'main',
 
         React.DOM.div({className: "col-md-8 "}, 
           React.DOM.div({className: "text"}, 
-          showtext({pagename: pagename, text: text, nextpage: this.nextpage, prevpage: this.prevpage, setpage: this.setPage, db: this.state.db, toc: this.state.toc, genToc: this.genToc, syncToc: this.syncToc})
+          showtext({pagename: pagename, text: text, nextpage: this.nextpage, prevpage: this.prevpage, nextfile: this.nextfile, prevfile: this.prevfile, setpage: this.setPage, db: this.state.db, toc: this.state.toc, genToc: this.genToc, syncToc: this.syncToc})
           )
         )
       )
@@ -14955,7 +14968,7 @@ require.register("adarsha-showtext/index.js", function(exports, require, module)
 /** @jsx React.DOM */
 
 //var othercomponent=Require("other"); 
-var controls = React.createClass({displayName: 'controls',  
+var controls = React.createClass({displayName: 'controls',
   getInitialState: function() {
     return {value: this.props.pagename};
   },
@@ -14988,6 +15001,20 @@ var controls = React.createClass({displayName: 'controls',
   }  
 });
 
+var controlsFile = React.createClass({displayName: 'controlsFile',
+  getInitialState: function() {
+    return {value: this.props.pagename};
+  },
+  render: function() { 
+   
+   return React.DOM.div(null, 
+            "Bampo:", 
+            React.DOM.button({className: "btn btn-success", onClick: this.props.prev}, "←"), 
+            React.DOM.button({className: "btn btn-success", onClick: this.props.next}, "→")
+          )
+  }  
+});
+
 var showtext = React.createClass({displayName: 'showtext',
   getInitialState: function() {
     return {bar: "world"};
@@ -15009,6 +15036,7 @@ var showtext = React.createClass({displayName: 'showtext',
     return (
       React.DOM.div(null, 
         controls({pagename: this.props.pagename, next: this.props.nextpage, prev: this.props.prevpage, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc, genToc: this.props.genToc, syncToc: this.props.syncToc}), 
+        controlsFile({pagename: this.props.pagename, next: this.props.nextfile, prev: this.props.prevfile, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc, genToc: this.props.genToc, syncToc: this.props.syncToc}), 
 
         React.DOM.div({className: "text", dangerouslySetInnerHTML: {__html: text}})
       )
