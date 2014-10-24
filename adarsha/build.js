@@ -14398,7 +14398,7 @@ require.register("adarsha-main/index.js", function(exports, require, module){
  change name of ./component.js and  "dependencies" section of ../../component.js */
 var require_kdb=[{ 
   filename:"jiangkangyur.kdb"  , 
-  url:"http://ya.ksana.tw/kdb/jiangkangyur.kdb" , desc:"jiangkangyur"
+  url:"http://kagyuoffice.org.tw/jiangkangyur.kdb" , desc:"jiangkangyur"
 }];
 //var othercomponent=Require("other"); 
 var bootstrap=Require("bootstrap");  
@@ -14983,9 +14983,8 @@ var controls = React.createClass({displayName: 'controls',
   },
   render: function() { 
    
-   return React.DOM.div(null, 
-            React.DOM.button({className: "btn btn-success", onClick: this.gotoToc}, "Catalog"), 
-            React.DOM.a({target: "_new", href: "http://127.0.0.1:2556/pedurmacat/#"+this.props.pagename}, "Compare")
+   return React.DOM.div(null
+
           )
   }  
 });
@@ -14999,7 +14998,7 @@ var controlsFile = React.createClass({displayName: 'controlsFile',
    console.log(this.props.filename);
    
    return React.DOM.div(null, 
-            "Bampo:", 
+            "Bampo", 
             React.DOM.button({className: "btn btn-success", onClick: this.props.prev}, "←"), 
            
             React.DOM.button({className: "btn btn-success", onClick: this.props.next}, "→")
@@ -15017,6 +15016,7 @@ var showtext = React.createClass({displayName: 'showtext',
   renderpb: function(s){
     if(typeof s == "undefined") return "";
     s= s.replace(/<pb n="(.*?)"/g,function(m,m1){
+      var link='<a target="_new" href={"http://127.0.0.1:2556/pedurmacat/#'+m1+'"}>Compare</a>';
       return "<br></br>"+m;
     });
     
