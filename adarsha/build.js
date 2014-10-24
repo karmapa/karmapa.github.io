@@ -14412,7 +14412,7 @@ var showtext=Require("showtext");
 var renderItem=Require("renderItem");
 var tibetan=Require("ksana-document").languages.tibetan; 
 var page2catalog=Require("page2catalog");
-var version="v0.0.23"
+var version="v0.0.24"
 var main = React.createClass({displayName: 'main',
   componentDidMount:function() {
     var that=this;
@@ -15016,7 +15016,7 @@ var showtext = React.createClass({displayName: 'showtext',
   renderpb: function(s){
     if(typeof s == "undefined") return "";
     s= s.replace(/<pb n="(.*?)">/g,function(m,m1){
-      var link='<a data-toggle="tooltip" data-placement="top" title="Tooltip on top" target="_new" href={"http://karmapa.github.io/pedurma_catalog/#'+m1+'"}>'+'<img width=25 src="imageicon.png"/>'+'</a>';
+      var link='<a target="_new" href="../adarsha_img/#'+m1+'">'+'<img width=25 src="imageicon.png"/>'+'</a>';
 
       return m+link;
     });
