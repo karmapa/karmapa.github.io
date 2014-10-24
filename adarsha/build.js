@@ -14398,7 +14398,7 @@ require.register("adarsha-main/index.js", function(exports, require, module){
  change name of ./component.js and  "dependencies" section of ../../component.js */
 var require_kdb=[{ 
   filename:"jiangkangyur.kdb"  , 
-  url:"http://kagyuoffice.org.tw/jiangkangyur.kdb" , desc:"jiangkangyur"
+  url:"http://ya.ksana.tw/kdb/jiangkangyur.kdb" , desc:"jiangkangyur"
 }];
 //var othercomponent=Require("other"); 
 var bootstrap=Require("bootstrap");  
@@ -15015,9 +15015,10 @@ var showtext = React.createClass({displayName: 'showtext',
   },
   renderpb: function(s){
     if(typeof s == "undefined") return "";
-    s= s.replace(/<pb n="(.*?)"/g,function(m,m1){
-      var link='<a target="_new" href={"http://127.0.0.1:2556/pedurmacat/#'+m1+'"}>Compare</a>';
-      return "<br></br>"+m;
+    s= s.replace(/<pb n="(.*?)">/g,function(m,m1){
+      var link='<a data-toggle="tooltip" data-placement="top" title="Tooltip on top" target="_new" href={"http://karmapa.github.io/pedurma_catalog/#'+m1+'"}>'+'<img width=25 src="imageicon.png"/>'+'</a>';
+
+      return m+link;
     });
     
   return s;
