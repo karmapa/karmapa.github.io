@@ -14412,7 +14412,7 @@ var showtext=Require("showtext");
 var renderItem=Require("renderItem");
 var tibetan=Require("ksana-document").languages.tibetan; 
 var page2catalog=Require("page2catalog");
-var version="v0.0.23"
+var version="v0.0.24"
 var main = React.createClass({displayName: 'main',
   componentDidMount:function() {
     var that=this;
@@ -14422,6 +14422,11 @@ var main = React.createClass({displayName: 'main',
     document.title=version+"-adarsha";
     return {dialog:null,res:{},bodytext:{file:0,page:0},db:null,toc_result:[]};
   },
+  componentDidUpdate:function()  {
+    var ch=document.documentElement.clientHeight;
+    this.refs["text-content"].getDOMNode().style.height=ch+"px";
+    this.refs["tab-content"].getDOMNode().style.height=(ch-40)+"px";
+  },  
   encodeHashTag:function(file,p) { //file/page to hash tag
     var f=parseInt(file)+1;
     var pagename=this.state.db.getFilePageNames(f)[p];
@@ -14443,8 +14448,6 @@ var main = React.createClass({displayName: 'main',
     var tofind=tibetan.romanize.fromWylie(w);
     if (w!=tofind) {
       this.setState({wylie:tofind});
-    } else if(w.indexOf(" ")>-1){
-      tofind=tofind+"་";
     }
     kse.search(this.state.db,tofind,{range:{start:start,maxhit:100}},function(data){ //call search engine          
       this.setState({res:data, tofind:tofind});  
@@ -14470,14 +14473,15 @@ var main = React.createClass({displayName: 'main',
       }
     },this);
 
-    this.setState({toc_result:out});
+    this.setState({toc_result:out, tofind_toc:tofind_toc});
 
   },
   renderinputs:function(searcharea) {  // input interface for search
     if (this.state.db) {
       if(searcharea == "text"){
         return (    
-          React.DOM.div(null, React.DOM.input({className: "form-control", onInput: this.dosearch, ref: "tofind", defaultValue: "byang chub"})
+          React.DOM.div(null, React.DOM.input({className: "form-control", onInput: this.dosearch, ref: "tofind", defaultValue: "byang chub"}), 
+          React.DOM.span({className: "wylie"}, this.state.wylie)
           )
           )    
       }
@@ -14597,7 +14601,7 @@ var main = React.createClass({displayName: 'main',
         console.log(this.state.bodytext);
     }
     return (
-      React.DOM.div(null, 
+      React.DOM.div({className: "row"}, 
         React.DOM.div({className: "col-md-4"}, 
             React.DOM.ul({className: "nav nav-tabs", role: "tablist"}, 
               React.DOM.li({className: "active"}, React.DOM.a({href: "#Catalog", role: "tab", 'data-toggle': "tab"}, "Catalog")), 
@@ -14605,7 +14609,7 @@ var main = React.createClass({displayName: 'main',
               React.DOM.li(null, React.DOM.a({href: "#SearchText", role: "tab", 'data-toggle': "tab"}, "Texts Search"))
             ), 
 
-            React.DOM.div({className: "tab-content"}, 
+            React.DOM.div({className: "tab-content", ref: "tab-content"}, 
               React.DOM.div({className: "tab-pane fade in active", id: "Catalog"}, 
                 stacktoc({showText: this.showText, showExcerpt: this.showExcerpt, hits: this.state.res.rawresult, data: this.state.toc, goVoff: this.state.goVoff}), "// 顯示目錄"
               ), 
@@ -14613,7 +14617,7 @@ var main = React.createClass({displayName: 'main',
               React.DOM.div({className: "tab-pane fade", id: "SearchTitle"}, 
                 this.renderinputs("title"), 
                 
-                renderItem({data: this.state.toc_result, gotopage: this.gotopage})
+                renderItem({data: this.state.toc_result, gotopage: this.gotopage, tofind_toc: this.state.tofind_toc})
               ), 
 
               React.DOM.div({className: "tab-pane fade", id: "SearchText"}, 
@@ -14632,7 +14636,7 @@ var main = React.createClass({displayName: 'main',
         ), 
 
         React.DOM.div({className: "col-md-8 "}, 
-          React.DOM.div({className: "text"}, 
+          React.DOM.div({className: "text text-content", ref: "text-content"}, 
           showtext({filename: this.state.bodytext.filename, pagename: pagename, text: text, nextpage: this.nextpage, prevpage: this.prevpage, nextfile: this.nextfile, prevfile: this.prevfile, setpage: this.setPage, db: this.state.db, toc: this.state.toc, genToc: this.genToc, syncToc: this.syncToc})
           )
         )
@@ -15016,7 +15020,7 @@ var showtext = React.createClass({displayName: 'showtext',
   renderpb: function(s){
     if(typeof s == "undefined") return "";
     s= s.replace(/<pb n="(.*?)">/g,function(m,m1){
-      var link='<a data-toggle="tooltip" data-placement="top" title="Tooltip on top" target="_new" href={"http://karmapa.github.io/pedurma_catalog/#'+m1+'"}>'+'<img width=25 src="imageicon.png"/>'+'</a>';
+      var link='<a target="_new" href="../adarsha_img/#'+m1+'">'+'<img width=25 src="imageicon.png"/>'+'</a>';
 
       return m+link;
     });
@@ -15055,9 +15059,13 @@ var renderItem = React.createClass({displayName: 'renderItem',
     this.props.gotopage(voff);
   },
   renderItem: function(item) {
+    var tofind=this.props.tofind_toc;
+    item.text=item.text.replace(tofind,function(t){
+      return '<hl>'+t+"</hl>";
+    });
     return (
       React.DOM.div(null, 
-        React.DOM.li(null, React.DOM.a({herf: "#", className: "item", 'data-voff': item.voff, onClick: this.onItemClick}, item.text))
+        React.DOM.li(null, React.DOM.a({herf: "#", className: "item", 'data-voff': item.voff, onClick: this.onItemClick, dangerouslySetInnerHTML: {__html:item.text}}))
       ) 
       )
   },
