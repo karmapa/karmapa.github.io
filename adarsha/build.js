@@ -14422,6 +14422,11 @@ var main = React.createClass({displayName: 'main',
     document.title=version+"-adarsha";
     return {dialog:null,res:{},bodytext:{file:0,page:0},db:null,toc_result:[]};
   },
+  componentDidUpdate:function()  {
+    var ch=document.documentElement.clientHeight;
+    this.refs["text-content"].getDOMNode().style.height=ch+"px";
+    this.refs["tab-content"].getDOMNode().style.height=(ch-40)+"px";
+  },  
   encodeHashTag:function(file,p) { //file/page to hash tag
     var f=parseInt(file)+1;
     var pagename=this.state.db.getFilePageNames(f)[p];
@@ -14596,7 +14601,7 @@ var main = React.createClass({displayName: 'main',
         console.log(this.state.bodytext);
     }
     return (
-      React.DOM.div(null, 
+      React.DOM.div({className: "row"}, 
         React.DOM.div({className: "col-md-4"}, 
             React.DOM.ul({className: "nav nav-tabs", role: "tablist"}, 
               React.DOM.li({className: "active"}, React.DOM.a({href: "#Catalog", role: "tab", 'data-toggle': "tab"}, "Catalog")), 
@@ -14604,7 +14609,7 @@ var main = React.createClass({displayName: 'main',
               React.DOM.li(null, React.DOM.a({href: "#SearchText", role: "tab", 'data-toggle': "tab"}, "Texts Search"))
             ), 
 
-            React.DOM.div({className: "tab-content"}, 
+            React.DOM.div({className: "tab-content", ref: "tab-content"}, 
               React.DOM.div({className: "tab-pane fade in active", id: "Catalog"}, 
                 stacktoc({showText: this.showText, showExcerpt: this.showExcerpt, hits: this.state.res.rawresult, data: this.state.toc, goVoff: this.state.goVoff}), "// 顯示目錄"
               ), 
@@ -14631,7 +14636,7 @@ var main = React.createClass({displayName: 'main',
         ), 
 
         React.DOM.div({className: "col-md-8 "}, 
-          React.DOM.div({className: "text"}, 
+          React.DOM.div({className: "text text-content", ref: "text-content"}, 
           showtext({filename: this.state.bodytext.filename, pagename: pagename, text: text, nextpage: this.nextpage, prevpage: this.prevpage, nextfile: this.nextfile, prevfile: this.prevfile, setpage: this.setPage, db: this.state.db, toc: this.state.toc, genToc: this.genToc, syncToc: this.syncToc})
           )
         )
