@@ -7163,8 +7163,13 @@ div.child span.text:hover {text-decoration:underline;cursor:pointer;color:#85BB6
 }
 pb:after{content: attr(n);
 	}
+division:after{content: attr(t);
+	}
 .renderItem {}
 .item{cursor: pointer;}
+hl{color:red;}
+hl[n="1"]{color: blue;}
+hl[n="2"]{color: green;}
 .renderinputs {}
 .page2catalog {}
 #main {}

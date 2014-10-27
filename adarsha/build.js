@@ -14443,8 +14443,6 @@ var main = React.createClass({displayName: 'main',
     var tofind=tibetan.romanize.fromWylie(w);
     if (w!=tofind) {
       this.setState({wylie:tofind});
-    } else if(w.indexOf(" ")>-1){
-      tofind=tofind+"་";
     }
     kse.search(this.state.db,tofind,{range:{start:start,maxhit:100}},function(data){ //call search engine          
       this.setState({res:data, tofind:tofind});  
@@ -14470,14 +14468,15 @@ var main = React.createClass({displayName: 'main',
       }
     },this);
 
-    this.setState({toc_result:out});
+    this.setState({toc_result:out, tofind_toc:tofind_toc});
 
   },
   renderinputs:function(searcharea) {  // input interface for search
     if (this.state.db) {
       if(searcharea == "text"){
         return (    
-          React.DOM.div(null, React.DOM.input({className: "form-control", onInput: this.dosearch, ref: "tofind", defaultValue: "byang chub"})
+          React.DOM.div(null, React.DOM.input({className: "form-control", onInput: this.dosearch, ref: "tofind", defaultValue: "byang chub"}), 
+          React.DOM.span({className: "wylie"}, this.state.wylie)
           )
           )    
       }
@@ -14613,7 +14612,7 @@ var main = React.createClass({displayName: 'main',
               React.DOM.div({className: "tab-pane fade", id: "SearchTitle"}, 
                 this.renderinputs("title"), 
                 
-                renderItem({data: this.state.toc_result, gotopage: this.gotopage})
+                renderItem({data: this.state.toc_result, gotopage: this.gotopage, tofind_toc: this.state.tofind_toc})
               ), 
 
               React.DOM.div({className: "tab-pane fade", id: "SearchText"}, 
@@ -15055,9 +15054,13 @@ var renderItem = React.createClass({displayName: 'renderItem',
     this.props.gotopage(voff);
   },
   renderItem: function(item) {
+    var tofind=this.props.tofind_toc;
+    item.text=item.text.replace(tofind,function(t){
+      return '<hl>'+t+"</hl>";
+    });
     return (
       React.DOM.div(null, 
-        React.DOM.li(null, React.DOM.a({herf: "#", className: "item", 'data-voff': item.voff, onClick: this.onItemClick}, item.text))
+        React.DOM.li(null, React.DOM.a({herf: "#", className: "item", 'data-voff': item.voff, onClick: this.onItemClick, dangerouslySetInnerHTML: {__html:item.text}}))
       ) 
       )
   },
