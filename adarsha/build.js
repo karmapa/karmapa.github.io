@@ -14574,9 +14574,6 @@ var main = React.createClass({displayName: 'main',
     this.showPage(file,page,false);
     console.log(file,"prev");
   },
-  stopfile:function(file) {
-
-  },
   setPage:function(newpagename,file) {
     var fp=this.state.db.findPage(newpagename);
     if (fp.length){
@@ -14585,7 +14582,8 @@ var main = React.createClass({displayName: 'main',
   },
   filepage2vpos:function() {
     var offsets=this.state.db.getFilePageOffsets(this.state.bodytext.file);
-    return offsets[this.state.bodytext.page];
+    var page=this.state.bodytext.page || 1;
+    return offsets[page];
   },
   syncToc:function() {
     this.setState({goVoff:this.filepage2vpos()});
@@ -14998,14 +14996,15 @@ var controlsFile = React.createClass({displayName: 'controlsFile',
   getInitialState: function() {
     return {value: this.props.pagename};
   },
-  render: function() { 
-   console.log(this.props.filename);
-   
+  gotoToc: function(){
+    this.props.syncToc();       
+  },
+  render: function() {    
    return React.DOM.div(null, 
             "Bampo", 
             React.DOM.button({className: "btn btn-success", onClick: this.props.prev}, "←"), 
-           
-            React.DOM.button({className: "btn btn-success", onClick: this.props.next}, "→")
+            React.DOM.button({className: "btn btn-success", onClick: this.props.next}, "→"), 
+            React.DOM.button({className: "btn btn-success", onClick: this.gotoToc}, "catalog")
           )
   }  
 });
@@ -15022,7 +15021,7 @@ var showtext = React.createClass({displayName: 'showtext',
     s= s.replace(/<pb n="(.*?)">/g,function(m,m1){
       var link='<a target="_new" href="../adarsha_img/#'+m1+'">'+'<img width=25 src="imageicon.png"/>'+'</a>';
 
-      return m+link;
+      return "<br></br>"+m+link;
     });
     
   return s;
