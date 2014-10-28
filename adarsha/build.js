@@ -207,13 +207,16 @@ require.register("ksanaforge-boot/index.js", function(exports, require, module){
 var ksana={"platform":"remote"};
 
 if (typeof process !="undefined") {
-
 	if (process.versions["node-webkit"]) {
-  	ksana.platform="node-webkit";
-  	window.ksanagap={platform:"node-webkit"};
-  	if (typeof nodeRequire!="undefined") ksana.require=nodeRequire;
-  }
+  		ksana.platform="node-webkit";
+			window.ksanagap=require("./ksanagap"); //compatible layer with mobile
+			window.kfs=require("./kfs");
+  		if (typeof nodeRequire!="undefined") ksana.require=nodeRequire;
+  	}
 } else if (typeof chrome!="undefined" && chrome.fileSystem){
+	window.ksanagap=require("./ksanagap"); //compatible layer with mobile
+	window.ksanagap.platform="chrome";
+	window.kfs=require("./kfs");
 	ksana.platform="chrome";
 }
 
@@ -230,6 +233,73 @@ var boot=function(appId,main,maindiv) {
 window.ksana=ksana;
 window.Require=Require;
 module.exports=boot;
+});
+require.register("ksanaforge-boot/ksanagap.js", function(exports, require, module){
+var ksanagap={
+	platform:"node-webkit",
+	downloader:require("./downloader"),
+}
+
+
+module.exports=ksanagap;
+});
+require.register("ksanaforge-boot/downloader.js", function(exports, require, module){
+var start=function(urls, target) { //return download id
+	
+}
+
+var cancel=function(downloadid) {
+	
+}
+
+var getStatus=function(downloadid) {
+	
+}
+
+var downloader={start:start, getStatus:getStatus, cancel:cancel};
+module.exports=downloader;
+});
+require.register("ksanaforge-boot/kfs.js", function(exports, require, module){
+//Simulate feature in ksanagap
+/* 
+  runs on node-webkit only
+*/
+
+var readDir=function(path) { //simulate Ksanagap function
+	var fs=nodeRequire("fs");
+	path=path||"..";
+	var dirs=[];
+	if (path[0]==".") {
+		if (path==".") dirs=fs.readdirSync(".");
+		else {
+			dirs=fs.readdirSync("..");
+		}
+	} else {
+		dirs=fs.readdirSync(path);
+	}
+
+	return dirs.join("\uffff");
+}
+var listApps=function() {
+	var fs=nodeRequire("fs");
+	var jsonfile=function(d) {return "../"+d+"/ksana.json"};
+	var dirs=fs.readdirSync("..").filter(function(d){
+				return fs.statSync("../"+d).isDirectory() && d[0]!="."
+				   && fs.existsSync(jsonfile(d));
+	});
+	
+	var out=dirs.map(function(d){
+		var obj= JSON.parse(fs.readFileSync(jsonfile(d),"utf8"));
+		obj.dbid=d;
+		obj.path=d;
+		return obj;
+	})
+	return out;
+}
+
+var kfs={readDir:readDir,listApps:listApps};
+
+module.exports=kfs;
 });
 require.register("brighthas-bootstrap/dist/js/bootstrap.js", function(exports, require, module){
 /*!
@@ -14412,7 +14482,7 @@ var showtext=Require("showtext");
 var renderItem=Require("renderItem");
 var tibetan=Require("ksana-document").languages.tibetan; 
 var page2catalog=Require("page2catalog");
-var version="v0.0.24"
+var version="v0.0.28"
 var main = React.createClass({displayName: 'main',
   componentDidMount:function() {
     var that=this;
@@ -14420,7 +14490,7 @@ var main = React.createClass({displayName: 'main',
   }, 
   getInitialState: function() {
     document.title=version+"-adarsha";
-    return {dialog:null,res:{},bodytext:{file:0,page:0},db:null,toc_result:[]};
+    return {dialog:null,res:{},bodytext:{file:0,page:0},db:null,toc_result:[],page:0};
   },
   componentDidUpdate:function()  {
     var ch=document.documentElement.clientHeight;
@@ -14534,30 +14604,15 @@ var main = React.createClass({displayName: 'main',
     window.location.hash = this.encodeHashTag(f,p);
     var that=this;
     kse.highlightFile(this.state.db,f,{q:this.state.tofind},function(data){
-      that.setState({bodytext:data});
+      that.setState({bodytext:data,page:p});
       if (hideResultlist) that.setState({res:[]});     
     });
 
   }, 
   showText:function(n) {
     var res=kse.vpos2filepage(this.state.db,this.state.toc[n].voff);
-    console.log(res.file,this.state.toc[n].voff);
+    console.log(res.file,res.page,this.state.toc[n].voff);
     this.showPage(res.file,res.page,true);
-  },
-  gotopage:function(vpos){
-    var res=kse.vpos2filepage(this.state.db,vpos);
-    this.showPage(res.file,res.page,false);
-  },
-  nextpage:function() {
-    var page=this.state.bodytext.page+1;
-    this.showPage(this.state.bodytext.file,page,false);
-    console.log(this.showPage(this.state.bodytext.file,page),"next");
-  },
-  prevpage:function() {
-    var page=this.state.bodytext.page-1;
-    if (page<0) page=0;
-    this.showPage(this.state.bodytext.file,page,false);
-    console.log(this.showPage(this.state.bodytext.file,page),"prev");
   },
   nextfile:function() {
     var file=this.state.bodytext.file+1;
@@ -14580,14 +14635,7 @@ var main = React.createClass({displayName: 'main',
       this.showPage(fp[0].file,fp[0].page);
     }
   },
-  filepage2vpos:function() {
-    var offsets=this.state.db.getFilePageOffsets(this.state.bodytext.file);
-    var page=this.state.bodytext.page || 1;
-    return offsets[page];
-  },
-  syncToc:function() {
-    this.setState({goVoff:this.filepage2vpos()});
-  }, 
+
   render: function() {
     if (!this.state.quota) { // install required db
         return this.openFileinstaller(true);
@@ -14604,7 +14652,7 @@ var main = React.createClass({displayName: 'main',
             React.DOM.ul({className: "nav nav-tabs", role: "tablist"}, 
               React.DOM.li({className: "active"}, React.DOM.a({href: "#Catalog", role: "tab", 'data-toggle': "tab"}, "Catalog")), 
               React.DOM.li(null, React.DOM.a({href: "#SearchTitle", role: "tab", 'data-toggle': "tab"}, "Title Search")), 
-              React.DOM.li(null, React.DOM.a({href: "#SearchText", role: "tab", 'data-toggle': "tab"}, "Texts Search"))
+              React.DOM.li(null, React.DOM.a({href: "#SearchText", role: "tab", 'data-toggle': "tab"}, "Text Search"))
             ), 
 
             React.DOM.div({className: "tab-content", ref: "tab-content"}, 
@@ -14635,7 +14683,7 @@ var main = React.createClass({displayName: 'main',
 
         React.DOM.div({className: "col-md-8 "}, 
           React.DOM.div({className: "text text-content", ref: "text-content"}, 
-          showtext({filename: this.state.bodytext.filename, pagename: pagename, text: text, nextpage: this.nextpage, prevpage: this.prevpage, nextfile: this.nextfile, prevfile: this.prevfile, setpage: this.setPage, db: this.state.db, toc: this.state.toc, genToc: this.genToc, syncToc: this.syncToc})
+          showtext({page: this.state.page, bodytext: this.state.bodytext, text: text, nextfile: this.nextfile, prevfile: this.prevfile, setpage: this.setPage, db: this.state.db, toc: this.state.toc})
           )
         )
       )
@@ -14977,7 +15025,7 @@ require.register("adarsha-showtext/index.js", function(exports, require, module)
 //var othercomponent=Require("other"); 
 var controls = React.createClass({displayName: 'controls',
   getInitialState: function() {
-    return {value: this.props.pagename};
+    return {};
   },
 
   gotoToc: function(){
@@ -14992,19 +15040,61 @@ var controls = React.createClass({displayName: 'controls',
 });
 
 var controlsFile = React.createClass({displayName: 'controlsFile',
- 
   getInitialState: function() {
-    return {value: this.props.pagename};
+    return {address:0};
   },
-  gotoToc: function(){
-    this.props.syncToc();       
+  filepage2vpos:function(file,page) {
+    var out=[];
+    if(!this.props.db) return 0;
+    var offsets=this.props.db.getFilePageOffsets(file);
+    var voff=offsets[page];
+    var n=this.findByVoff(voff);//toc裡的第幾項
+    var parents=this.enumAncestors(n) || 1;
+    for(var i=0; i<parents.length; i++){
+      out.push(this.props.toc[parents[i]].text);
+    }
+    return out.join("  >  ");
+  },
+  findByVoff: function(voff) {
+    if(!this.props.toc) return 0;
+    for (var i=0;i<this.props.toc.length;i++) {
+      var t=this.props.toc[i];
+      if (t.voff>voff) return i-1;
+    }
+    return 0; //return root node
+  },
+
+  enumAncestors: function(cur) {
+    var toc=this.props.toc;
+    if (!toc || !toc.length) return;
+    //var cur=this.state.cur;
+    if (cur==0) return [];
+    var n=cur-1;
+    var depth=toc[cur].depth - 1;
+    var parents=[];
+    while (n>=0 && depth>0) {
+      if (toc[n].depth==depth) {
+        parents.unshift(n);
+        depth--;
+      }
+      n--;
+    }
+    parents.unshift(0); //first ancestor is root node
+    return parents;
+  },
+  getAddress: function() {
+    var file=this.props.bodytext.file;
+    var page=this.props.page;
+    var res=this.filepage2vpos(file,page);
+   // this.setState({address:res});
+    return res;
   },
   render: function() {    
    return React.DOM.div(null, 
             "Bampo", 
             React.DOM.button({className: "btn btn-success", onClick: this.props.prev}, "←"), 
             React.DOM.button({className: "btn btn-success", onClick: this.props.next}, "→"), 
-            React.DOM.button({className: "btn btn-success", onClick: this.gotoToc}, "catalog")
+            React.DOM.span(null, this.getAddress())
           )
   }  
 });
@@ -15028,12 +15118,11 @@ var showtext = React.createClass({displayName: 'showtext',
   },
   render: function() {
 
-    var pn=this.props.pagename;
     var text=this.renderpb(this.props.text);
     return (
       React.DOM.div(null, 
-        controls({pagename: this.props.pagename, next: this.props.nextpage, prev: this.props.prevpage, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc, genToc: this.props.genToc, syncToc: this.props.syncToc}), 
-        controlsFile({filename: this.props.filename, pagename: this.props.pagename, next: this.props.nextfile, prev: this.props.prevfile, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc, genToc: this.props.genToc, syncToc: this.props.syncToc}), 
+        controls({next: this.props.nextpage, prev: this.props.prevpage, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc, genToc: this.props.genToc, syncToc: this.props.syncToc}), 
+        controlsFile({page: this.props.page, bodytext: this.props.bodytext, next: this.props.nextfile, prev: this.props.prevfile, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc}), 
 
         React.DOM.div({className: "text", dangerouslySetInnerHTML: {__html: text}})
       )
@@ -15180,6 +15269,9 @@ boot("adarsha","main","main");
 
 
 require.alias("ksanaforge-boot/index.js", "adarsha/deps/boot/index.js");
+require.alias("ksanaforge-boot/ksanagap.js", "adarsha/deps/boot/ksanagap.js");
+require.alias("ksanaforge-boot/downloader.js", "adarsha/deps/boot/downloader.js");
+require.alias("ksanaforge-boot/kfs.js", "adarsha/deps/boot/kfs.js");
 require.alias("ksanaforge-boot/index.js", "adarsha/deps/boot/index.js");
 require.alias("ksanaforge-boot/index.js", "boot/index.js");
 require.alias("ksanaforge-boot/index.js", "ksanaforge-boot/index.js");
