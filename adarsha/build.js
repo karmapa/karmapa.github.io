@@ -15109,7 +15109,7 @@ var showtext = React.createClass({displayName: 'showtext',
   renderpb: function(s){
     if(typeof s == "undefined") return "";
     s= s.replace(/<pb n="(.*?)">/g,function(m,m1){
-      var link='<a target="_new" href="../adarsha_img/#'+m1+'">'+'<img width=25 src="imageicon.png"/>'+'</a>';
+      var link='<a target="_new" href="http://karmapa.github.io/adarsha_img'+m1+'">'+'<img width=25 src="imageicon.png"/>'+'</a>';
 
       return "<br></br>"+m+link;
     });
