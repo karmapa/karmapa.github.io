@@ -7137,7 +7137,17 @@ td.visible-print {
 	float: left;
 	}
 
+
 a{color:#178918;}
+
+.header{background-color: #E0E0E0;
+	letter-spacing:8px;
+	font-size: 40px;
+	color: #8E8E8E;
+	font-family: Courier new;
+	margin-left: -10px;
+    margin-right: -10px;
+	height: 20%;}
 
 .tab-content , .text-content {height:100%;overflow-y:auto;}
 

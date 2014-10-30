@@ -207,13 +207,16 @@ require.register("ksanaforge-boot/index.js", function(exports, require, module){
 var ksana={"platform":"remote"};
 
 if (typeof process !="undefined") {
-
 	if (process.versions["node-webkit"]) {
-  	ksana.platform="node-webkit";
-  	window.ksanagap={platform:"node-webkit"};
-  	if (typeof nodeRequire!="undefined") ksana.require=nodeRequire;
-  }
+  		ksana.platform="node-webkit";
+			window.ksanagap=require("./ksanagap"); //compatible layer with mobile
+			window.kfs=require("./kfs");
+  		if (typeof nodeRequire!="undefined") ksana.require=nodeRequire;
+  	}
 } else if (typeof chrome!="undefined" && chrome.fileSystem){
+	window.ksanagap=require("./ksanagap"); //compatible layer with mobile
+	window.ksanagap.platform="chrome";
+	window.kfs=require("./kfs");
 	ksana.platform="chrome";
 }
 
@@ -230,6 +233,73 @@ var boot=function(appId,main,maindiv) {
 window.ksana=ksana;
 window.Require=Require;
 module.exports=boot;
+});
+require.register("ksanaforge-boot/ksanagap.js", function(exports, require, module){
+var ksanagap={
+	platform:"node-webkit",
+	downloader:require("./downloader"),
+}
+
+
+module.exports=ksanagap;
+});
+require.register("ksanaforge-boot/downloader.js", function(exports, require, module){
+var start=function(urls, target) { //return download id
+	
+}
+
+var cancel=function(downloadid) {
+	
+}
+
+var getStatus=function(downloadid) {
+	
+}
+
+var downloader={start:start, getStatus:getStatus, cancel:cancel};
+module.exports=downloader;
+});
+require.register("ksanaforge-boot/kfs.js", function(exports, require, module){
+//Simulate feature in ksanagap
+/* 
+  runs on node-webkit only
+*/
+
+var readDir=function(path) { //simulate Ksanagap function
+	var fs=nodeRequire("fs");
+	path=path||"..";
+	var dirs=[];
+	if (path[0]==".") {
+		if (path==".") dirs=fs.readdirSync(".");
+		else {
+			dirs=fs.readdirSync("..");
+		}
+	} else {
+		dirs=fs.readdirSync(path);
+	}
+
+	return dirs.join("\uffff");
+}
+var listApps=function() {
+	var fs=nodeRequire("fs");
+	var jsonfile=function(d) {return "../"+d+"/ksana.json"};
+	var dirs=fs.readdirSync("..").filter(function(d){
+				return fs.statSync("../"+d).isDirectory() && d[0]!="."
+				   && fs.existsSync(jsonfile(d));
+	});
+	
+	var out=dirs.map(function(d){
+		var obj= JSON.parse(fs.readFileSync(jsonfile(d),"utf8"));
+		obj.dbid=d;
+		obj.path=d;
+		return obj;
+	})
+	return out;
+}
+
+var kfs={readDir:readDir,listApps:listApps};
+
+module.exports=kfs;
 });
 require.register("brighthas-bootstrap/dist/js/bootstrap.js", function(exports, require, module){
 /*!
@@ -14520,8 +14590,8 @@ var controlBar = React.createClass({displayName: 'controlBar',
       React.DOM.div(null, 
         React.DOM.span({className: "recen"}, this.props.fromRecen), 
         sutraname({volpage: this.props.volpage}), 
-        React.DOM.button({className: "btn btn-success", onClick: this.props.prevpage}, "←"), 
-        React.DOM.button({className: "btn btn-success", onClick: this.props.nextpage}, "→")
+        React.DOM.a({href: "#", onClick: this.props.prevpage}, React.DOM.img({width: "25", src: "prev.png"})), 
+        React.DOM.a({href: "#", onClick: this.props.nextpage}, React.DOM.img({width: "25", src: "next.png"}))
       )
     );
   }
@@ -14646,9 +14716,10 @@ var recension = React.createClass({displayName: 'recension',
         return(
       React.DOM.div(null, 
         React.DOM.span({className: "recen"}, this.props.recen), 
+        
+        React.DOM.a({href: "#", onClick: this.goPrev}, React.DOM.img({width: "25", src: "prev.png"})), 
         React.DOM.span({ref: "pg"}, this.state.volpage_noPar), 
-        React.DOM.button({className: "btn btn-success", onClick: this.goPrev}, "←"), 
-        React.DOM.button({className: "btn btn-success", onClick: this.goNext}, "→"), 
+        React.DOM.a({href: "#", onClick: this.goNext}, React.DOM.img({width: "25", src: "next.png"})), 
         sutraimage({volpage: this.state.volpage, recen: this.state.recen})
       )
     );
@@ -26287,7 +26358,7 @@ var sutraimage = React.createClass({displayName: 'sutraimage',
     var recen=this.props.recen||"";
     return (
       React.DOM.div(null, 
-        React.DOM.img({src: this.renderImage(this.props.volpage,this.props.recen)})
+        React.DOM.img({width: "100%", src: this.renderImage(this.props.volpage,this.props.recen)})
       )
     );
   }
@@ -26360,6 +26431,9 @@ boot("pedurmacat","main","main");
 
 
 require.alias("ksanaforge-boot/index.js", "pedurmacat/deps/boot/index.js");
+require.alias("ksanaforge-boot/ksanagap.js", "pedurmacat/deps/boot/ksanagap.js");
+require.alias("ksanaforge-boot/downloader.js", "pedurmacat/deps/boot/downloader.js");
+require.alias("ksanaforge-boot/kfs.js", "pedurmacat/deps/boot/kfs.js");
 require.alias("ksanaforge-boot/index.js", "pedurmacat/deps/boot/index.js");
 require.alias("ksanaforge-boot/index.js", "boot/index.js");
 require.alias("ksanaforge-boot/index.js", "ksanaforge-boot/index.js");

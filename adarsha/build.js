@@ -14567,7 +14567,7 @@ var main = React.createClass({displayName: 'main',
     }
   },   
   genToc:function(texts,depths,voffs){
-    var out=[{depth:0,text:"Jiang Kangyur"}];
+    var out=[{depth:0,text:"འཇང་བཀའ་འགྱུར།"}];
     for(var i=0; i<texts.length; i++){
       out.push({text:texts[i],depth:depths[i],voff:voffs[i]});
     }
@@ -14647,6 +14647,13 @@ var main = React.createClass({displayName: 'main',
         console.log(this.state.bodytext);
     }
     return (
+  React.DOM.div({className: "row"}, 
+    React.DOM.div({className: "col-md-12"}, 
+      React.DOM.div({className: "header"}, 
+        React.DOM.img({width: "100px", src: "Treasure.png"}), "ADARSHA"
+
+      ), 
+
       React.DOM.div({className: "row"}, 
         React.DOM.div({className: "col-md-4"}, 
             React.DOM.ul({className: "nav nav-tabs", role: "tablist"}, 
@@ -14687,6 +14694,8 @@ var main = React.createClass({displayName: 'main',
           )
         )
       )
+    )
+  )
       );
     }
   }
@@ -15092,9 +15101,9 @@ var controlsFile = React.createClass({displayName: 'controlsFile',
   render: function() {    
    return React.DOM.div(null, 
             "Bampo", 
-            React.DOM.button({className: "btn btn-success", onClick: this.props.prev}, "←"), 
-            React.DOM.button({className: "btn btn-success", onClick: this.props.next}, "→"), 
-            React.DOM.span(null, this.getAddress())
+            React.DOM.a({href: "#", onClick: this.props.prev}, React.DOM.img({width: "25", src: "prev.png"})), 
+            React.DOM.a({href: "#", onClick: this.props.next}, React.DOM.img({width: "25", src: "next.png"})), 
+            React.DOM.br(null), React.DOM.span(null, this.getAddress())
           )
   }  
 });
@@ -15109,7 +15118,7 @@ var showtext = React.createClass({displayName: 'showtext',
   renderpb: function(s){
     if(typeof s == "undefined") return "";
     s= s.replace(/<pb n="(.*?)">/g,function(m,m1){
-      var link='<a target="_new" href="http://karmapa.github.io/adarsha_img#'+m1+'">'+'<img width=25 src="imageicon.png"/>'+'</a>';
+      var link='<a target="_new" href="../adarsha_img/#'+m1+'">'+'<img width=25 src="imageicon.png"/>'+'</a>';
 
       return "<br></br>"+m+link;
     });
