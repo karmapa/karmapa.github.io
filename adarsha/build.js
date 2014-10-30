@@ -14482,7 +14482,7 @@ var showtext=Require("showtext");
 var renderItem=Require("renderItem");
 var tibetan=Require("ksana-document").languages.tibetan; 
 var page2catalog=Require("page2catalog");
-var version="v0.0.28"
+var version="v0.0.30"
 var main = React.createClass({displayName: 'main',
   componentDidMount:function() {
     var that=this;
@@ -14617,8 +14617,6 @@ var main = React.createClass({displayName: 'main',
   nextfile:function() {
     var file=this.state.bodytext.file+1;
     var page=this.state.bodytext.page || 1;
-    var han=parseInt(this.state.bodytext.filename.substr(0,3));
-
     this.showPage(file,page,false);
     console.log(file,"next");
   },
@@ -14650,7 +14648,7 @@ var main = React.createClass({displayName: 'main',
   React.DOM.div({className: "row"}, 
     React.DOM.div({className: "col-md-12"}, 
       React.DOM.div({className: "header"}, 
-        React.DOM.img({width: "100px", src: "Treasure.png"}), "ADARSHA"
+        React.DOM.img({width: "100px", src: "http://karmapa.github.io/adarsha/Treasure.png"}), "ADARSHA"
 
       ), 
 
@@ -15101,8 +15099,8 @@ var controlsFile = React.createClass({displayName: 'controlsFile',
   render: function() {    
    return React.DOM.div(null, 
             "Bampo", 
-            React.DOM.a({href: "#", onClick: this.props.prev}, React.DOM.img({width: "25", src: "prev.png"})), 
-            React.DOM.a({href: "#", onClick: this.props.next}, React.DOM.img({width: "25", src: "next.png"})), 
+            React.DOM.a({href: "#", onClick: this.props.prev}, React.DOM.img({width: "25", src: "http://karmapa.github.io/adarsha/prev.png"})), 
+            React.DOM.a({href: "#", onClick: this.props.next}, React.DOM.img({width: "25", src: "http://karmapa.github.io/adarsha/next.png"})), 
             React.DOM.br(null), React.DOM.span(null, this.getAddress())
           )
   }  
@@ -15118,7 +15116,7 @@ var showtext = React.createClass({displayName: 'showtext',
   renderpb: function(s){
     if(typeof s == "undefined") return "";
     s= s.replace(/<pb n="(.*?)">/g,function(m,m1){
-      var link='<a target="_new" href="../adarsha_img/#'+m1+'">'+'<img width=25 src="imageicon.png"/>'+'</a>';
+      var link='<a target="_new" href="../adarsha_img/#'+m1+'">'+'<img width=25 src="http://karmapa.github.io/imageicon.png"/>'+'</a>';
 
       return "<br></br>"+m+link;
     });
@@ -15132,7 +15130,7 @@ var showtext = React.createClass({displayName: 'showtext',
       React.DOM.div(null, 
         controls({next: this.props.nextpage, prev: this.props.prevpage, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc, genToc: this.props.genToc, syncToc: this.props.syncToc}), 
         controlsFile({page: this.props.page, bodytext: this.props.bodytext, next: this.props.nextfile, prev: this.props.prevfile, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc}), 
-
+        React.DOM.br(null), 
         React.DOM.div({className: "text", dangerouslySetInnerHTML: {__html: text}})
       )
     );
