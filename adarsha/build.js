@@ -213,10 +213,10 @@ if (typeof process !="undefined") {
 			window.kfs=require("./kfs");
   		if (typeof nodeRequire!="undefined") ksana.require=nodeRequire;
   	}
-} else if (typeof chrome!="undefined" && chrome.fileSystem){
+} else if (typeof chrome!="undefined"){//} && chrome.fileSystem){
 	window.ksanagap=require("./ksanagap"); //compatible layer with mobile
 	window.ksanagap.platform="chrome";
-	window.kfs=require("./kfs");
+	window.kfs=require("./kfs_html5");
 	ksana.platform="chrome";
 }
 
@@ -235,28 +235,135 @@ window.Require=Require;
 module.exports=boot;
 });
 require.register("ksanaforge-boot/ksanagap.js", function(exports, require, module){
+var switchApp=function(path) {
+  process.chdir("../"+path);
+  document.location.href= "../"+path+"/index.html"; 
+}
+var downloader={};
+var rootPath="";
+if (typeof process!="undefined") {
+	downloader=require("./downloader");
+	rootPath=process.cwd();
+	rootPath=nodeRequire("path").resolve(rootPath,"..").replace(/\\/g,"/")+'/';
+}
 var ksanagap={
 	platform:"node-webkit",
-	downloader:require("./downloader"),
+	startDownload:downloader.startDownload,
+	downloadedByte:downloader.downloadedByte,
+	downloadingFile:downloader.downloadingFile,
+	cancelDownload:downloader.cancelDownload,
+	doneDownload:downloader.doneDownload,
+	switchApp:switchApp,
+	rootPath:rootPath
 }
 
 
 module.exports=ksanagap;
 });
 require.register("ksanaforge-boot/downloader.js", function(exports, require, module){
-var start=function(urls, target) { //return download id
-	
+if (typeof nodeRequire!="undefined"){
+	var http   = nodeRequire("http");
+	var fs     = nodeRequire("fs");
+	var path   = nodeRequire("path");
+	var mkdirp = require("./mkdirp");	
+}
+var userCancel=false;
+var files=[];
+var totalDownloadByte=0;
+var targetPath="";
+var tempPath="";
+var nfile=0;
+var baseurl="";
+var result="";
+var downloading=false;
+var startDownload=function(dbid,_baseurl,_files) { //return download id
+	files=_files.split("\uffff");
+	if (downloading) return false; //only one session
+	userCancel=false;
+	totalDownloadByte=0;
+	nextFile();
+	downloading=true;
+	baseurl=_baseurl;
+	targetPath=ksanagap.rootPath+dbid+'/';
+	tempPath=ksanagap.rootPath+".tmp/";
+	result="";
+	return true;
 }
 
-var cancel=function(downloadid) {
-	
+var nextFile=function() {
+	setTimeout(function(){
+		if (nfile==files.length) {
+			nfile++;
+			endDownload();
+		} else {
+			downloadFile(nfile++);	
+		}
+	},100);
 }
 
-var getStatus=function(downloadid) {
-	
+var downloadFile=function(nfile) {
+	var url=baseurl+files[nfile];
+	var tmpfilename=tempPath+files[nfile];
+
+	mkdirp.sync(path.dirname(tmpfilename));
+	var writeStream = fs.createWriteStream(tmpfilename);
+	var datalength=0;
+	var request = http.get(url, function(response) {
+		response.on('data',function(chunk){
+			writeStream.write(chunk);
+			datalength+=chunk.length;
+			totalDownloadByte+=datalength;
+			if (userCancel) {
+				writeStream.end();
+				setTimeout(function(){nextFile();},100);
+			}
+		});
+		response.on("end",function() {
+			writeStream.end();
+			setTimeout(function(){nextFile();},100);
+		});
+	});
 }
 
-var downloader={start:start, getStatus:getStatus, cancel:cancel};
+var cancelDownload=function() {
+	userCancel=true;
+	endDownload();
+}
+var verify=function() {
+	return true;
+}
+var endDownload=function() {
+	nfile=files.length+1;//stop
+	result="cancelled";
+	downloading=false;
+	if (userCancel) return;
+
+	for (var i=0;i<files.length;i++) {
+		var targetfilename=targetPath+files[i];
+		var tmpfilename   =tempPath+files[i];
+		mkdirp.sync(path.dirname(targetfilename));
+		fs.renameSync(tmpfilename,targetfilename);
+	}
+	if (verify()) {
+		result="success";
+	} else {
+		result="error";
+	}
+}
+
+var downloadedByte=function() {
+	return totalDownloadByte;
+}
+var doneDownload=function() {
+	if (nfile>files.length) return result;
+	else return "";
+}
+var downloadingFile=function() {
+	return nfile-1;
+}
+
+var downloader={startDownload:startDownload, downloadedByte:downloadedByte,
+	downloadingFile:downloadingFile, cancelDownload:cancelDownload,doneDownload:doneDownload};
 module.exports=downloader;
 });
 require.register("ksanaforge-boot/kfs.js", function(exports, require, module){
@@ -282,24 +389,123 @@ var readDir=function(path) { //simulate Ksanagap function
 }
 var listApps=function() {
 	var fs=nodeRequire("fs");
-	var jsonfile=function(d) {return "../"+d+"/ksana.json"};
+	var ksanajsfile=function(d) {return "../"+d+"/ksana.js"};
 	var dirs=fs.readdirSync("..").filter(function(d){
 				return fs.statSync("../"+d).isDirectory() && d[0]!="."
-				   && fs.existsSync(jsonfile(d));
+				   && fs.existsSync(ksanajsfile(d));
 	});
 	
 	var out=dirs.map(function(d){
-		var obj= JSON.parse(fs.readFileSync(jsonfile(d),"utf8"));
+		var content=fs.readFileSync(ksanajsfile(d),"utf8");
+  	content=content.replace("})","}");
+  	content=content.replace("jsonp_handler(","");
+		var obj= JSON.parse(content);
 		obj.dbid=d;
 		obj.path=d;
 		return obj;
 	})
-	return out;
+	return JSON.stringify(out);
 }
 
 var kfs={readDir:readDir,listApps:listApps};
 
 module.exports=kfs;
+});
+require.register("ksanaforge-boot/kfs_html5.js", function(exports, require, module){
+var readDir=function(){
+	return [];
+}
+var listApps=function(){
+	return [];
+}
+module.exports={readDir:readDir,listApps:listApps};
+});
+require.register("ksanaforge-boot/mkdirp.js", function(exports, require, module){
+function mkdirP (p, mode, f, made) {
+     var path = nodeRequire('path');
+     var fs = nodeRequire('fs');
+	
+    if (typeof mode === 'function' || mode === undefined) {
+        f = mode;
+        mode = 0x1FF & (~process.umask());
+    }
+    if (!made) made = null;
+
+    var cb = f || function () {};
+    if (typeof mode === 'string') mode = parseInt(mode, 8);
+    p = path.resolve(p);
+
+    fs.mkdir(p, mode, function (er) {
+        if (!er) {
+            made = made || p;
+            return cb(null, made);
+        }
+        switch (er.code) {
+            case 'ENOENT':
+                mkdirP(path.dirname(p), mode, function (er, made) {
+                    if (er) cb(er, made);
+                    else mkdirP(p, mode, cb, made);
+                });
+                break;
+
+            // In the case of any other error, just see if there's a dir
+            // there already.  If so, then hooray!  If not, then something
+            // is borked.
+            default:
+                fs.stat(p, function (er2, stat) {
+                    // if the stat fails, then that's super weird.
+                    // let the original error be the failure reason.
+                    if (er2 || !stat.isDirectory()) cb(er, made)
+                    else cb(null, made);
+                });
+                break;
+        }
+    });
+}
+
+mkdirP.sync = function sync (p, mode, made) {
+    var path = nodeRequire('path');
+    var fs = nodeRequire('fs');
+    if (mode === undefined) {
+        mode = 0x1FF & (~process.umask());
+    }
+    if (!made) made = null;
+
+    if (typeof mode === 'string') mode = parseInt(mode, 8);
+    p = path.resolve(p);
+
+    try {
+        fs.mkdirSync(p, mode);
+        made = made || p;
+    }
+    catch (err0) {
+        switch (err0.code) {
+            case 'ENOENT' :
+                made = sync(path.dirname(p), mode, made);
+                sync(p, mode, made);
+                break;
+
+            // In the case of any other error, just see if there's a dir
+            // there already.  If so, then hooray!  If not, then something
+            // is borked.
+            default:
+                var stat;
+                try {
+                    stat = fs.statSync(p);
+                }
+                catch (err1) {
+                    throw err0;
+                }
+                if (!stat.isDirectory()) throw err0;
+                break;
+        }
+    }
+
+    return made;
+};
+
+module.exports = mkdirP.mkdirp = mkdirP.mkdirP = mkdirP;
+
 });
 require.register("brighthas-bootstrap/dist/js/bootstrap.js", function(exports, require, module){
 /*!
@@ -14685,7 +14891,7 @@ var main = React.createClass({displayName: 'main',
               )
             )
         ), 
-
+       
         React.DOM.div({className: "col-md-8 "}, 
           React.DOM.div({className: "text text-content", ref: "text-content"}, 
           showtext({page: this.state.page, bodytext: this.state.bodytext, text: text, nextfile: this.nextfile, prevfile: this.prevfile, setpage: this.setPage, db: this.state.db, toc: this.state.toc})
@@ -15279,6 +15485,8 @@ require.alias("ksanaforge-boot/index.js", "adarsha/deps/boot/index.js");
 require.alias("ksanaforge-boot/ksanagap.js", "adarsha/deps/boot/ksanagap.js");
 require.alias("ksanaforge-boot/downloader.js", "adarsha/deps/boot/downloader.js");
 require.alias("ksanaforge-boot/kfs.js", "adarsha/deps/boot/kfs.js");
+require.alias("ksanaforge-boot/kfs_html5.js", "adarsha/deps/boot/kfs_html5.js");
+require.alias("ksanaforge-boot/mkdirp.js", "adarsha/deps/boot/mkdirp.js");
 require.alias("ksanaforge-boot/index.js", "adarsha/deps/boot/index.js");
 require.alias("ksanaforge-boot/index.js", "boot/index.js");
 require.alias("ksanaforge-boot/index.js", "ksanaforge-boot/index.js");
