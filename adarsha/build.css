@@ -7135,8 +7135,8 @@ td.visible-print {
 .col-md-4{
 	line-height: 36px;
 	float: left;
+	border-right: 2px solid #ccc;
 	}
-
 
 a{color:#178918;}
 
@@ -7147,13 +7147,14 @@ a{color:#178918;}
 	font-family: Courier new;
 	margin-left: -10px;
     margin-right: -10px;
-	height: 20%;}
+	}
 
 .tab-content , .text-content {height:100%;overflow-y:auto;}
 
 .row {
     margin-left: 0px;
     margin-right: 0px;
+    margin-bottom: 0px;
     width:99.99%;
 }
 .comp1 {}
@@ -7191,3 +7192,7 @@ hl[n="2"]{color: green;}
 .renderinputs {}
 .page2catalog {}
 #main {}
+
+
+@font-face { font-family: 'tibetan1'; font-style: normal; font-weight: normal; src: url("fonts/TibMachUni-1.901.woff"); }
+.text , .tocitem {font-family: 'tibetan1';text-decoration: none;cursor:pointer;}

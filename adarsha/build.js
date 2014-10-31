@@ -213,10 +213,10 @@ if (typeof process !="undefined") {
 			window.kfs=require("./kfs");
   		if (typeof nodeRequire!="undefined") ksana.require=nodeRequire;
   	}
-} else if (typeof chrome!="undefined" && chrome.fileSystem){
+} else if (typeof chrome!="undefined"){//} && chrome.fileSystem){
 	window.ksanagap=require("./ksanagap"); //compatible layer with mobile
 	window.ksanagap.platform="chrome";
-	window.kfs=require("./kfs");
+	window.kfs=require("./kfs_html5");
 	ksana.platform="chrome";
 }
 
@@ -235,28 +235,135 @@ window.Require=Require;
 module.exports=boot;
 });
 require.register("ksanaforge-boot/ksanagap.js", function(exports, require, module){
+var switchApp=function(path) {
+  process.chdir("../"+path);
+  document.location.href= "../"+path+"/index.html"; 
+}
+var downloader={};
+var rootPath="";
+if (typeof process!="undefined") {
+	downloader=require("./downloader");
+	rootPath=process.cwd();
+	rootPath=nodeRequire("path").resolve(rootPath,"..").replace(/\\/g,"/")+'/';
+}
 var ksanagap={
 	platform:"node-webkit",
-	downloader:require("./downloader"),
+	startDownload:downloader.startDownload,
+	downloadedByte:downloader.downloadedByte,
+	downloadingFile:downloader.downloadingFile,
+	cancelDownload:downloader.cancelDownload,
+	doneDownload:downloader.doneDownload,
+	switchApp:switchApp,
+	rootPath:rootPath
 }
 
 
 module.exports=ksanagap;
 });
 require.register("ksanaforge-boot/downloader.js", function(exports, require, module){
-var start=function(urls, target) { //return download id
-	
+if (typeof nodeRequire!="undefined"){
+	var http   = nodeRequire("http");
+	var fs     = nodeRequire("fs");
+	var path   = nodeRequire("path");
+	var mkdirp = require("./mkdirp");	
+}
+var userCancel=false;
+var files=[];
+var totalDownloadByte=0;
+var targetPath="";
+var tempPath="";
+var nfile=0;
+var baseurl="";
+var result="";
+var downloading=false;
+var startDownload=function(dbid,_baseurl,_files) { //return download id
+	files=_files.split("\uffff");
+	if (downloading) return false; //only one session
+	userCancel=false;
+	totalDownloadByte=0;
+	nextFile();
+	downloading=true;
+	baseurl=_baseurl;
+	targetPath=ksanagap.rootPath+dbid+'/';
+	tempPath=ksanagap.rootPath+".tmp/";
+	result="";
+	return true;
 }
 
-var cancel=function(downloadid) {
-	
+var nextFile=function() {
+	setTimeout(function(){
+		if (nfile==files.length) {
+			nfile++;
+			endDownload();
+		} else {
+			downloadFile(nfile++);	
+		}
+	},100);
 }
 
-var getStatus=function(downloadid) {
-	
+var downloadFile=function(nfile) {
+	var url=baseurl+files[nfile];
+	var tmpfilename=tempPath+files[nfile];
+
+	mkdirp.sync(path.dirname(tmpfilename));
+	var writeStream = fs.createWriteStream(tmpfilename);
+	var datalength=0;
+	var request = http.get(url, function(response) {
+		response.on('data',function(chunk){
+			writeStream.write(chunk);
+			datalength+=chunk.length;
+			totalDownloadByte+=datalength;
+			if (userCancel) {
+				writeStream.end();
+				setTimeout(function(){nextFile();},100);
+			}
+		});
+		response.on("end",function() {
+			writeStream.end();
+			setTimeout(function(){nextFile();},100);
+		});
+	});
 }
 
-var downloader={start:start, getStatus:getStatus, cancel:cancel};
+var cancelDownload=function() {
+	userCancel=true;
+	endDownload();
+}
+var verify=function() {
+	return true;
+}
+var endDownload=function() {
+	nfile=files.length+1;//stop
+	result="cancelled";
+	downloading=false;
+	if (userCancel) return;
+
+	for (var i=0;i<files.length;i++) {
+		var targetfilename=targetPath+files[i];
+		var tmpfilename   =tempPath+files[i];
+		mkdirp.sync(path.dirname(targetfilename));
+		fs.renameSync(tmpfilename,targetfilename);
+	}
+	if (verify()) {
+		result="success";
+	} else {
+		result="error";
+	}
+}
+
+var downloadedByte=function() {
+	return totalDownloadByte;
+}
+var doneDownload=function() {
+	if (nfile>files.length) return result;
+	else return "";
+}
+var downloadingFile=function() {
+	return nfile-1;
+}
+
+var downloader={startDownload:startDownload, downloadedByte:downloadedByte,
+	downloadingFile:downloadingFile, cancelDownload:cancelDownload,doneDownload:doneDownload};
 module.exports=downloader;
 });
 require.register("ksanaforge-boot/kfs.js", function(exports, require, module){
@@ -282,24 +389,123 @@ var readDir=function(path) { //simulate Ksanagap function
 }
 var listApps=function() {
 	var fs=nodeRequire("fs");
-	var jsonfile=function(d) {return "../"+d+"/ksana.json"};
+	var ksanajsfile=function(d) {return "../"+d+"/ksana.js"};
 	var dirs=fs.readdirSync("..").filter(function(d){
 				return fs.statSync("../"+d).isDirectory() && d[0]!="."
-				   && fs.existsSync(jsonfile(d));
+				   && fs.existsSync(ksanajsfile(d));
 	});
 	
 	var out=dirs.map(function(d){
-		var obj= JSON.parse(fs.readFileSync(jsonfile(d),"utf8"));
+		var content=fs.readFileSync(ksanajsfile(d),"utf8");
+  	content=content.replace("})","}");
+  	content=content.replace("jsonp_handler(","");
+		var obj= JSON.parse(content);
 		obj.dbid=d;
 		obj.path=d;
 		return obj;
 	})
-	return out;
+	return JSON.stringify(out);
 }
 
 var kfs={readDir:readDir,listApps:listApps};
 
 module.exports=kfs;
+});
+require.register("ksanaforge-boot/kfs_html5.js", function(exports, require, module){
+var readDir=function(){
+	return [];
+}
+var listApps=function(){
+	return [];
+}
+module.exports={readDir:readDir,listApps:listApps};
+});
+require.register("ksanaforge-boot/mkdirp.js", function(exports, require, module){
+function mkdirP (p, mode, f, made) {
+     var path = nodeRequire('path');
+     var fs = nodeRequire('fs');
+	
+    if (typeof mode === 'function' || mode === undefined) {
+        f = mode;
+        mode = 0x1FF & (~process.umask());
+    }
+    if (!made) made = null;
+
+    var cb = f || function () {};
+    if (typeof mode === 'string') mode = parseInt(mode, 8);
+    p = path.resolve(p);
+
+    fs.mkdir(p, mode, function (er) {
+        if (!er) {
+            made = made || p;
+            return cb(null, made);
+        }
+        switch (er.code) {
+            case 'ENOENT':
+                mkdirP(path.dirname(p), mode, function (er, made) {
+                    if (er) cb(er, made);
+                    else mkdirP(p, mode, cb, made);
+                });
+                break;
+
+            // In the case of any other error, just see if there's a dir
+            // there already.  If so, then hooray!  If not, then something
+            // is borked.
+            default:
+                fs.stat(p, function (er2, stat) {
+                    // if the stat fails, then that's super weird.
+                    // let the original error be the failure reason.
+                    if (er2 || !stat.isDirectory()) cb(er, made)
+                    else cb(null, made);
+                });
+                break;
+        }
+    });
+}
+
+mkdirP.sync = function sync (p, mode, made) {
+    var path = nodeRequire('path');
+    var fs = nodeRequire('fs');
+    if (mode === undefined) {
+        mode = 0x1FF & (~process.umask());
+    }
+    if (!made) made = null;
+
+    if (typeof mode === 'string') mode = parseInt(mode, 8);
+    p = path.resolve(p);
+
+    try {
+        fs.mkdirSync(p, mode);
+        made = made || p;
+    }
+    catch (err0) {
+        switch (err0.code) {
+            case 'ENOENT' :
+                made = sync(path.dirname(p), mode, made);
+                sync(p, mode, made);
+                break;
+
+            // In the case of any other error, just see if there's a dir
+            // there already.  If so, then hooray!  If not, then something
+            // is borked.
+            default:
+                var stat;
+                try {
+                    stat = fs.statSync(p);
+                }
+                catch (err1) {
+                    throw err0;
+                }
+                if (!stat.isDirectory()) throw err0;
+                break;
+        }
+    }
+
+    return made;
+};
+
+module.exports = mkdirP.mkdirp = mkdirP.mkdirP = mkdirP;
+
 });
 require.register("brighthas-bootstrap/dist/js/bootstrap.js", function(exports, require, module){
 /*!
@@ -2325,19 +2531,22 @@ require.register("ksana-document/index.js", function(exports, require, module){
 	,underlines:require("./underlines")
 }
 if (typeof process!="undefined") {
-	API.persistent=require('./persistent');
-	API.indexer_kd=require('./indexer_kd');
-	API.indexer=require('./indexer');
-	API.projects=require('./projects');
-	//API.kdb=require('./kdb');  // file format
-	API.kdbw=require('./kdbw');  // create ydb
-	API.xml4kdb=require('./xml4kdb');  
-	API.build=require("./buildfromxml");
-	API.tei=require("./tei");
-	API.regex=require("./regex");
-	API.setPath=function(path) {
-		console.log("API set path ",path)
-		API.kde.setPath(path);
+	if (typeof process.versions!="undefined" 
+		  && typeof process.versions["node-webkit"]=="undefined") {
+		API.persistent=require('./persistent');
+		API.indexer_kd=require('./indexer_kd');
+		API.indexer=require('./indexer');
+		API.projects=require('./projects');
+		//API.kdb=require('./kdb');  // file format
+		API.kdbw=require('./kdbw');  // create ydb
+		API.xml4kdb=require('./xml4kdb');  
+		API.build=require("./buildfromxml");
+		API.tei=require("./tei");
+		API.regex=require("./regex");
+		API.setPath=function(path) {
+			console.log("API set path ",path)
+			API.kde.setPath(path);
+		}		
 	}
 }
 module.exports=API;
@@ -3223,7 +3432,6 @@ require.register("ksana-document/api.js", function(exports, require, module){
 if (typeof nodeRequire=='undefined') var nodeRequire=(typeof ksana=="undefined")?require:ksana.require;
 var appPath=""; //for servermode
 var getProjectPath=function(p) {
-  debugger;
   var path=nodeRequire('path');
   return path.resolve(p.filename);
 };
@@ -4429,8 +4637,22 @@ var processTags=function(captureTags,tags,texts) {
 	}
 	for (var i=0;i<tags.length;i++) {
 		for (var j=0;j<tags[i].length;j++) {
-			var T=tags[i][j],tagname=T[1],tagoffset=T[0],attributes=T[2],tagvpos=T[3];	
-			var nulltag=attributes[attributes.length-1]=='/';
+			var T=tags[i][j],tagname=T[1],tagoffset=T[0],attributes=T[2],tagvpos=T[3];
+			var lastchar=attributes[attributes.length-1];
+			var nulltag=false;
+			if (typeof lastchar!="undefined") {
+				if (lastchar=="/") {
+					nulltag=true;
+				} else {
+					var lastcc=lastchar.charCodeAt(0);
+					if (!(lastchar=='"' ||lastchar=='-'|| (lastcc>0x40 && lastcc<0x7b))) {
+						console.error("error lastchar of tag ("+lastchar+")");
+						console.error("in <"+tagname,attributes+"> of",status.filename)	;
+						throw 'last char of should be / " or ascii ';
+					}
+				}
+			}
+
 			if (captureTags[tagname]) {
 				var attr=parseAttributesString(attributes);
 				if (!nulltag) {
@@ -4927,6 +5149,10 @@ if (typeof ksanagap=="undefined") {
 } else {
 	if (ksanagap.platform=="ios") {
 		Kfs=require("./kdbfs_ios");
+	} else if (ksanagap.platform=="node-webkit") {
+		Kfs=require("./kdbfs");
+	} else if (ksanagap.platform=="chrome") {
+		Kfs=require("./kdbfs");
 	} else {
 		Kfs=require("./kdbfs_android");
 	}
@@ -6201,8 +6427,8 @@ require.register("ksana-document/kdb_sync.js", function(exports, require, module
 var Kfs=require('./kdbfs_sync');
 
 var Sync=function(kdb) {
-	DT=kdb.DT;
-	kfs=Kfs(kdb.fs);
+	var DT=kdb.DT;
+	var kfs=Kfs(kdb.fs);
 	var cur=0;
 	/* loadxxx functions move file pointer */
 	// load variable length int
@@ -6425,8 +6651,9 @@ if (module) module.exports=Sync;
 });
 require.register("ksana-document/kdbfs_sync.js", function(exports, require, module){
 /* OS dependent file operation */
+if (typeof nodeRequire=='undefined') var nodeRequire=(typeof ksana=="undefined")?require:ksana.require;
 
-var fs=require('fs');
+var fs=nodeRequire('fs');
 var signature_size=1;
 
 var unpack_int = function (ar, count , reset) {
@@ -6776,14 +7003,14 @@ function errorHandler(e) {
   console.error('Error: ' +e.name+ " "+e.message);
 }
 var initfs=function(grantedBytes,cb,context) {
-      webkitRequestFileSystem(PERSISTENT, grantedBytes,  function(fs) {
-      API.fs=fs;
-      API.quota=grantedBytes;
-      readdir(function(){
-        API.initialized=true;
-        cb.apply(context,[grantedBytes,fs]);
-      },context);
-    }, errorHandler);
+  webkitRequestFileSystem(PERSISTENT, grantedBytes,  function(fs) {
+    API.fs=fs;
+    API.quota=grantedBytes;
+    readdir(function(){
+      API.initialized=true;
+      cb.apply(context,[grantedBytes,fs]);
+    },context);
+  }, errorHandler);
 }
 var init=function(quota,cb,context) {
   navigator.webkitPersistentStorage.requestQuota(quota, 
@@ -7613,7 +7840,36 @@ var openLocalNode=function(kdbid,cb,context) {
 			return engine;
 		}
 	}
-	if (cb) cb(null);
+	if (cb) cb.apply(context,[null]);
+	return null;
+}
+var openLocalNodeWebkit=function(kdbid,cb,context) {
+	var fs=nodeRequire('fs');
+	var engine=localPool[kdbid];
+	if (engine) {
+		if (cb) cb.apply(context||engine.context,[engine]);
+		return engine;
+	}
+
+	var Kdb=Require('ksana-document').kdb;
+	var kdbfn=kdbid;
+	if (kdbfn.indexOf(".kdb")==-1) kdbfn+=".kdb";
+
+	var tries=getLocalTries(kdbfn);
+
+	for (var i=0;i<tries.length;i++) {
+		if (fs.existsSync(tries[i])) {
+			//console.log("kdb path: "+nodeRequire('path').resolve(tries[i]));
+			new Kdb(tries[i],function(kdb){
+				createLocalEngine(kdb,function(engine){
+						localPool[kdbid]=engine;
+						cb.apply(context||engine.context,[engine]);
+				},context);
+			});
+			return engine;
+		}
+	}
+	if (cb) cb.apply(context,[null]);
 	return null;
 }
 
@@ -7645,7 +7901,9 @@ var openLocal=function(kdbid,cb,context)  {
 		}		
 	} else {
 		if (ksanagap.platform=="node-webkit") {
-			openLocalNode(kdbid,cb,context);
+			openLocalNodeWebkit(kdbid,cb,context);
+		} else if (ksanagap.platform=="chrome") {
+			openLocalHtml5(kdbid,cb,context);
 		} else {
 			openLocalKsanagap(kdbid,cb,context);	
 		}
@@ -13197,7 +13455,7 @@ var startindexer=function(mkdbconfig) {
   }
   var getstatus=function() {
     var status=indexer.status();
-    outback((Math.floor(status.progress*1000)/10)+'%'+status.message);
+    console.log((Math.floor(status.progress*1000)/10)+'%');
     if (status.done) {
       var endtime=new Date();
       console.log("END",endtime, "elapse",(endtime-starttime) /1000,"seconds") ;
@@ -13391,7 +13649,6 @@ var parseP5=function(xml,parsed,fn,_config,_status) {
 		xml=config.callbacks.beforeParseTag(xml);
 	}
 	parser.write(xml);
-	debugger;
 	context=null;
 	parser=null;
 	if (parsed) return createMarkups(parsed);
@@ -14134,7 +14391,7 @@ var filemanager = React.createClass({displayName: 'filemanager',
 		return parseInt(q) * times;
 	},
 	missingKdb:function() {
-		if (typeof ksanagap!="undefined") return [];
+		if (ksanagap.platform!="chrome") return [];
 		var missing=this.props.needed.filter(function(kdb){
 			for (var i in html5fs.files) {
 				if (html5fs.files[i][0]==kdb.filename) return false;
@@ -14169,7 +14426,7 @@ var filemanager = React.createClass({displayName: 'filemanager',
 	  },this);
 	},
 	onQuoteOk:function(quota,usage) {
-		if (typeof ksanagap!="undefined") {
+		if (ksanagap.platform!="chrome") {
 			//console.log("onquoteok");
 			this.setState({noupdate:true,missing:[],files:[],autoclose:true
 				,quota:quota,remain:quota-usage,usage:usage});
@@ -14421,7 +14678,7 @@ var htmlfs = React.createClass({displayName: 'htmlfs',
 		},0);
 	},
 	queryQuota:function() {
-		if (typeof ksanagap=="undefined") {
+		if (ksanagap.platform=="chrome") {
 			html5fs.queryQuota(function(usage,quota){
 				this.setState({usage:usage,quota:quota,initialized:true});
 			},this);			
@@ -14482,7 +14739,7 @@ var showtext=Require("showtext");
 var renderItem=Require("renderItem");
 var tibetan=Require("ksana-document").languages.tibetan; 
 var page2catalog=Require("page2catalog");
-var version="v0.0.30"
+var version="v0.0.31"
 var main = React.createClass({displayName: 'main',
   componentDidMount:function() {
     var that=this;
@@ -14670,7 +14927,7 @@ var main = React.createClass({displayName: 'main',
                 
                 renderItem({data: this.state.toc_result, gotopage: this.gotopage, tofind_toc: this.state.tofind_toc})
               ), 
-
+ 
               React.DOM.div({className: "tab-pane fade", id: "SearchText"}, 
                 this.renderinputs("text"), 
                 
@@ -14684,6 +14941,7 @@ var main = React.createClass({displayName: 'main',
                 React.DOM.span(null, this.state.elapse)
               )
             )
+               
         ), 
 
         React.DOM.div({className: "col-md-8 "}, 
@@ -15108,17 +15366,37 @@ var controlsFile = React.createClass({displayName: 'controlsFile',
 
 var showtext = React.createClass({displayName: 'showtext',
   getInitialState: function() {
-    return {bar: "world"};
+    return {bar: "world", pageImg:""};
   },
   hitClick: function(n){
     if(this.props.showExcerpt) this.props.showExcerpt(n);
   },
-  renderpb: function(s){
-    if(typeof s == "undefined") return "";
-    s= s.replace(/<pb n="(.*?)">/g,function(m,m1){
-      var link='<a target="_new" href="../adarsha_img/#'+m1+'">'+'<img width=25 src="http://karmapa.github.io/imageicon.png"/>'+'</a>';
+  renderPageImg: function(e) {
+    var pb=e.target.dataset.pb;
+    if (pb) this.setState({clickedpb:pb});
+    var img=e.target.dataset.img;
+    if (img) this.setState({clickedpb:null});
+  },
+  getImgName: function(volpage) {
+    var p=volpage.split(".");
+    var v="000"+p[0];
+    var vol=v.substr(v.length-3,v.length);
+    var pa="000"+p[1].substr(0,p[1].length-1);
+    var page=pa.substr(pa.length-3,pa.length);
+    var side=p[1].substr(p[1].length-1);
 
-      return "<br></br>"+m+link;
+    return vol+"/"+vol+"-"+page+side;
+  },
+  renderpb: function(s){
+    var that=this;
+    if(typeof s == "undefined") return "";
+    s= s.replace(/<pb n="(.*?)"><\/pb>/g,function(m,m1){
+      var link='<br></br><a href="#" data-pb="'+m1+'">'+m1+'<img width="25" src="imageicon.png"/></a>';
+      if(m1 == that.state.clickedpb){
+        var imgName=that.getImgName(m1);
+        link='<br></br>'+m1+'<img data-img="'+m1+'" width="100%" src="http://dharma-treasure.org/kangyur_images/lijiang/'+imgName+'.jpg"/>';
+      }
+      return link;
     });
     
   return s;
@@ -15131,7 +15409,7 @@ var showtext = React.createClass({displayName: 'showtext',
         controls({next: this.props.nextpage, prev: this.props.prevpage, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc, genToc: this.props.genToc, syncToc: this.props.syncToc}), 
         controlsFile({page: this.props.page, bodytext: this.props.bodytext, next: this.props.nextfile, prev: this.props.prevfile, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc}), 
         React.DOM.br(null), 
-        React.DOM.div({className: "text", dangerouslySetInnerHTML: {__html: text}})
+        React.DOM.div({onClick: this.renderPageImg, className: "text", dangerouslySetInnerHTML: {__html: text}})
       )
     );
   }
@@ -15279,6 +15557,8 @@ require.alias("ksanaforge-boot/index.js", "adarsha/deps/boot/index.js");
 require.alias("ksanaforge-boot/ksanagap.js", "adarsha/deps/boot/ksanagap.js");
 require.alias("ksanaforge-boot/downloader.js", "adarsha/deps/boot/downloader.js");
 require.alias("ksanaforge-boot/kfs.js", "adarsha/deps/boot/kfs.js");
+require.alias("ksanaforge-boot/kfs_html5.js", "adarsha/deps/boot/kfs_html5.js");
+require.alias("ksanaforge-boot/mkdirp.js", "adarsha/deps/boot/mkdirp.js");
 require.alias("ksanaforge-boot/index.js", "adarsha/deps/boot/index.js");
 require.alias("ksanaforge-boot/index.js", "boot/index.js");
 require.alias("ksanaforge-boot/index.js", "ksanaforge-boot/index.js");
