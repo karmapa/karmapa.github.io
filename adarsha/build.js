@@ -14910,7 +14910,7 @@ var main = React.createClass({displayName: 'main',
       ), 
 
       React.DOM.div({className: "row"}, 
-        React.DOM.div({className: "col-md-4"}, 
+        React.DOM.div({className: "col-md-3"}, 
             React.DOM.ul({className: "nav nav-tabs", role: "tablist"}, 
               React.DOM.li({className: "active"}, React.DOM.a({href: "#Catalog", role: "tab", 'data-toggle': "tab"}, "Catalog")), 
               React.DOM.li(null, React.DOM.a({href: "#SearchTitle", role: "tab", 'data-toggle': "tab"}, "Title Search")), 
@@ -14944,7 +14944,7 @@ var main = React.createClass({displayName: 'main',
                
         ), 
 
-        React.DOM.div({className: "col-md-8 "}, 
+        React.DOM.div({className: "col-md-9 "}, 
           React.DOM.div({className: "text text-content", ref: "text-content"}, 
           showtext({page: this.state.page, bodytext: this.state.bodytext, text: text, nextfile: this.nextfile, prevfile: this.prevfile, setpage: this.setPage, db: this.state.db, toc: this.state.toc})
           )

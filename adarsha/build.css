@@ -7132,7 +7132,7 @@ td.visible-print {
 	font-family: ctrc-uchen;
 	}
 
-.col-md-4{
+.col-md-3{
 	line-height: 36px;
 	float: left;
 	border-right: 2px solid #ccc;
@@ -7155,6 +7155,8 @@ a{color:#178918;}
     margin-left: 0px;
     margin-right: 0px;
     margin-bottom: 0px;
+    padding-left: -10px;
+    padding-right: -10px;
     width:99.99%;
 }
 .comp1 {}
