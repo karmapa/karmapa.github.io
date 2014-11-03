@@ -14751,7 +14751,7 @@ var main = React.createClass({displayName: 'main',
   },
   componentDidUpdate:function()  {
     var ch=document.documentElement.clientHeight;
-    var banner=68;
+    var banner=82;
     this.refs["text-content"].getDOMNode().style.height=ch-banner+"px";
     this.refs["tab-content"].getDOMNode().style.height=(ch-banner-40)+"px";
   },  
@@ -14904,12 +14904,13 @@ var main = React.createClass({displayName: 'main',
   React.DOM.div({className: "row"}, 
     React.DOM.div({className: "col-md-12"}, 
       React.DOM.div({className: "header"}, 
-        React.DOM.img({width: "100px", src: "banner/treasure.png"}), "ADARSHA"
+        "  ", React.DOM.img({height: "80px", src: "banner/banner-01.png"})
 
       ), 
 
       React.DOM.div({className: "row"}, 
         React.DOM.div({className: "col-md-3"}, 
+          React.DOM.div({className: "borderright"}, 
             React.DOM.ul({className: "nav nav-tabs", role: "tablist"}, 
               React.DOM.li({className: "active"}, React.DOM.a({href: "#Catalog", role: "tab", 'data-toggle': "tab"}, "Catalog")), 
               React.DOM.li(null, React.DOM.a({href: "#SearchTitle", role: "tab", 'data-toggle': "tab"}, "Title Search")), 
@@ -14940,10 +14941,10 @@ var main = React.createClass({displayName: 'main',
                 React.DOM.span(null, this.state.elapse)
               )
             )
-               
+          )
         ), 
 
-        React.DOM.div({className: "col-md-9 "}, 
+        React.DOM.div({className: "col-md-9"}, 
           React.DOM.div({className: "text text-content", ref: "text-content"}, 
           showtext({page: this.state.page, bodytext: this.state.bodytext, text: text, nextfile: this.nextfile, prevfile: this.prevfile, setpage: this.setPage, db: this.state.db, toc: this.state.toc})
           )
@@ -15358,7 +15359,7 @@ var controlsFile = React.createClass({displayName: 'controlsFile',
             "Bampo", 
             React.DOM.a({href: "#", onClick: this.props.prev}, React.DOM.img({width: "25", src: "banner/prev.png"})), 
             React.DOM.a({href: "#", onClick: this.props.next}, React.DOM.img({width: "25", src: "banner/next.png"})), 
-            React.DOM.br(null), React.DOM.span(null, this.getAddress())
+            React.DOM.br(null), React.DOM.span({id: "address"}, this.getAddress())
           )
   }  
 });
@@ -15408,7 +15409,7 @@ var showtext = React.createClass({displayName: 'showtext',
         controls({next: this.props.nextpage, prev: this.props.prevpage, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc, genToc: this.props.genToc, syncToc: this.props.syncToc}), 
         controlsFile({page: this.props.page, bodytext: this.props.bodytext, next: this.props.nextfile, prev: this.props.prevfile, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc}), 
         React.DOM.br(null), 
-        React.DOM.div({onClick: this.renderPageImg, className: "text", dangerouslySetInnerHTML: {__html: text}})
+        React.DOM.div({onClick: this.renderPageImg, className: "pagetext", dangerouslySetInnerHTML: {__html: text}})
       )
     );
   }
