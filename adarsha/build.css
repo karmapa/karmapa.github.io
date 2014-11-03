@@ -7130,13 +7130,22 @@ td.visible-print {
 
 .text {
 	font-family: ctrc-uchen;
+	padding-top:10px; 
+	padding-right:20px;
 	}
 
 .col-md-3{
 	line-height: 36px;
 	float: left;
-	border-right: 2px solid #ccc;
 	}
+.col-md-9{
+    padding-right: 0;	
+}
+.borderright{
+	border-right: 2px solid #ccc;
+	height: 50%;
+
+}
 
 a{color:#178918;}
 
@@ -7145,8 +7154,8 @@ a{color:#178918;}
 	font-size: 40px;
 	color: #8E8E8E;
 	font-family: Courier new;
-	margin-left: -10px;
-    margin-right: -10px;
+	margin-left: -18px;
+    margin-right: -18px;
 	}
 
 .tab-content , .text-content {height:100%;overflow-y:auto;}
@@ -7178,12 +7187,14 @@ div.child span.text:hover {text-decoration:underline;cursor:pointer;color:#85BB6
 .tocitem {text-decoration: none;cursor:pointer;}
 .badge:hover {color:#59E817;cursor:pointer;}
 .showtext {font-family: ctrc-uchen;}
-.text {line-height: 26px;
+.pagetext {line-height: 30px;
+	font-size: 120%;
 }
 pb:after{content: attr(n);
 	}
 division:after{content: attr(t);
 	}
+#address{font-size: 120%;}
 .renderItem {}
 .item{cursor: pointer;}
 hl{color:red;}
