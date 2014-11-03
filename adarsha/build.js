@@ -14739,7 +14739,7 @@ var showtext=Require("showtext");
 var renderItem=Require("renderItem");
 var tibetan=Require("ksana-document").languages.tibetan; 
 var page2catalog=Require("page2catalog");
-var version="v0.0.31"
+var version="v0.1.03"
 var main = React.createClass({displayName: 'main',
   componentDidMount:function() {
     var that=this;
@@ -14751,8 +14751,9 @@ var main = React.createClass({displayName: 'main',
   },
   componentDidUpdate:function()  {
     var ch=document.documentElement.clientHeight;
-    this.refs["text-content"].getDOMNode().style.height=ch+"px";
-    this.refs["tab-content"].getDOMNode().style.height=(ch-40)+"px";
+    var banner=68;
+    this.refs["text-content"].getDOMNode().style.height=ch-banner+"px";
+    this.refs["tab-content"].getDOMNode().style.height=(ch-banner-40)+"px";
   },  
   encodeHashTag:function(file,p) { //file/page to hash tag
     var f=parseInt(file)+1;
@@ -14868,14 +14869,12 @@ var main = React.createClass({displayName: 'main',
   }, 
   showText:function(n) {
     var res=kse.vpos2filepage(this.state.db,this.state.toc[n].voff);
-    console.log(res.file,res.page,this.state.toc[n].voff);
     this.showPage(res.file,res.page,true);
   },
   nextfile:function() {
     var file=this.state.bodytext.file+1;
     var page=this.state.bodytext.page || 1;
     this.showPage(file,page,false);
-    console.log(file,"next");
   },
   prevfile:function() {
     var file=this.state.bodytext.file-1;
@@ -14905,7 +14904,7 @@ var main = React.createClass({displayName: 'main',
   React.DOM.div({className: "row"}, 
     React.DOM.div({className: "col-md-12"}, 
       React.DOM.div({className: "header"}, 
-        React.DOM.img({width: "100px", src: "http://karmapa.github.io/adarsha/Treasure.png"}), "ADARSHA"
+        React.DOM.img({width: "100px", src: "banner/treasure.png"}), "ADARSHA"
 
       ), 
 
@@ -14919,7 +14918,7 @@ var main = React.createClass({displayName: 'main',
 
             React.DOM.div({className: "tab-content", ref: "tab-content"}, 
               React.DOM.div({className: "tab-pane fade in active", id: "Catalog"}, 
-                stacktoc({showText: this.showText, showExcerpt: this.showExcerpt, hits: this.state.res.rawresult, data: this.state.toc, goVoff: this.state.goVoff}), "// 顯示目錄"
+                stacktoc({showText: this.showText, showExcerpt: this.showExcerpt, hits: this.state.res.rawresult, data: this.state.toc, goVoff: this.state.goVoff})
               ), 
 
               React.DOM.div({className: "tab-pane fade", id: "SearchTitle"}, 
@@ -15357,8 +15356,8 @@ var controlsFile = React.createClass({displayName: 'controlsFile',
   render: function() {    
    return React.DOM.div(null, 
             "Bampo", 
-            React.DOM.a({href: "#", onClick: this.props.prev}, React.DOM.img({width: "25", src: "http://karmapa.github.io/adarsha/prev.png"})), 
-            React.DOM.a({href: "#", onClick: this.props.next}, React.DOM.img({width: "25", src: "http://karmapa.github.io/adarsha/next.png"})), 
+            React.DOM.a({href: "#", onClick: this.props.prev}, React.DOM.img({width: "25", src: "banner/prev.png"})), 
+            React.DOM.a({href: "#", onClick: this.props.next}, React.DOM.img({width: "25", src: "banner/next.png"})), 
             React.DOM.br(null), React.DOM.span(null, this.getAddress())
           )
   }  
@@ -15391,15 +15390,15 @@ var showtext = React.createClass({displayName: 'showtext',
     var that=this;
     if(typeof s == "undefined") return "";
     s= s.replace(/<pb n="(.*?)"><\/pb>/g,function(m,m1){
-      var link='<br></br><a href="#" data-pb="'+m1+'">'+m1+'<img width="25" src="imageicon.png"/></a>';
+      var link='<br></br><a href="#" data-pb="'+m1+'">'+m1+'<img width="25" src="banner/imageicon.png"/></a>';
       if(m1 == that.state.clickedpb){
         var imgName=that.getImgName(m1);
-        link='<br></br>'+m1+'<img data-img="'+m1+'" width="100%" src="http://dharma-treasure.org/kangyur_images/lijiang/'+imgName+'.jpg"/>';
+        link='<br></br>'+m1+'<img data-img="'+m1+'" width="100%" src="../adarsha_img/lijiang/'+imgName+'.jpg"/>';
       }
       return link;
     });
     
-  return s;
+    return s;
   },
   render: function() {
 
