@@ -14869,14 +14869,12 @@ var main = React.createClass({displayName: 'main',
   }, 
   showText:function(n) {
     var res=kse.vpos2filepage(this.state.db,this.state.toc[n].voff);
-    console.log(res.file,res.page,this.state.toc[n].voff);
     this.showPage(res.file,res.page,true);
   },
   nextfile:function() {
     var file=this.state.bodytext.file+1;
     var page=this.state.bodytext.page || 1;
     this.showPage(file,page,false);
-    console.log(file,"next");
   },
   prevfile:function() {
     var file=this.state.bodytext.file-1;
@@ -14906,7 +14904,7 @@ var main = React.createClass({displayName: 'main',
   React.DOM.div({className: "row"}, 
     React.DOM.div({className: "col-md-12"}, 
       React.DOM.div({className: "header"}, 
-        React.DOM.img({width: "100px", src: "http://karmapa.github.io/adarsha/Treasure.png"}), "ADARSHA"
+        React.DOM.img({width: "100px", src: "banner/treasure.png"}), "ADARSHA"
 
       ), 
 
@@ -15358,8 +15356,8 @@ var controlsFile = React.createClass({displayName: 'controlsFile',
   render: function() {    
    return React.DOM.div(null, 
             "Bampo", 
-            React.DOM.a({href: "#", onClick: this.props.prev}, React.DOM.img({width: "25", src: "http://karmapa.github.io/adarsha/prev.png"})), 
-            React.DOM.a({href: "#", onClick: this.props.next}, React.DOM.img({width: "25", src: "http://karmapa.github.io/adarsha/next.png"})), 
+            React.DOM.a({href: "#", onClick: this.props.prev}, React.DOM.img({width: "25", src: "banner/prev.png"})), 
+            React.DOM.a({href: "#", onClick: this.props.next}, React.DOM.img({width: "25", src: "banner/next.png"})), 
             React.DOM.br(null), React.DOM.span(null, this.getAddress())
           )
   }  
@@ -15392,7 +15390,7 @@ var showtext = React.createClass({displayName: 'showtext',
     var that=this;
     if(typeof s == "undefined") return "";
     s= s.replace(/<pb n="(.*?)"><\/pb>/g,function(m,m1){
-      var link='<br></br><a href="#" data-pb="'+m1+'">'+m1+'<img width="25" src="imageicon.png"/></a>';
+      var link='<br></br><a href="#" data-pb="'+m1+'">'+m1+'<img width="25" src="banner/imageicon.png"/></a>';
       if(m1 == that.state.clickedpb){
         var imgName=that.getImgName(m1);
         link='<br></br>'+m1+'<img data-img="'+m1+'" width="100%" src="../adarsha_img/lijiang/'+imgName+'.jpg"/>';
@@ -15400,7 +15398,7 @@ var showtext = React.createClass({displayName: 'showtext',
       return link;
     });
     
-  return s;
+    return s;
   },
   render: function() {
 
