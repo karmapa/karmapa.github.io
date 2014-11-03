@@ -14739,7 +14739,7 @@ var showtext=Require("showtext");
 var renderItem=Require("renderItem");
 var tibetan=Require("ksana-document").languages.tibetan; 
 var page2catalog=Require("page2catalog");
-var version="v0.0.31"
+var version="v0.1.03"
 var main = React.createClass({displayName: 'main',
   componentDidMount:function() {
     var that=this;
@@ -14751,8 +14751,9 @@ var main = React.createClass({displayName: 'main',
   },
   componentDidUpdate:function()  {
     var ch=document.documentElement.clientHeight;
-    this.refs["text-content"].getDOMNode().style.height=ch+"px";
-    this.refs["tab-content"].getDOMNode().style.height=(ch-40)+"px";
+    var banner=68;
+    this.refs["text-content"].getDOMNode().style.height=ch-banner+"px";
+    this.refs["tab-content"].getDOMNode().style.height=(ch-banner-40)+"px";
   },  
   encodeHashTag:function(file,p) { //file/page to hash tag
     var f=parseInt(file)+1;
@@ -14919,7 +14920,7 @@ var main = React.createClass({displayName: 'main',
 
             React.DOM.div({className: "tab-content", ref: "tab-content"}, 
               React.DOM.div({className: "tab-pane fade in active", id: "Catalog"}, 
-                stacktoc({showText: this.showText, showExcerpt: this.showExcerpt, hits: this.state.res.rawresult, data: this.state.toc, goVoff: this.state.goVoff}), "// 顯示目錄"
+                stacktoc({showText: this.showText, showExcerpt: this.showExcerpt, hits: this.state.res.rawresult, data: this.state.toc, goVoff: this.state.goVoff})
               ), 
 
               React.DOM.div({className: "tab-pane fade", id: "SearchTitle"}, 
@@ -15394,7 +15395,7 @@ var showtext = React.createClass({displayName: 'showtext',
       var link='<br></br><a href="#" data-pb="'+m1+'">'+m1+'<img width="25" src="imageicon.png"/></a>';
       if(m1 == that.state.clickedpb){
         var imgName=that.getImgName(m1);
-        link='<br></br>'+m1+'<img data-img="'+m1+'" width="100%" src="http://dharma-treasure.org/kangyur_images/lijiang/'+imgName+'.jpg"/>';
+        link='<br></br>'+m1+'<img data-img="'+m1+'" width="100%" src="../adarsha_img/lijiang/'+imgName+'.jpg"/>';
       }
       return link;
     });
