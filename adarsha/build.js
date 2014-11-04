@@ -14739,6 +14739,7 @@ var showtext=Require("showtext");
 var renderItem=Require("renderItem");
 var tibetan=Require("ksana-document").languages.tibetan; 
 var page2catalog=Require("page2catalog");
+var namelist=Require("namelist");
 var version="v0.1.03"
 var main = React.createClass({displayName: 'main',
   componentDidMount:function() {
@@ -14747,7 +14748,7 @@ var main = React.createClass({displayName: 'main',
   }, 
   getInitialState: function() {
     document.title=version+"-adarsha";
-    return {dialog:null,res:{},bodytext:{file:0,page:0},db:null,toc_result:[],page:0};
+    return {dialog:null,res:{},res_toc:[],bodytext:{file:0,page:0},db:null,toc_result:[],page:0,field:"sutra"};
   },
   componentDidUpdate:function()  {
     var ch=document.documentElement.clientHeight;
@@ -14770,56 +14771,41 @@ var main = React.createClass({displayName: 'main',
   goHashTag:function() {
     this.decodeHashTag(window.location.hash || "#1.1");
   },
-  dosearch: function(){
-    var start=arguments[2];  
+  searchtypechange:function(e) {
+    var field=e.target.dataset.type;
     var w=this.refs.tofind.getDOMNode().value;
     var tofind=tibetan.romanize.fromWylie(w);
     if (w!=tofind) {
       this.setState({wylie:tofind});
     }
-    kse.search(this.state.db,tofind,{range:{start:start,maxhit:100}},function(data){ //call search engine          
-      this.setState({res:data, tofind:tofind});  
-    });
+    this.dosearch(null,null,field,tofind);
+    this.setState({field:field});
   },
-  dosearch_ex: function(e) {
-    var tofind=e.target.innerHTML;
-    kse.search(this.state.db,tofind,{range:{maxhit:100}},function(data){ //call search engine          
-      this.setState({res:data, tofind:tofind});  
-    });
-  },
-  dosearch_toc: function(){
-    var out=[];
-    var t=this.refs.tofind_toc.getDOMNode().value;
-    var tofind_toc=tibetan.romanize.fromWylie(t);
-    if (t!=tofind_toc) {
-      this.setState({wylie_toc:tofind_toc});
-    }    
-    var toc=this.state.toc;
-    out=toc.filter(function(te){
-      if(te["text"].indexOf(tofind_toc)>-1 && te["text"].match(tofind_toc)!=""){
-        return te;
-      }
-    },this);
-
-    this.setState({toc_result:out, tofind_toc:tofind_toc});
-
+  dosearch: function(e,reactid,field,tofind){
+    field=field || this.state.field;
+    var start=arguments[2];  
+    if(field == "fulltext"){
+      kse.search(this.state.db,tofind,{range:{start:start,maxhit:100}},function(data){ //call search engine          
+        this.setState({res:data, tofind:tofind});  
+      });
+    }
+    if(field == "kacha"){
+      var res_kacha=api.search_api.searchKacha(tofind,this.state.toc);
+      this.setState({res_toc:res_kacha, tofind:tofind});
+    }
+    if(field == "sutra"){
+      var res_sutra=api.search_api.searchSutra(tofind,this.state.toc);
+      this.setState({res_toc:res_sutra, tofind:tofind});
+    }
+    
   },
   renderinputs:function(searcharea) {  // input interface for search
     if (this.state.db) {
-      if(searcharea == "text"){
-        return (    
-          React.DOM.div(null, React.DOM.input({className: "form-control", onInput: this.dosearch, ref: "tofind", defaultValue: "byang chub"}), 
-          React.DOM.span({className: "wylie"}, this.state.wylie)
-          )
-          )    
-      }
-      if(searcharea == "title"){
-        return (    
-          React.DOM.div(null, React.DOM.input({className: "form-control", onInput: this.dosearch_toc, ref: "tofind_toc", defaultValue: "byang chub"}), 
-          React.DOM.span({className: "wylie"}, this.state.wylie_toc)
-          )
-          ) 
-      }
+      return (    
+        React.DOM.div(null, React.DOM.input({className: "form-control", onInput: this.searchtypechange, ref: "tofind", defaultValue: "byang chub"}), 
+        React.DOM.span({className: "wylie"}, this.state.wylie)
+        )
+        )          
     } else {
       return React.DOM.span(null, "loading database....")
     }
@@ -14857,7 +14843,11 @@ var main = React.createClass({displayName: 'main',
   showExcerpt:function(n) {
     var voff=this.state.toc[n].voff;
     this.dosearch(null,null,voff);
-  }, 
+  },
+  gotofile:function(vpos){
+    var res=kse.vpos2filepage(this.state.db,vpos);
+    this.showPage(res.file,res.page-1,false);
+  },
   showPage:function(f,p,hideResultlist) {    
     window.location.hash = this.encodeHashTag(f,p);
     var that=this;
@@ -14881,7 +14871,6 @@ var main = React.createClass({displayName: 'main',
     var page=this.state.bodytext.page || 1;
     if (file<0) file=0;
     this.showPage(file,page,false);
-    console.log(file,"prev");
   },
   setPage:function(newpagename,file) {
     var fp=this.state.db.findPage(newpagename);
@@ -14889,7 +14878,6 @@ var main = React.createClass({displayName: 'main',
       this.showPage(fp[0].file,fp[0].page);
     }
   },
-
   render: function() {
     if (!this.state.quota) { // install required db
         return this.openFileinstaller(true);
@@ -14898,7 +14886,6 @@ var main = React.createClass({displayName: 'main',
       if (this.state.bodytext) {
         text=this.state.bodytext.text;
         pagename=this.state.bodytext.pagename;
-        console.log(this.state.bodytext);
     }
     return (
   React.DOM.div({className: "row"}, 
@@ -14913,8 +14900,7 @@ var main = React.createClass({displayName: 'main',
           React.DOM.div({className: "borderright"}, 
             React.DOM.ul({className: "nav nav-tabs", role: "tablist"}, 
               React.DOM.li({className: "active"}, React.DOM.a({href: "#Catalog", role: "tab", 'data-toggle': "tab"}, "Catalog")), 
-              React.DOM.li(null, React.DOM.a({href: "#SearchTitle", role: "tab", 'data-toggle': "tab"}, "Title Search")), 
-              React.DOM.li(null, React.DOM.a({href: "#SearchText", role: "tab", 'data-toggle': "tab"}, "Text Search"))
+              React.DOM.li(null, React.DOM.a({href: "#Search", role: "tab", 'data-toggle': "tab"}, "Search"))
             ), 
 
             React.DOM.div({className: "tab-content", ref: "tab-content"}, 
@@ -14922,23 +14908,20 @@ var main = React.createClass({displayName: 'main',
                 stacktoc({showText: this.showText, showExcerpt: this.showExcerpt, hits: this.state.res.rawresult, data: this.state.toc, goVoff: this.state.goVoff})
               ), 
 
-              React.DOM.div({className: "tab-pane fade", id: "SearchTitle"}, 
+              React.DOM.div({className: "tab-pane fade", id: "Search"}, 
                 this.renderinputs("title"), 
-                
-                renderItem({data: this.state.toc_result, gotopage: this.gotopage, tofind_toc: this.state.tofind_toc})
-              ), 
- 
-              React.DOM.div({className: "tab-pane fade", id: "SearchText"}, 
-                this.renderinputs("text"), 
-                
-                     "Search Example:   1.", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "བྱས"), 
-                "2. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "གནས"), 
-                "3. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "འགྱུར"), 
-                "4. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "བདག"), 
-                "5. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "དགེ"), 
-                React.DOM.br(null), React.DOM.br(null), React.DOM.br(null), 
-                resultlist({res: this.state.res, tofind: this.state.tofind, gotopage: this.gotopage}), 
-                React.DOM.span(null, this.state.elapse)
+                React.DOM.div({className: "btn-group", 'data-toggle': "buttons", ref: "searchtype", onClick: this.searchtypechange}, 
+                  React.DOM.label({'data-type': "sutra", className: "btn btn-success active"}, 
+                  React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "Sutra")
+                  ), 
+                  React.DOM.label({'data-type': "kacha", className: "btn btn-success"}, 
+                  React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "Kacha")
+                  ), 
+                  React.DOM.label({'data-type': "fulltext", className: "btn btn-success"}, 
+                  React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "Text")
+                  )
+                ), 
+                namelist({res_toc: this.state.res_toc, tofind: this.state.tofind, gotofile: this.gotofile})
               )
             )
           )
@@ -15022,17 +15005,34 @@ require.register("adarsha-api/index.js", function(exports, require, module){
 //var othercomponent=Require("other"); 
 //new module filename must be added to scripts section of ./component.js and export here
 var api = {
- search: require("./search")
+ search_api: require("./search_api")
 }
 
 module.exports=api;
 });
-require.register("adarsha-api/search.js", function(exports, require, module){
-var search=function(tofind){
-	console.log(tofind);
+require.register("adarsha-api/search_api.js", function(exports, require, module){
+var searchSutra=function(tofind,toc){
+	var out=[];
+	toc.map(function(item){
+		if(item.depth==3 && item.text.indexOf(tofind)>-1){
+			out.push(item);
+		}
+	});
+	return out;
 }
 
-module.exports=search;
+var searchKacha=function(tofind,toc){
+	var out=[];
+	toc.map(function(item){
+		if(item.depth!=3 && item.depth!=0 && item.text.indexOf(tofind)>-1){
+			out.push(item);
+		}
+	});
+	return out;
+}
+
+var search_api={searchSutra:searchSutra,searchKacha:searchKacha}
+module.exports=search_api;
 });
 require.register("ksanaforge-stacktoc/index.js", function(exports, require, module){
 /** @jsx React.DOM */
@@ -15519,10 +15519,49 @@ var page2catalog = React.createClass({displayName: 'page2catalog',
 });
 module.exports=page2catalog;
 });
+require.register("adarsha-namelist/index.js", function(exports, require, module){
+/** @jsx React.DOM */
+
+/* to rename the component, change name of ./component.js and  "dependencies" section of ../../component.js */
+
+//var othercomponent=Require("other"); 
+var namelist = React.createClass({displayName: 'namelist',
+  getInitialState: function() {
+    return {};
+  },
+  onItemClick:function(e) {
+    var voff=parseInt(e.target.dataset.voff);
+    React.DOM.span(null, e.target.innerHTML)
+    this.props.gotofile(voff);
+  },
+  renderItem: function(item) {
+    var tofind=this.props.tofind;
+    item.text=item.text.replace(tofind,function(t){
+      return '<hl>'+t+"</hl>";
+    });
+    return (
+      React.DOM.div(null, 
+        React.DOM.li(null, React.DOM.a({herf: "#", className: "item", 'data-voff': item.voff, onClick: this.onItemClick, dangerouslySetInnerHTML: {__html:item.text}}))
+      ) 
+      )
+  },
+  render: function() {
+
+    return (
+      React.DOM.div(null, 
+        this.props.res_toc.map(this.renderItem)
+      )
+    );
+  }
+});
+module.exports=namelist;
+});
 require.register("adarsha/index.js", function(exports, require, module){
 var boot=require("boot");
 boot("adarsha","main","main");
 });
+
+
 
 
 
@@ -15642,7 +15681,7 @@ require.alias("adarsha-resultlist/index.js", "adarsha/deps/resultlist/index.js")
 require.alias("adarsha-resultlist/index.js", "resultlist/index.js");
 require.alias("adarsha-resultlist/index.js", "adarsha-resultlist/index.js");
 require.alias("adarsha-api/index.js", "adarsha/deps/api/index.js");
-require.alias("adarsha-api/search.js", "adarsha/deps/api/search.js");
+require.alias("adarsha-api/search_api.js", "adarsha/deps/api/search_api.js");
 require.alias("adarsha-api/index.js", "adarsha/deps/api/index.js");
 require.alias("adarsha-api/index.js", "api/index.js");
 require.alias("adarsha-api/index.js", "adarsha-api/index.js");
@@ -15666,6 +15705,10 @@ require.alias("adarsha-page2catalog/index.js", "adarsha/deps/page2catalog/index.
 require.alias("adarsha-page2catalog/index.js", "adarsha/deps/page2catalog/index.js");
 require.alias("adarsha-page2catalog/index.js", "page2catalog/index.js");
 require.alias("adarsha-page2catalog/index.js", "adarsha-page2catalog/index.js");
+require.alias("adarsha-namelist/index.js", "adarsha/deps/namelist/index.js");
+require.alias("adarsha-namelist/index.js", "adarsha/deps/namelist/index.js");
+require.alias("adarsha-namelist/index.js", "namelist/index.js");
+require.alias("adarsha-namelist/index.js", "adarsha-namelist/index.js");
 require.alias("adarsha/index.js", "adarsha/index.js");
 if (typeof exports == 'object') {
   module.exports = require('adarsha');
