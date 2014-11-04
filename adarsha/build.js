@@ -4626,7 +4626,7 @@ var storeFields=function(fields,json) {
 var tagStack=[];
 var processTags=function(captureTags,tags,texts) {
 	var getTextBetween=function(from,to,startoffset,endoffset) {
-		if (from==to) return texts[from].t.substring(startoffset-1,endoffset-1);
+		if (from==to) return texts[from].t.substring(startoffset,endoffset);
 		var first=texts[from].t.substr(startoffset-1);
 		var middle="";
 		for (var i=from+1;i<to;i++) {
@@ -4672,7 +4672,9 @@ var processTags=function(captureTags,tags,texts) {
 						throw "tag unbalance";
 					} else {
 						tagStack.pop();
+
 						text=getTextBetween(prev[3],i,prev[1],tagoffset);
+						//console.log(text,prev[1],tagoffset)
 					}
 				}
 				
@@ -4795,7 +4797,7 @@ var start=function(mkdbconfig) {
 	if (!mkdbconfig.files.length) return null;//nothing to index
 
 	initIndexer(mkdbconfig);
-  	return status;
+  return status;
 }
 
 var indexstep=function() {
@@ -7056,75 +7058,75 @@ require.register("ksana-document/kdbfs_android.js", function(exports, require, m
 	array and buffer return in string format
 	need JSON.parse
 */
-var verbose=1;
+var verbose=0;
 
 var readSignature=function(pos,cb) {
-	console.debug("read signature");
+	if (verbose) console.debug("read signature");
 	var signature=kfs.readUTF8String(this.handle,pos,1);
-	console.debug(signature,signature.charCodeAt(0));
+	if (verbose) console.debug(signature,signature.charCodeAt(0));
 	cb.apply(this,[signature]);
 }
 var readI32=function(pos,cb) {
-	console.debug("read i32 at "+pos);
+	if (verbose) console.debug("read i32 at "+pos);
 	var i32=kfs.readInt32(this.handle,pos);
-	console.debug(i32);
+	if (verbose) console.debug(i32);
 	cb.apply(this,[i32]);	
 }
 var readUI32=function(pos,cb) {
-	console.debug("read ui32 at "+pos);
+	if (verbose) console.debug("read ui32 at "+pos);
 	var ui32=kfs.readUInt32(this.handle,pos);
-	console.debug(ui32);
+	if (verbose) console.debug(ui32);
 	cb.apply(this,[ui32]);
 }
 var readUI8=function(pos,cb) {
-	console.debug("read ui8 at "+pos); 
+	if (verbose) console.debug("read ui8 at "+pos); 
 	var ui8=kfs.readUInt8(this.handle,pos);
-	console.debug(ui8);
+	if (verbose) console.debug(ui8);
 	cb.apply(this,[ui8]);
 }
 var readBuf=function(pos,blocksize,cb) {
-	console.debug("read buffer at "+pos+ " blocksize "+blocksize);
+	if (verbose) console.debug("read buffer at "+pos+ " blocksize "+blocksize);
 	var buf=kfs.readBuf(this.handle,pos,blocksize);
 	var buff=JSON.parse(buf);
-	console.debug("buffer length"+buff.length);
+	if (verbose) console.debug("buffer length"+buff.length);
 	cb.apply(this,[buff]);	
 }
 var readBuf_packedint=function(pos,blocksize,count,reset,cb) {
-	console.debug("read packed int at "+pos+" blocksize "+blocksize+" count "+count);
+	if (verbose) console.debug("read packed int at "+pos+" blocksize "+blocksize+" count "+count);
 	var buf=kfs.readBuf_packedint(this.handle,pos,blocksize,count,reset);
 	var adv=parseInt(buf);
 	var buff=JSON.parse(buf.substr(buf.indexOf("[")));
-	console.debug("packedInt length "+buff.length+" first item="+buff[0]);
+	if (verbose) console.debug("packedInt length "+buff.length+" first item="+buff[0]);
 	cb.apply(this,[{data:buff,adv:adv}]);	
 }
 
 
 var readString= function(pos,blocksize,encoding,cb) {
-	console.debug("readstring at "+pos+" blocksize " +blocksize+" enc:"+encoding);
+	if (verbose) console.debug("readstring at "+pos+" blocksize " +blocksize+" enc:"+encoding);
 	if (encoding=="ucs2") {
 		var str=kfs.readULE16String(this.handle,pos,blocksize);
 	} else {
 		var str=kfs.readUTF8String(this.handle,pos,blocksize);	
 	}	 
-	console.debug(str);
+	if (verbose) console.debug(str);
 	cb.apply(this,[str]);	
 }
 
 var readFixedArray = function(pos ,count, unitsize,cb) {
-	console.debug("read fixed array at "+pos+" count "+count+" unitsize "+unitsize); 
+	if (verbose) console.debug("read fixed array at "+pos+" count "+count+" unitsize "+unitsize); 
 	var buf=kfs.readFixedArray(this.handle,pos,count,unitsize);
 	var buff=JSON.parse(buf);
-	console.debug("array length"+buff.length);
+	if (verbose) console.debug("array length"+buff.length);
 	cb.apply(this,[buff]);	
 }
 var readStringArray = function(pos,blocksize,encoding,cb) {
-	console.log("read String array at "+pos+" blocksize "+blocksize +" enc "+encoding); 
+	if (verbose) console.log("read String array at "+pos+" blocksize "+blocksize +" enc "+encoding); 
 	encoding = encoding||"utf8";
 	var buf=kfs.readStringArray(this.handle,pos,blocksize,encoding);
 	//var buff=JSON.parse(buf);
-	console.debug("read string array");
+	if (verbose) console.debug("read string array");
 	var buff=buf.split("\uffff"); //cannot return string with 0
-	console.debug("array length"+buff.length);
+	if (verbose) console.debug("array length"+buff.length);
 	cb.apply(this,[buff]);	
 }
 var mergePostings=function(positions,cb) {
@@ -7154,7 +7156,7 @@ var Open=function(path,opts,cb) {
 		this.mergePostings=mergePostings;
 		this.free=free;
 		this.size=kfs.getFileSize(this.handle);
-		console.log("filesize  "+this.size);
+		if (verbose) console.log("filesize  "+this.size);
 		if (cb)	cb.call(this);
 	}
 
@@ -13467,8 +13469,9 @@ var startindexer=function(mkdbconfig) {
 
 }
 
-var build=function(path){
+var build=function(path,mkdbjs){
   var fs=require("fs");
+  mkdbjs=mkdbjs||"mkdb.js";
 
   if (!fs.existsSync(mkdbjs)) {
       throw "no "+mkdbjs  ;
@@ -14778,12 +14781,11 @@ var main = React.createClass({displayName: 'main',
     if (w!=tofind) {
       this.setState({wylie:tofind});
     }
-    this.dosearch(null,null,field,tofind);
+    this.dosearch(null,null,0,field,tofind);
     this.setState({field:field});
   },
-  dosearch: function(e,reactid,field,tofind){
+  dosearch: function(e,reactid,start,field,tofind){
     field=field || this.state.field;
-    var start=arguments[2];  
     if(field == "fulltext"){
       kse.search(this.state.db,tofind,{range:{start:start,maxhit:100}},function(data){ //call search engine          
         this.setState({res:data, tofind:tofind});  
@@ -14921,7 +14923,8 @@ var main = React.createClass({displayName: 'main',
                   React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "Text")
                   )
                 ), 
-                namelist({res_toc: this.state.res_toc, tofind: this.state.tofind, gotofile: this.gotofile})
+                namelist({res_toc: this.state.res_toc, tofind: this.state.tofind, gotofile: this.gotofile}), 
+                resultlist({res: this.state.res, tofind: this.state.tofind, gotofile: this.gotofile})
               )
             )
           )
@@ -14983,7 +14986,7 @@ var resultlist=React.createClass({displayName: 'resultlist',  //should search re
   }, 
   gotopage:function(e) {
     var vpos=parseInt(e.target.parentNode.dataset['vpos']);
-    this.props.gotopage(vpos);
+    this.props.gotofile(vpos);
   },
   render:function() {
     if (this.props.res) {
