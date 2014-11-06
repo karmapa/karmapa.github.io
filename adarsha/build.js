@@ -15354,8 +15354,8 @@ var controlsFile = React.createClass({displayName: 'controlsFile',
    // this.setState({address:res});
     return res;
   },
-  render: function() {    
-   return React.DOM.div(null, 
+  render: function() {   
+   return React.DOM.div({className: "cursor"}, 
             "Bampo", 
             React.DOM.a({href: "#", onClick: this.props.prev}, React.DOM.img({width: "25", src: "./banner/prev.png"})), 
             React.DOM.a({href: "#", onClick: this.props.next}, React.DOM.img({width: "25", src: "./banner/next.png"})), 
@@ -15405,7 +15405,7 @@ var showtext = React.createClass({displayName: 'showtext',
 
     var text=this.renderpb(this.props.text);
     return (
-      React.DOM.div(null, 
+      React.DOM.div({className: "cursor"}, 
         controls({next: this.props.nextpage, prev: this.props.prevpage, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc, genToc: this.props.genToc, syncToc: this.props.syncToc}), 
         controlsFile({page: this.props.page, bodytext: this.props.bodytext, next: this.props.nextfile, prev: this.props.prevfile, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc}), 
         React.DOM.br(null), 

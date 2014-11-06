@@ -7120,7 +7120,7 @@ td.visible-print {
 
 
 
-.main {
+.main {cursor:default;
 	
 }
 /*.form-control{border-radius: 0%;}*/
@@ -7146,7 +7146,6 @@ td.visible-print {
 	height: 50%;
 
 }
-
 
 a{color:#178918;}
 
@@ -7187,15 +7186,19 @@ div.current span.text:hover{text-decoration:underline;cursor:pointer;}
 div.child span.text:hover {text-decoration:underline;cursor:pointer;color:#85BB65;}
 .tocitem {text-decoration: none;cursor:pointer;}
 .badge:hover {color:#59E817;cursor:pointer;}
-.showtext {font-family: ctrc-uchen;}
+.showtext {font-family: ctrc-uchen;
+	cursor:text;}
 .pagetext {line-height: 30px;
 	font-size: 120%;
+	cursor:default;
 }
-pb:after{content: attr(n);
-	}
+.cursor{cursor:default;}
+
+pb:after{content: attr(n);}
 division:after{content: attr(t);
 	}
-#address{font-size: 120%;}
+#address{font-size: 120%;
+	cursor:default;}
 .renderItem {}
 .item{cursor: pointer;}
 hl{color:red;}
