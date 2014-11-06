@@ -7147,6 +7147,7 @@ td.visible-print {
 
 }
 
+
 a{color:#178918;}
 
 .header{background-color: #E0E0E0;
@@ -7202,8 +7203,10 @@ hl[n="1"]{color: blue;}
 hl[n="2"]{color: green;}
 .renderinputs {}
 .page2catalog {}
+.namelist {}
+.searchbar {}
 #main {}
 
 
-@font-face { font-family: 'tibetan1'; font-style: normal; font-weight: normal; src: url("fonts/TibMachUni-1.901.woff"); }
+@font-face { font-family: 'tibetan1'; font-style: normal; font-weight: normal; src: url("fonts/himalaya_2.ttf"); }
 .text , .tocitem {font-family: 'tibetan1';text-decoration: none;cursor:pointer;}

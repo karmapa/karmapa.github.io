@@ -4626,7 +4626,7 @@ var storeFields=function(fields,json) {
 var tagStack=[];
 var processTags=function(captureTags,tags,texts) {
 	var getTextBetween=function(from,to,startoffset,endoffset) {
-		if (from==to) return texts[from].t.substring(startoffset-1,endoffset-1);
+		if (from==to) return texts[from].t.substring(startoffset,endoffset);
 		var first=texts[from].t.substr(startoffset-1);
 		var middle="";
 		for (var i=from+1;i<to;i++) {
@@ -4672,7 +4672,9 @@ var processTags=function(captureTags,tags,texts) {
 						throw "tag unbalance";
 					} else {
 						tagStack.pop();
+
 						text=getTextBetween(prev[3],i,prev[1],tagoffset);
+						//console.log(text,prev[1],tagoffset)
 					}
 				}
 				
@@ -4795,7 +4797,7 @@ var start=function(mkdbconfig) {
 	if (!mkdbconfig.files.length) return null;//nothing to index
 
 	initIndexer(mkdbconfig);
-  	return status;
+  return status;
 }
 
 var indexstep=function() {
@@ -7056,75 +7058,75 @@ require.register("ksana-document/kdbfs_android.js", function(exports, require, m
 	array and buffer return in string format
 	need JSON.parse
 */
-var verbose=1;
+var verbose=0;
 
 var readSignature=function(pos,cb) {
-	console.debug("read signature");
+	if (verbose) console.debug("read signature");
 	var signature=kfs.readUTF8String(this.handle,pos,1);
-	console.debug(signature,signature.charCodeAt(0));
+	if (verbose) console.debug(signature,signature.charCodeAt(0));
 	cb.apply(this,[signature]);
 }
 var readI32=function(pos,cb) {
-	console.debug("read i32 at "+pos);
+	if (verbose) console.debug("read i32 at "+pos);
 	var i32=kfs.readInt32(this.handle,pos);
-	console.debug(i32);
+	if (verbose) console.debug(i32);
 	cb.apply(this,[i32]);	
 }
 var readUI32=function(pos,cb) {
-	console.debug("read ui32 at "+pos);
+	if (verbose) console.debug("read ui32 at "+pos);
 	var ui32=kfs.readUInt32(this.handle,pos);
-	console.debug(ui32);
+	if (verbose) console.debug(ui32);
 	cb.apply(this,[ui32]);
 }
 var readUI8=function(pos,cb) {
-	console.debug("read ui8 at "+pos); 
+	if (verbose) console.debug("read ui8 at "+pos); 
 	var ui8=kfs.readUInt8(this.handle,pos);
-	console.debug(ui8);
+	if (verbose) console.debug(ui8);
 	cb.apply(this,[ui8]);
 }
 var readBuf=function(pos,blocksize,cb) {
-	console.debug("read buffer at "+pos+ " blocksize "+blocksize);
+	if (verbose) console.debug("read buffer at "+pos+ " blocksize "+blocksize);
 	var buf=kfs.readBuf(this.handle,pos,blocksize);
 	var buff=JSON.parse(buf);
-	console.debug("buffer length"+buff.length);
+	if (verbose) console.debug("buffer length"+buff.length);
 	cb.apply(this,[buff]);	
 }
 var readBuf_packedint=function(pos,blocksize,count,reset,cb) {
-	console.debug("read packed int at "+pos+" blocksize "+blocksize+" count "+count);
+	if (verbose) console.debug("read packed int at "+pos+" blocksize "+blocksize+" count "+count);
 	var buf=kfs.readBuf_packedint(this.handle,pos,blocksize,count,reset);
 	var adv=parseInt(buf);
 	var buff=JSON.parse(buf.substr(buf.indexOf("[")));
-	console.debug("packedInt length "+buff.length+" first item="+buff[0]);
+	if (verbose) console.debug("packedInt length "+buff.length+" first item="+buff[0]);
 	cb.apply(this,[{data:buff,adv:adv}]);	
 }
 
 
 var readString= function(pos,blocksize,encoding,cb) {
-	console.debug("readstring at "+pos+" blocksize " +blocksize+" enc:"+encoding);
+	if (verbose) console.debug("readstring at "+pos+" blocksize " +blocksize+" enc:"+encoding);
 	if (encoding=="ucs2") {
 		var str=kfs.readULE16String(this.handle,pos,blocksize);
 	} else {
 		var str=kfs.readUTF8String(this.handle,pos,blocksize);	
 	}	 
-	console.debug(str);
+	if (verbose) console.debug(str);
 	cb.apply(this,[str]);	
 }
 
 var readFixedArray = function(pos ,count, unitsize,cb) {
-	console.debug("read fixed array at "+pos+" count "+count+" unitsize "+unitsize); 
+	if (verbose) console.debug("read fixed array at "+pos+" count "+count+" unitsize "+unitsize); 
 	var buf=kfs.readFixedArray(this.handle,pos,count,unitsize);
 	var buff=JSON.parse(buf);
-	console.debug("array length"+buff.length);
+	if (verbose) console.debug("array length"+buff.length);
 	cb.apply(this,[buff]);	
 }
 var readStringArray = function(pos,blocksize,encoding,cb) {
-	console.log("read String array at "+pos+" blocksize "+blocksize +" enc "+encoding); 
+	if (verbose) console.log("read String array at "+pos+" blocksize "+blocksize +" enc "+encoding); 
 	encoding = encoding||"utf8";
 	var buf=kfs.readStringArray(this.handle,pos,blocksize,encoding);
 	//var buff=JSON.parse(buf);
-	console.debug("read string array");
+	if (verbose) console.debug("read string array");
 	var buff=buf.split("\uffff"); //cannot return string with 0
-	console.debug("array length"+buff.length);
+	if (verbose) console.debug("array length"+buff.length);
 	cb.apply(this,[buff]);	
 }
 var mergePostings=function(positions,cb) {
@@ -7154,7 +7156,7 @@ var Open=function(path,opts,cb) {
 		this.mergePostings=mergePostings;
 		this.free=free;
 		this.size=kfs.getFileSize(this.handle);
-		console.log("filesize  "+this.size);
+		if (verbose) console.log("filesize  "+this.size);
 		if (cb)	cb.call(this);
 	}
 
@@ -13467,8 +13469,9 @@ var startindexer=function(mkdbconfig) {
 
 }
 
-var build=function(path){
+var build=function(path,mkdbjs){
   var fs=require("fs");
+  mkdbjs=mkdbjs||"mkdb.js";
 
   if (!fs.existsSync(mkdbjs)) {
       throw "no "+mkdbjs  ;
@@ -14739,6 +14742,7 @@ var showtext=Require("showtext");
 var renderItem=Require("renderItem");
 var tibetan=Require("ksana-document").languages.tibetan; 
 var page2catalog=Require("page2catalog");
+var namelist=Require("namelist");
 var version="v0.1.03"
 var main = React.createClass({displayName: 'main',
   componentDidMount:function() {
@@ -14747,7 +14751,7 @@ var main = React.createClass({displayName: 'main',
   }, 
   getInitialState: function() {
     document.title=version+"-adarsha";
-    return {dialog:null,res:{},bodytext:{file:0,page:0},db:null,toc_result:[],page:0};
+    return {dialog:null,res:{},res_toc:[],bodytext:{file:0,page:0},db:null,toc_result:[],page:0,field:"sutra"};
   },
   componentDidUpdate:function()  {
     var ch=document.documentElement.clientHeight;
@@ -14770,56 +14774,38 @@ var main = React.createClass({displayName: 'main',
   goHashTag:function() {
     this.decodeHashTag(window.location.hash || "#1.1");
   },
-  dosearch: function(){
-    var start=arguments[2];  
+  searchtypechange:function(e) {
+    var field=e.target.dataset.type;
     var w=this.refs.tofind.getDOMNode().value;
     var tofind=tibetan.romanize.fromWylie(w);
-    if (w!=tofind) {
-      this.setState({wylie:tofind});
+    this.dosearch(null,null,0,field,tofind);
+    this.setState({field:field});
+  },
+  dosearch: function(e,reactid,start,field,tofind){
+    field=field || this.state.field;
+    if(field == "fulltext"){
+      kse.search(this.state.db,tofind,{range:{start:start,maxhit:100}},function(data){ //call search engine          
+        this.setState({res:data, tofind:tofind, res_toc:[]});  
+      });
     }
-    kse.search(this.state.db,tofind,{range:{start:start,maxhit:100}},function(data){ //call search engine          
-      this.setState({res:data, tofind:tofind});  
-    });
+    if(field == "kacha"){
+      var res_kacha=api.search_api.searchKacha(tofind,this.state.toc);
+      this.setState({res_toc:res_kacha, tofind:tofind, res:[]});
+    }
+    if(field == "sutra"){
+      var res_sutra=api.search_api.searchSutra(tofind,this.state.toc);
+      this.setState({res_toc:res_sutra, tofind:tofind, res:[]});
+    }
+    
   },
-  dosearch_ex: function(e) {
-    var tofind=e.target.innerHTML;
-    kse.search(this.state.db,tofind,{range:{maxhit:100}},function(data){ //call search engine          
-      this.setState({res:data, tofind:tofind});  
-    });
-  },
-  dosearch_toc: function(){
-    var out=[];
-    var t=this.refs.tofind_toc.getDOMNode().value;
-    var tofind_toc=tibetan.romanize.fromWylie(t);
-    if (t!=tofind_toc) {
-      this.setState({wylie_toc:tofind_toc});
-    }    
-    var toc=this.state.toc;
-    out=toc.filter(function(te){
-      if(te["text"].indexOf(tofind_toc)>-1 && te["text"].match(tofind_toc)!=""){
-        return te;
-      }
-    },this);
-
-    this.setState({toc_result:out, tofind_toc:tofind_toc});
-
-  },
-  renderinputs:function(searcharea) {  // input interface for search
+  renderinputs:function(searcharea) {  // input interface for search // onInput={this.searchtypechange}
     if (this.state.db) {
-      if(searcharea == "text"){
-        return (    
-          React.DOM.div(null, React.DOM.input({className: "form-control", onInput: this.dosearch, ref: "tofind", defaultValue: "byang chub"}), 
-          React.DOM.span({className: "wylie"}, this.state.wylie)
-          )
-          )    
-      }
-      if(searcharea == "title"){
-        return (    
-          React.DOM.div(null, React.DOM.input({className: "form-control", onInput: this.dosearch_toc, ref: "tofind_toc", defaultValue: "byang chub"}), 
-          React.DOM.span({className: "wylie"}, this.state.wylie_toc)
-          )
-          ) 
-      }
+      return (    
+        React.DOM.div(null, 
+        React.DOM.input({className: "form-control", ref: "tofind", defaultValue: "byang chub"}), 
+        React.DOM.span({className: "wylie"}, this.state.wylie)
+        )
+        )          
     } else {
       return React.DOM.span(null, "loading database....")
     }
@@ -14857,7 +14843,11 @@ var main = React.createClass({displayName: 'main',
   showExcerpt:function(n) {
     var voff=this.state.toc[n].voff;
     this.dosearch(null,null,voff);
-  }, 
+  },
+  gotofile:function(vpos){
+    var res=kse.vpos2filepage(this.state.db,vpos);
+    this.showPage(res.file,res.page-1,false);
+  },
   showPage:function(f,p,hideResultlist) {    
     window.location.hash = this.encodeHashTag(f,p);
     var that=this;
@@ -14881,7 +14871,6 @@ var main = React.createClass({displayName: 'main',
     var page=this.state.bodytext.page || 1;
     if (file<0) file=0;
     this.showPage(file,page,false);
-    console.log(file,"prev");
   },
   setPage:function(newpagename,file) {
     var fp=this.state.db.findPage(newpagename);
@@ -14889,7 +14878,6 @@ var main = React.createClass({displayName: 'main',
       this.showPage(fp[0].file,fp[0].page);
     }
   },
-
   render: function() {
     if (!this.state.quota) { // install required db
         return this.openFileinstaller(true);
@@ -14898,13 +14886,12 @@ var main = React.createClass({displayName: 'main',
       if (this.state.bodytext) {
         text=this.state.bodytext.text;
         pagename=this.state.bodytext.pagename;
-        console.log(this.state.bodytext);
     }
     return (
   React.DOM.div({className: "row"}, 
     React.DOM.div({className: "col-md-12"}, 
       React.DOM.div({className: "header"}, 
-        "  ", React.DOM.img({height: "80px", src: "banner/banner-01.png"})
+        "  ", React.DOM.img({height: "80px", src: "./banner/banner-01.png"})
 
       ), 
 
@@ -14912,9 +14899,8 @@ var main = React.createClass({displayName: 'main',
         React.DOM.div({className: "col-md-3"}, 
           React.DOM.div({className: "borderright"}, 
             React.DOM.ul({className: "nav nav-tabs", role: "tablist"}, 
-              React.DOM.li({className: "active"}, React.DOM.a({href: "#Catalog", role: "tab", 'data-toggle': "tab"}, "Catalog")), 
-              React.DOM.li(null, React.DOM.a({href: "#SearchTitle", role: "tab", 'data-toggle': "tab"}, "Title Search")), 
-              React.DOM.li(null, React.DOM.a({href: "#SearchText", role: "tab", 'data-toggle': "tab"}, "Text Search"))
+              React.DOM.li({className: "active"}, React.DOM.a({href: "#Catalog", role: "tab", 'data-toggle': "tab"}, "དཀར་ཆགས།")), 
+              React.DOM.li(null, React.DOM.a({href: "#Search", role: "tab", 'data-toggle': "tab"}, "འཚོལ་བ།"))
             ), 
 
             React.DOM.div({className: "tab-content", ref: "tab-content"}, 
@@ -14922,23 +14908,21 @@ var main = React.createClass({displayName: 'main',
                 stacktoc({showText: this.showText, showExcerpt: this.showExcerpt, hits: this.state.res.rawresult, data: this.state.toc, goVoff: this.state.goVoff})
               ), 
 
-              React.DOM.div({className: "tab-pane fade", id: "SearchTitle"}, 
+              React.DOM.div({className: "tab-pane fade", id: "Search"}, 
                 this.renderinputs("title"), 
-                
-                renderItem({data: this.state.toc_result, gotopage: this.gotopage, tofind_toc: this.state.tofind_toc})
-              ), 
- 
-              React.DOM.div({className: "tab-pane fade", id: "SearchText"}, 
-                this.renderinputs("text"), 
-                
-                     "Search Example:   1.", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "བྱས"), 
-                "2. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "གནས"), 
-                "3. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "འགྱུར"), 
-                "4. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "བདག"), 
-                "5. ", React.DOM.a({href: "#", onClick: this.dosearch_ex}, "དགེ"), 
-                React.DOM.br(null), React.DOM.br(null), React.DOM.br(null), 
-                resultlist({res: this.state.res, tofind: this.state.tofind, gotopage: this.gotopage}), 
-                React.DOM.span(null, this.state.elapse)
+                React.DOM.div({className: "btn-group", 'data-toggle': "buttons", ref: "searchtype", onClick: this.searchtypechange}, 
+                  React.DOM.label({'data-type': "sutra", className: "btn btn-success"}, 
+                  React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "མདོ་ཡི་མཚན་འཚོལ་བ།")
+                  ), 
+                  React.DOM.label({'data-type': "kacha", className: "btn btn-success"}, 
+                  React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "དཀར་ཆགས་འཚོལ་བ།")
+                  ), 
+                  React.DOM.label({'data-type': "fulltext", className: "btn btn-success"}, 
+                  React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "ནང་དོན་འཚོལ་བ།")
+                  )
+                ), 
+                namelist({res_toc: this.state.res_toc, tofind: this.state.tofind, gotofile: this.gotofile}), 
+                resultlist({res: this.state.res, tofind: this.state.tofind, gotofile: this.gotofile})
               )
             )
           )
@@ -14987,7 +14971,6 @@ require.register("adarsha-resultlist/index.js", function(exports, require, modul
 //var othercomponent=Require("other"); 
 var resultlist=React.createClass({displayName: 'resultlist',  //should search result
   show:function() {
-    console.log(this.props.children);
     var tofind=this.props.tofind;
     return this.props.res.excerpt.map(function(r,i){ // excerpt is an array 
       var t = new RegExp(tofind,"g"); 
@@ -15000,7 +14983,7 @@ var resultlist=React.createClass({displayName: 'resultlist',  //should search re
   }, 
   gotopage:function(e) {
     var vpos=parseInt(e.target.parentNode.dataset['vpos']);
-    this.props.gotopage(vpos);
+    this.props.gotofile(vpos);
   },
   render:function() {
     if (this.props.res) {
@@ -15022,17 +15005,34 @@ require.register("adarsha-api/index.js", function(exports, require, module){
 //var othercomponent=Require("other"); 
 //new module filename must be added to scripts section of ./component.js and export here
 var api = {
- search: require("./search")
+ search_api: require("./search_api")
 }
 
 module.exports=api;
 });
-require.register("adarsha-api/search.js", function(exports, require, module){
-var search=function(tofind){
-	console.log(tofind);
+require.register("adarsha-api/search_api.js", function(exports, require, module){
+var searchSutra=function(tofind,toc){
+	var out=[];
+	toc.map(function(item){
+		if(item.depth==3 && item.text.indexOf(tofind)>-1){
+			out.push(item);
+		}
+	});
+	return out;
 }
 
-module.exports=search;
+var searchKacha=function(tofind,toc){
+	var out=[];
+	toc.map(function(item){
+		if(item.depth!=3 && item.depth!=0 && item.text.indexOf(tofind)>-1){
+			out.push(item);
+		}
+	});
+	return out;
+}
+
+var search_api={searchSutra:searchSutra,searchKacha:searchKacha}
+module.exports=search_api;
 });
 require.register("ksanaforge-stacktoc/index.js", function(exports, require, module){
 /** @jsx React.DOM */
@@ -15357,8 +15357,8 @@ var controlsFile = React.createClass({displayName: 'controlsFile',
   render: function() {    
    return React.DOM.div(null, 
             "Bampo", 
-            React.DOM.a({href: "#", onClick: this.props.prev}, React.DOM.img({width: "25", src: "banner/prev.png"})), 
-            React.DOM.a({href: "#", onClick: this.props.next}, React.DOM.img({width: "25", src: "banner/next.png"})), 
+            React.DOM.a({href: "#", onClick: this.props.prev}, React.DOM.img({width: "25", src: "./banner/prev.png"})), 
+            React.DOM.a({href: "#", onClick: this.props.next}, React.DOM.img({width: "25", src: "./banner/next.png"})), 
             React.DOM.br(null), React.DOM.span({id: "address"}, this.getAddress())
           )
   }  
@@ -15519,10 +15519,91 @@ var page2catalog = React.createClass({displayName: 'page2catalog',
 });
 module.exports=page2catalog;
 });
+require.register("adarsha-namelist/index.js", function(exports, require, module){
+/** @jsx React.DOM */
+
+/* to rename the component, change name of ./component.js and  "dependencies" section of ../../component.js */
+
+//var othercomponent=Require("other"); 
+var namelist = React.createClass({displayName: 'namelist',
+  getInitialState: function() {
+    return {};
+  },
+  onItemClick:function(e) {
+    var voff=parseInt(e.target.dataset.voff);
+    React.DOM.span(null, e.target.innerHTML)
+    this.props.gotofile(voff);
+  },
+  renderItem: function(item) {
+    var tofind=this.props.tofind;
+    item.text=item.text.replace(tofind,function(t){
+      return '<hl>'+t+"</hl>";
+    });
+    return (
+      React.DOM.div(null, 
+        React.DOM.li(null, React.DOM.a({herf: "#", className: "item", 'data-voff': item.voff, onClick: this.onItemClick, dangerouslySetInnerHTML: {__html:item.text}}))
+      ) 
+      )
+  },
+  render: function() {
+
+    return (
+      React.DOM.div(null, 
+        this.props.res_toc.map(this.renderItem)
+      )
+    );
+  }
+});
+module.exports=namelist;
+});
+require.register("adarsha-searchbar/index.js", function(exports, require, module){
+/** @jsx React.DOM */
+
+/* to rename the component, change name of ./component.js and  "dependencies" section of ../../component.js */
+
+//var othercomponent=Require("other"); 
+var searchbar = React.createClass({displayName: 'searchbar',
+  getInitialState: function() {
+    return {find:[],field:[]};
+  },
+  gettofind: function() {
+    var find=this.refs.tofind.getDOMNode().value;
+    this.setState({find:find});
+  },
+  getfield: function(e) {
+    var field=e.target.dataset.type;
+    this.setState({field:field});   
+  },
+  render: function() {
+    return (
+      React.DOM.div(null, 
+        React.DOM.input({className: "form-control", onInput: this.gettofind, ref: "tofind", defaultValue: "byang chub"}), 
+        React.DOM.div({className: "btn-group", 'data-toggle': "buttons", ref: "searchtype", onClick: this.getfield}, 
+          React.DOM.label({'data-type': "sutra", className: "btn btn-success"}, 
+          React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "Sutra")
+          ), 
+          React.DOM.label({'data-type': "kacha", className: "btn btn-success"}, 
+          React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "Kacha")
+          ), 
+          React.DOM.label({'data-type': "fulltext", className: "btn btn-success"}, 
+          React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "Text")
+          )
+        ), 
+        this.props.dosearch(null,null,0,this.state.field,this.state.tofind)
+      )
+    );
+  }
+});
+module.exports=searchbar;
+});
 require.register("adarsha/index.js", function(exports, require, module){
 var boot=require("boot");
 boot("adarsha","main","main");
 });
+
+
+
+
 
 
 
@@ -15642,7 +15723,7 @@ require.alias("adarsha-resultlist/index.js", "adarsha/deps/resultlist/index.js")
 require.alias("adarsha-resultlist/index.js", "resultlist/index.js");
 require.alias("adarsha-resultlist/index.js", "adarsha-resultlist/index.js");
 require.alias("adarsha-api/index.js", "adarsha/deps/api/index.js");
-require.alias("adarsha-api/search.js", "adarsha/deps/api/search.js");
+require.alias("adarsha-api/search_api.js", "adarsha/deps/api/search_api.js");
 require.alias("adarsha-api/index.js", "adarsha/deps/api/index.js");
 require.alias("adarsha-api/index.js", "api/index.js");
 require.alias("adarsha-api/index.js", "adarsha-api/index.js");
@@ -15666,6 +15747,14 @@ require.alias("adarsha-page2catalog/index.js", "adarsha/deps/page2catalog/index.
 require.alias("adarsha-page2catalog/index.js", "adarsha/deps/page2catalog/index.js");
 require.alias("adarsha-page2catalog/index.js", "page2catalog/index.js");
 require.alias("adarsha-page2catalog/index.js", "adarsha-page2catalog/index.js");
+require.alias("adarsha-namelist/index.js", "adarsha/deps/namelist/index.js");
+require.alias("adarsha-namelist/index.js", "adarsha/deps/namelist/index.js");
+require.alias("adarsha-namelist/index.js", "namelist/index.js");
+require.alias("adarsha-namelist/index.js", "adarsha-namelist/index.js");
+require.alias("adarsha-searchbar/index.js", "adarsha/deps/searchbar/index.js");
+require.alias("adarsha-searchbar/index.js", "adarsha/deps/searchbar/index.js");
+require.alias("adarsha-searchbar/index.js", "searchbar/index.js");
+require.alias("adarsha-searchbar/index.js", "adarsha-searchbar/index.js");
 require.alias("adarsha/index.js", "adarsha/index.js");
 if (typeof exports == 'object') {
   module.exports = require('adarsha');
