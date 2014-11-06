@@ -14778,9 +14778,6 @@ var main = React.createClass({displayName: 'main',
     var field=e.target.dataset.type;
     var w=this.refs.tofind.getDOMNode().value;
     var tofind=tibetan.romanize.fromWylie(w);
-    if (w!=tofind) {
-      this.setState({wylie:tofind});
-    }
     this.dosearch(null,null,0,field,tofind);
     this.setState({field:field});
   },
@@ -14788,23 +14785,24 @@ var main = React.createClass({displayName: 'main',
     field=field || this.state.field;
     if(field == "fulltext"){
       kse.search(this.state.db,tofind,{range:{start:start,maxhit:100}},function(data){ //call search engine          
-        this.setState({res:data, tofind:tofind});  
+        this.setState({res:data, tofind:tofind, res_toc:[]});  
       });
     }
     if(field == "kacha"){
       var res_kacha=api.search_api.searchKacha(tofind,this.state.toc);
-      this.setState({res_toc:res_kacha, tofind:tofind});
+      this.setState({res_toc:res_kacha, tofind:tofind, res:[]});
     }
     if(field == "sutra"){
       var res_sutra=api.search_api.searchSutra(tofind,this.state.toc);
-      this.setState({res_toc:res_sutra, tofind:tofind});
+      this.setState({res_toc:res_sutra, tofind:tofind, res:[]});
     }
     
   },
-  renderinputs:function(searcharea) {  // input interface for search
+  renderinputs:function(searcharea) {  // input interface for search // onInput={this.searchtypechange}
     if (this.state.db) {
       return (    
-        React.DOM.div(null, React.DOM.input({className: "form-control", onInput: this.searchtypechange, ref: "tofind", defaultValue: "byang chub"}), 
+        React.DOM.div(null, 
+        React.DOM.input({className: "form-control", ref: "tofind", defaultValue: "byang chub"}), 
         React.DOM.span({className: "wylie"}, this.state.wylie)
         )
         )          
@@ -14893,7 +14891,7 @@ var main = React.createClass({displayName: 'main',
   React.DOM.div({className: "row"}, 
     React.DOM.div({className: "col-md-12"}, 
       React.DOM.div({className: "header"}, 
-        "  ", React.DOM.img({height: "80px", src: "banner/banner-01.png"})
+        "  ", React.DOM.img({height: "80px", src: "./banner/banner-01.png"})
 
       ), 
 
@@ -14901,8 +14899,8 @@ var main = React.createClass({displayName: 'main',
         React.DOM.div({className: "col-md-3"}, 
           React.DOM.div({className: "borderright"}, 
             React.DOM.ul({className: "nav nav-tabs", role: "tablist"}, 
-              React.DOM.li({className: "active"}, React.DOM.a({href: "#Catalog", role: "tab", 'data-toggle': "tab"}, "Catalog")), 
-              React.DOM.li(null, React.DOM.a({href: "#Search", role: "tab", 'data-toggle': "tab"}, "Search"))
+              React.DOM.li({className: "active"}, React.DOM.a({href: "#Catalog", role: "tab", 'data-toggle': "tab"}, "དཀར་ཆགས།")), 
+              React.DOM.li(null, React.DOM.a({href: "#Search", role: "tab", 'data-toggle': "tab"}, "འཚོལ་བ།"))
             ), 
 
             React.DOM.div({className: "tab-content", ref: "tab-content"}, 
@@ -14913,14 +14911,14 @@ var main = React.createClass({displayName: 'main',
               React.DOM.div({className: "tab-pane fade", id: "Search"}, 
                 this.renderinputs("title"), 
                 React.DOM.div({className: "btn-group", 'data-toggle': "buttons", ref: "searchtype", onClick: this.searchtypechange}, 
-                  React.DOM.label({'data-type': "sutra", className: "btn btn-success active"}, 
-                  React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "Sutra")
+                  React.DOM.label({'data-type': "sutra", className: "btn btn-success"}, 
+                  React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "མདོ་ཡི་མཚན་འཚོལ་བ།")
                   ), 
                   React.DOM.label({'data-type': "kacha", className: "btn btn-success"}, 
-                  React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "Kacha")
+                  React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "དཀར་ཆགས་འཚོལ་བ།")
                   ), 
                   React.DOM.label({'data-type': "fulltext", className: "btn btn-success"}, 
-                  React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "Text")
+                  React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "ནང་དོན་འཚོལ་བ།")
                   )
                 ), 
                 namelist({res_toc: this.state.res_toc, tofind: this.state.tofind, gotofile: this.gotofile}), 
@@ -14973,7 +14971,6 @@ require.register("adarsha-resultlist/index.js", function(exports, require, modul
 //var othercomponent=Require("other"); 
 var resultlist=React.createClass({displayName: 'resultlist',  //should search result
   show:function() {
-    console.log(this.props.children);
     var tofind=this.props.tofind;
     return this.props.res.excerpt.map(function(r,i){ // excerpt is an array 
       var t = new RegExp(tofind,"g"); 
@@ -15360,8 +15357,8 @@ var controlsFile = React.createClass({displayName: 'controlsFile',
   render: function() {    
    return React.DOM.div(null, 
             "Bampo", 
-            React.DOM.a({href: "#", onClick: this.props.prev}, React.DOM.img({width: "25", src: "banner/prev.png"})), 
-            React.DOM.a({href: "#", onClick: this.props.next}, React.DOM.img({width: "25", src: "banner/next.png"})), 
+            React.DOM.a({href: "#", onClick: this.props.prev}, React.DOM.img({width: "25", src: "./banner/prev.png"})), 
+            React.DOM.a({href: "#", onClick: this.props.next}, React.DOM.img({width: "25", src: "./banner/next.png"})), 
             React.DOM.br(null), React.DOM.span({id: "address"}, this.getAddress())
           )
   }  
@@ -15559,10 +15556,52 @@ var namelist = React.createClass({displayName: 'namelist',
 });
 module.exports=namelist;
 });
+require.register("adarsha-searchbar/index.js", function(exports, require, module){
+/** @jsx React.DOM */
+
+/* to rename the component, change name of ./component.js and  "dependencies" section of ../../component.js */
+
+//var othercomponent=Require("other"); 
+var searchbar = React.createClass({displayName: 'searchbar',
+  getInitialState: function() {
+    return {find:[],field:[]};
+  },
+  gettofind: function() {
+    var find=this.refs.tofind.getDOMNode().value;
+    this.setState({find:find});
+  },
+  getfield: function(e) {
+    var field=e.target.dataset.type;
+    this.setState({field:field});   
+  },
+  render: function() {
+    return (
+      React.DOM.div(null, 
+        React.DOM.input({className: "form-control", onInput: this.gettofind, ref: "tofind", defaultValue: "byang chub"}), 
+        React.DOM.div({className: "btn-group", 'data-toggle': "buttons", ref: "searchtype", onClick: this.getfield}, 
+          React.DOM.label({'data-type': "sutra", className: "btn btn-success"}, 
+          React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "Sutra")
+          ), 
+          React.DOM.label({'data-type': "kacha", className: "btn btn-success"}, 
+          React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "Kacha")
+          ), 
+          React.DOM.label({'data-type': "fulltext", className: "btn btn-success"}, 
+          React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "Text")
+          )
+        ), 
+        this.props.dosearch(null,null,0,this.state.field,this.state.tofind)
+      )
+    );
+  }
+});
+module.exports=searchbar;
+});
 require.register("adarsha/index.js", function(exports, require, module){
 var boot=require("boot");
 boot("adarsha","main","main");
 });
+
+
 
 
 
@@ -15712,6 +15751,10 @@ require.alias("adarsha-namelist/index.js", "adarsha/deps/namelist/index.js");
 require.alias("adarsha-namelist/index.js", "adarsha/deps/namelist/index.js");
 require.alias("adarsha-namelist/index.js", "namelist/index.js");
 require.alias("adarsha-namelist/index.js", "adarsha-namelist/index.js");
+require.alias("adarsha-searchbar/index.js", "adarsha/deps/searchbar/index.js");
+require.alias("adarsha-searchbar/index.js", "adarsha/deps/searchbar/index.js");
+require.alias("adarsha-searchbar/index.js", "searchbar/index.js");
+require.alias("adarsha-searchbar/index.js", "adarsha-searchbar/index.js");
 require.alias("adarsha/index.js", "adarsha/index.js");
 if (typeof exports == 'object') {
   module.exports = require('adarsha');
