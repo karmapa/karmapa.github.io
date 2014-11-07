@@ -7176,16 +7176,18 @@ hl[n="1"]{color: blue;}
 hl[n="2"]{color: green;}
 
 .stacktoc {font-size:150%;}
-
+.stacktoc a {color:black;}
+.stacktoc a.hitbadge {color:white;}
 div.parent{background:#FFFFCC; }
 div.parent:hover { background:#FFF380;}
 div.parent span.text:hover { text-decoration: underline; cursor:pointer;}
-div.current {color:black; background:#85BB65;border-bottom-right-radius:10px 10px;}
+div.current {color:black; background:#95CB85;border-bottom-right-radius:10px 10px;}
 div.current:hover {background:#59E817;}
 div.current span.text:hover{text-decoration:underline;cursor:pointer;}
 div.child span.text:hover {text-decoration:underline;cursor:pointer;color:#85BB65;}
 .tocitem {text-decoration: none;cursor:pointer;}
 .badge:hover {color:#59E817;cursor:pointer;}
+
 .showtext {font-family: ctrc-uchen;
 	cursor:text;}
 .pagetext {line-height: 30px;
@@ -7213,3 +7215,4 @@ hl[n="2"]{color: green;}
 
 @font-face { font-family: 'tibetan1'; font-style: normal; font-weight: normal; src: url("fonts/himalaya_2.ttf"); }
 .text , .tocitem {font-family: 'tibetan1';text-decoration: none;cursor:pointer;}
+.stacktoc , .results , .item , .nav-tabs {font-family: 'tibetan1';}

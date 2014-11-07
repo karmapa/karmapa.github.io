@@ -208,16 +208,23 @@ var ksana={"platform":"remote"};
 
 if (typeof process !="undefined") {
 	if (process.versions["node-webkit"]) {
+  		if (typeof nodeRequire!="undefined") ksana.require=nodeRequire;
   		ksana.platform="node-webkit";
 			window.ksanagap=require("./ksanagap"); //compatible layer with mobile
 			window.kfs=require("./kfs");
-  		if (typeof nodeRequire!="undefined") ksana.require=nodeRequire;
   	}
 } else if (typeof chrome!="undefined"){//} && chrome.fileSystem){
 	window.ksanagap=require("./ksanagap"); //compatible layer with mobile
 	window.ksanagap.platform="chrome";
 	window.kfs=require("./kfs_html5");
 	ksana.platform="chrome";
+} else {
+	if (typeof ksanagap!="undefined" ) {
+		ksana.platform=ksanagap.platform;
+		if (typeof ksanagap.android !="undefined") {
+			ksana.platform="android";
+		}
+	}
 }
 
 //if (typeof React=="undefined") window.React=require('../react');
@@ -236,8 +243,10 @@ module.exports=boot;
 });
 require.register("ksanaforge-boot/ksanagap.js", function(exports, require, module){
 var switchApp=function(path) {
-  process.chdir("../"+path);
-  document.location.href= "../"+path+"/index.html"; 
+	var fs=nodeRequire("fs");
+	path="../"+path;
+	document.location.href= path+"/index.html"; 
+	process.chdir(path);
 }
 var downloader={};
 var rootPath="";
@@ -245,6 +254,18 @@ if (typeof process!="undefined") {
 	downloader=require("./downloader");
 	rootPath=process.cwd();
 	rootPath=nodeRequire("path").resolve(rootPath,"..").replace(/\\/g,"/")+'/';
+}
+var deleteApp=function(app) {
+	console.error("not allow on PC, do it in File Explorer/ Finder");
+}
+var username=function() {
+	return "";
+}
+var useremail=function() {
+	return ""
+}
+var runtime_version=function() {
+	return "1.2";
 }
 var ksanagap={
 	platform:"node-webkit",
@@ -254,7 +275,11 @@ var ksanagap={
 	cancelDownload:downloader.cancelDownload,
 	doneDownload:downloader.doneDownload,
 	switchApp:switchApp,
-	rootPath:rootPath
+	rootPath:rootPath,
+	deleteApp: deleteApp,
+	username:username, //not support on PC
+	useremail:username,
+	runtime_version:runtime_version
 }
 
 
@@ -284,6 +309,7 @@ var startDownload=function(dbid,_baseurl,_files) { //return download id
 	nextFile();
 	downloading=true;
 	baseurl=_baseurl;
+	if (baseurl[baseurl.length-1]!='/')baseurl+='/';
 	targetPath=ksanagap.rootPath+dbid+'/';
 	tempPath=ksanagap.rootPath+".tmp/";
 	result="";
@@ -311,8 +337,7 @@ var downloadFile=function(nfile) {
 	var request = http.get(url, function(response) {
 		response.on('data',function(chunk){
 			writeStream.write(chunk);
-			datalength+=chunk.length;
-			totalDownloadByte+=datalength;
+			totalDownloadByte+=chunk.length;
 			if (userCancel) {
 				writeStream.end();
 				setTimeout(function(){nextFile();},100);
@@ -406,6 +431,8 @@ var listApps=function() {
 	})
 	return JSON.stringify(out);
 }
+
+
 
 var kfs={readDir:readDir,listApps:listApps};
 
@@ -14743,7 +14770,7 @@ var renderItem=Require("renderItem");
 var tibetan=Require("ksana-document").languages.tibetan; 
 var page2catalog=Require("page2catalog");
 var namelist=Require("namelist");
-var version="v0.1.03"
+var version="v0.1.07"
 var main = React.createClass({displayName: 'main',
   componentDidMount:function() {
     var that=this;
@@ -14845,7 +14872,7 @@ var main = React.createClass({displayName: 'main',
   },
   gotofile:function(vpos){
     var res=kse.vpos2filepage(this.state.db,vpos);
-    this.showPage(res.file,res.page-1,false);
+    this.showPage(res.file,res.page,false);
   },
   showPage:function(f,p,hideResultlist) {    
     window.location.hash = this.encodeHashTag(f,p);
@@ -15046,7 +15073,7 @@ var trimHit=function(hit) {
 }
 var Ancestors=React.createClass({displayName: 'Ancestors',
   goback:function(e) {
-    var n=e.target.dataset["n"]; 
+    var n=e.target.dataset["n"];  
     if (typeof n=="undefined") n=e.target.parentNode.dataset["n"];
     this.props.setCurrent(n); 
   },
@@ -15057,12 +15084,12 @@ var Ancestors=React.createClass({displayName: 'Ancestors',
     this.props.showExcerpt(n);
   }, 
   showHit:function(hit) {
-    if (hit)  return React.DOM.span({onClick: this.showExcerpt, className: "pull-right badge"}, trimHit(hit))
+    if (hit)  return React.DOM.a({href: "#", onClick: this.showExcerpt, className: "pull-right badge hitbadge"}, trimHit(hit))
     else return React.DOM.span(null);
   },
   renderAncestor:function(n,idx) {
     var hit=this.props.toc[n].hit;
-    return React.DOM.div({key: "a"+n, className: "node parent", 'data-n': n}, idx+1, ".", React.DOM.span({className: "text", onClick: this.goback}, this.props.toc[n].text), this.showHit(hit))
+    return React.DOM.div({key: "a"+n, className: "node parent", 'data-n': n}, idx+1, ".", React.DOM.a({className: "text", href: "#", onClick: this.goback}, this.props.toc[n].text), this.showHit(hit))
   },
   render:function() {
     if (!this.props.data || !this.props.data.length) return React.DOM.div(null);
@@ -15070,12 +15097,21 @@ var Ancestors=React.createClass({displayName: 'Ancestors',
   } 
 }); 
 var Children=React.createClass({displayName: 'Children',
+  getInitialState:function() {
+    return {selected:0};
+  },
+  shouldComponentUpdate:function(nextProps,nextState) {
+    if (nextProps.data.join()!=this.props.data.join() ) {
+      nextState.selected=parseInt(nextProps.data[0]);
+    }
+    return true;
+  },
   open:function(e) {
     var n=e.target.parentNode.dataset["n"];
-    if (typeof n!=="undefined") this.props.setCurrent(n);
+    if (typeof n!=="undefined") this.props.setCurrent(parseInt(n));
   }, 
   showHit:function(hit) {
-    if (hit)  return React.DOM.span({onClick: this.showExcerpt, className: "pull-right badge"}, trimHit(hit))
+    if (hit)  return React.DOM.a({href: "#", onClick: this.showExcerpt, className: "pull-right badge hitbadge"}, trimHit(hit))
     else return React.DOM.span(null);
   },
   showExcerpt:function(e) {
@@ -15084,12 +15120,14 @@ var Children=React.createClass({displayName: 'Children',
     e.preventDefault();
     this.props.hitClick(n);
   }, 
-  openNode:function(haschild) {
-    if (haschild) {
-      return React.DOM.button({className: "btn btn-xs btn-link", onClick: this.open}, "＋")
+  nodeClicked:function(e) {
+    var n=parseInt(e.target.dataset.n);
+    if (n!=this.state.selected) {
+      this.setState({selected:n});
+      this.showText(e);
     } else {
-      return React.DOM.button({className: "btn btn-xs btn-link disabled"}, "－")
-    }    
+      this.open(e);
+    }
   },
   renderChild:function(n) {
     var child=this.props.toc[n];
@@ -15098,10 +15136,10 @@ var Children=React.createClass({displayName: 'Children',
     //if (child.extra) extra="<extra>"+child.extra+"</extra>";
     if (!child.hasChild) classes+=" nochild";
     else haschild=true;
-     
-    return React.DOM.div({className: classes, 'data-n': n}, 
-    this.openNode(haschild), 
-    React.DOM.a({className: "tocitem text", onClick: this.showText}, this.props.toc[n].text), this.showHit(hit))
+    var classes="btn btn-link"
+    if (n==this.state.selected && haschild) classes="btn btn-default";
+
+    return React.DOM.div({'data-n': n}, React.DOM.a({'data-n': n, className: classes +" tocitem text", onClick: this.nodeClicked}, this.props.toc[n].text), this.showHit(hit))
   },
   showText:function(e) {
     var n=e.target.dataset["n"];
@@ -15171,6 +15209,7 @@ var stacktoc = React.createClass({displayName: 'stacktoc',
       } else break;
       if (n) child=toc[n];else break;
     }
+
     return children;
   },
   rebuildToc:function() {
@@ -15259,7 +15298,7 @@ var stacktoc = React.createClass({displayName: 'stacktoc',
     this.hitClick(this.state.cur);
   },
   showHit:function(hit) {
-    if (hit)  return React.DOM.span({onClick: this.onHitClick, className: "pull-right badge"}, trimHit(hit))
+    if (hit)  return React.DOM.a({href: "#", onClick: this.onHitClick, className: "pull-right badge hitbadge"}, trimHit(hit))
     else return React.DOM.span(null);
   },
   showText:function(e) {
@@ -15278,7 +15317,7 @@ var stacktoc = React.createClass({displayName: 'stacktoc',
     return ( 
       React.DOM.div({className: "stacktoc"}, 
         Ancestors({showExcerpt: this.hitClick, setCurrent: this.setCurrent, toc: this.props.data, data: ancestors}), 
-        React.DOM.div({onClick: this.showText, className: "node current", 'data-n': this.state.cur}, React.DOM.span(null, depth, "."), React.DOM.span({className: "text"}, current.text), this.showHit(current.hit)), 
+        React.DOM.div({className: "node current"}, React.DOM.a({href: "#", onClick: this.showText, 'data-n': this.state.cur}, React.DOM.span(null, depth, "."), React.DOM.span({className: "text"}, current.text)), this.showHit(current.hit)), 
         Children({showText: this.props.showText, hitClick: this.hitClick, setCurrent: this.setCurrent, toc: this.props.data, data: children})
       )
     ); 
@@ -15368,26 +15407,34 @@ var controlsFile = React.createClass({displayName: 'controlsFile',
 
 var showtext = React.createClass({displayName: 'showtext',
   getInitialState: function() {
-    return {bar: "world", pageImg:""};
+    return {bar: "world", pageImg:"", scroll:true};
   },
   componentDidUpdate:function()  {    
-    if(this.props.scrollto != 0){
+    if(this.props.scrollto && this.props.scrollto.match(/[ab]/) && this.state.scroll){
       var p=this.props.scrollto.match(/\d+.(\d+)[ab]/);
-      if(p[1]!=1){
-        $(".text-content").scrollTop( 0 );
-        $(".text-content").scrollTop( $("a[data-pb='"+this.props.scrollto+"']").position().top );
-      } else $(".text-content").scrollTop( 0 );
-      
+      $(".text-content").scrollTop( 0 );
+      if(p[1]!=1){       
+        var pb=$("a[data-pb='"+this.props.scrollto+"']");
+        if(pb.length) $(".text-content").scrollTop( pb.position().top-20 );
+      }          
     }  
-  }, 
+
+  },
   hitClick: function(n){
     if(this.props.showExcerpt) this.props.showExcerpt(n);
   },
   renderPageImg: function(e) {
     var pb=e.target.dataset.pb;
-    if (pb) this.setState({clickedpb:pb});
+    if (pb) {
+      this.setState({clickedpb:pb});  
+      this.setState({scroll:false});
+    }
     var img=e.target.dataset.img;
-    if (img) this.setState({clickedpb:null});
+    if (img) {
+      this.setState({clickedpb:null});  
+      this.setState({scroll:true}); 
+    }
+    
   },
   getImgName: function(volpage) {
     var p=volpage.split(".");
