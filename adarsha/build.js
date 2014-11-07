@@ -14751,7 +14751,7 @@ var main = React.createClass({displayName: 'main',
   }, 
   getInitialState: function() {
     document.title=version+"-adarsha";
-    return {dialog:null,res:{},res_toc:[],bodytext:{file:0,page:0},db:null,toc_result:[],page:0,field:"sutra"};
+    return {dialog:null,res:{},res_toc:[],bodytext:{file:0,page:0},db:null,toc_result:[],page:0,field:"sutra",scrollto:0};
   },
   componentDidUpdate:function()  {
     var ch=document.documentElement.clientHeight;
@@ -14761,14 +14761,13 @@ var main = React.createClass({displayName: 'main',
   },  
   encodeHashTag:function(file,p) { //file/page to hash tag
     var f=parseInt(file)+1;
-    var pagename=this.state.db.getFilePageNames(f)[p];
     return "#"+f+"."+p;
   },
   decodeHashTag:function(s) {
     var fp=s.match(/#(\d+)\.(.*)/);
     var p=parseInt(fp[2]);
     var file=parseInt(fp[1])-1;
-    var pagename=this.state.db.getFilePageNames(file)[p];   
+    var pagename=this.state.db.getFilePageNames(file)[p]; 
     this.setPage(pagename,file);
   },
   goHashTag:function() {
@@ -14851,11 +14850,13 @@ var main = React.createClass({displayName: 'main',
   showPage:function(f,p,hideResultlist) {    
     window.location.hash = this.encodeHashTag(f,p);
     var that=this;
+    var pagename=this.state.db.getFilePageNames(f)[p];
+    this.setState({scrollto:pagename});
+
     kse.highlightFile(this.state.db,f,{q:this.state.tofind},function(data){
       that.setState({bodytext:data,page:p});
       if (hideResultlist) that.setState({res:[]});     
     });
-
   }, 
   showText:function(n) {
     var res=kse.vpos2filepage(this.state.db,this.state.toc[n].voff);
@@ -14877,6 +14878,7 @@ var main = React.createClass({displayName: 'main',
     if (fp.length){
       this.showPage(fp[0].file,fp[0].page);
     }
+    console.log(newpagename);
   },
   render: function() {
     if (!this.state.quota) { // install required db
@@ -14911,13 +14913,13 @@ var main = React.createClass({displayName: 'main',
               React.DOM.div({className: "tab-pane fade", id: "Search"}, 
                 this.renderinputs("title"), 
                 React.DOM.div({className: "btn-group", 'data-toggle': "buttons", ref: "searchtype", onClick: this.searchtypechange}, 
-                  React.DOM.label({'data-type': "sutra", className: "btn btn-success"}, 
+                  React.DOM.label({'data-type': "sutra", className: "btn btn-success btn-xs"}, 
                   React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "མདོ་ཡི་མཚན་འཚོལ་བ།")
                   ), 
-                  React.DOM.label({'data-type': "kacha", className: "btn btn-success"}, 
+                  React.DOM.label({'data-type': "kacha", className: "btn btn-success btn-xs"}, 
                   React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "དཀར་ཆགས་འཚོལ་བ།")
                   ), 
-                  React.DOM.label({'data-type': "fulltext", className: "btn btn-success"}, 
+                  React.DOM.label({'data-type': "fulltext", className: "btn btn-success btn-xs"}, 
                   React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "ནང་དོན་འཚོལ་བ།")
                   )
                 ), 
@@ -14930,7 +14932,7 @@ var main = React.createClass({displayName: 'main',
 
         React.DOM.div({className: "col-md-9"}, 
           React.DOM.div({className: "text text-content", ref: "text-content"}, 
-          showtext({page: this.state.page, bodytext: this.state.bodytext, text: text, nextfile: this.nextfile, prevfile: this.prevfile, setpage: this.setPage, db: this.state.db, toc: this.state.toc})
+          showtext({page: this.state.page, bodytext: this.state.bodytext, text: text, nextfile: this.nextfile, prevfile: this.prevfile, setpage: this.setPage, db: this.state.db, toc: this.state.toc, scrollto: this.state.scrollto})
           )
         )
       )
@@ -14991,7 +14993,7 @@ var resultlist=React.createClass({displayName: 'resultlist',  //should search re
           return React.DOM.div({className: "results"}, this.show())
           debugger;
       } else {
-        return React.DOM.div(null, "Not found")
+        return React.DOM.div(null)
       }
     }
     else {
@@ -15354,8 +15356,8 @@ var controlsFile = React.createClass({displayName: 'controlsFile',
    // this.setState({address:res});
     return res;
   },
-  render: function() {    
-   return React.DOM.div(null, 
+  render: function() {   
+   return React.DOM.div({className: "cursor"}, 
             "Bampo", 
             React.DOM.a({href: "#", onClick: this.props.prev}, React.DOM.img({width: "25", src: "./banner/prev.png"})), 
             React.DOM.a({href: "#", onClick: this.props.next}, React.DOM.img({width: "25", src: "./banner/next.png"})), 
@@ -15368,6 +15370,16 @@ var showtext = React.createClass({displayName: 'showtext',
   getInitialState: function() {
     return {bar: "world", pageImg:""};
   },
+  componentDidUpdate:function()  {    
+    if(this.props.scrollto != 0){
+      var p=this.props.scrollto.match(/\d+.(\d+)[ab]/);
+      if(p[1]!=1){
+        $(".text-content").scrollTop( 0 );
+        $(".text-content").scrollTop( $("a[data-pb='"+this.props.scrollto+"']").position().top );
+      } else $(".text-content").scrollTop( 0 );
+      
+    }  
+  }, 
   hitClick: function(n){
     if(this.props.showExcerpt) this.props.showExcerpt(n);
   },
@@ -15402,10 +15414,9 @@ var showtext = React.createClass({displayName: 'showtext',
     return s;
   },
   render: function() {
-
     var text=this.renderpb(this.props.text);
     return (
-      React.DOM.div(null, 
+      React.DOM.div({className: "cursor"}, 
         controls({next: this.props.nextpage, prev: this.props.prevpage, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc, genToc: this.props.genToc, syncToc: this.props.syncToc}), 
         controlsFile({page: this.props.page, bodytext: this.props.bodytext, next: this.props.nextfile, prev: this.props.prevfile, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc}), 
         React.DOM.br(null), 
