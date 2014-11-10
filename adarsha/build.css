@@ -7128,6 +7128,28 @@ td.visible-print {
 .search{
 	}
 
+.nav-tabs > li, .nav-pills > li {
+    float:none;
+    display:inline-block;
+}
+
+.nav-tabs {
+    text-align:center;
+}
+
+
+
+.btn:active,  
+.btn.active {
+  background-image: none;              
+  color: #ffffff;
+  background-color: #5cb85c;           /*點擊&選取色彩  設綠色*/
+  border: 1px solid #5cb85c;
+  outline: 0;
+  -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+          box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+}
+
 .text {
 	font-family: ctrc-uchen;
 	padding-top:10px; 
@@ -7137,7 +7159,14 @@ td.visible-print {
 .col-md-3{
 	line-height: 36px;
 	float: left;
+	padding-left: 0;
+	padding-right: 10px;
 	}
+
+.input-small{
+	width:315px;
+}
+
 .col-md-9{
     padding-right: 0;	
 }
@@ -7169,7 +7198,8 @@ a{color:#178918;}
 .comp1 {}
 .results {}
 .results{font-family: ctrc-uchen;
-	line-height: 26px;}
+	line-height: 26px;
+	padding-left: 10px;}
 .pagename{cursor: pointer;}
 hl{color:red;}
 hl[n="1"]{color: blue;}
