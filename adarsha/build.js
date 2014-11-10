@@ -14805,7 +14805,7 @@ var main = React.createClass({displayName: 'main',
     var w=this.refs.tofind.getDOMNode().value;
     var tofind=tibetan.romanize.fromWylie(w);
     this.dosearch(null,null,0,field,tofind);
-    this.setState({field:field});
+    if(field) this.setState({field:field});
   },
   dosearch: function(e,reactid,start,field,tofind){
     field=field || this.state.field;
@@ -14828,7 +14828,7 @@ var main = React.createClass({displayName: 'main',
     if (this.state.db) {
       return (    
         React.DOM.div(null, 
-        React.DOM.input({className: "form-control", ref: "tofind", defaultValue: "byang chub"}), 
+        React.DOM.input({className: "form-control", ref: "tofind", onInput: this.searchtypechange, defaultValue: "byang chub"}), 
         React.DOM.span({className: "wylie"}, this.state.wylie)
         )
         )          
@@ -14928,7 +14928,7 @@ var main = React.createClass({displayName: 'main',
         React.DOM.div({className: "col-md-3"}, 
           React.DOM.div({className: "borderright"}, 
             React.DOM.ul({className: "nav nav-tabs", role: "tablist"}, 
-              React.DOM.li({className: "active"}, React.DOM.a({href: "#Catalog", role: "tab", 'data-toggle': "tab"}, "དཀར་ཆགས།")), 
+              React.DOM.li({className: "active"}, React.DOM.a({href: "#Catalog", role: "tab", 'data-toggle': "tab"}, "དཀར་ཆག །")), 
               React.DOM.li(null, React.DOM.a({href: "#Search", role: "tab", 'data-toggle': "tab"}, "འཚོལ་བ།"))
             ), 
 
@@ -14940,13 +14940,13 @@ var main = React.createClass({displayName: 'main',
               React.DOM.div({className: "tab-pane fade", id: "Search"}, 
                 this.renderinputs("title"), 
                 React.DOM.div({className: "btn-group", 'data-toggle': "buttons", ref: "searchtype", onClick: this.searchtypechange}, 
-                  React.DOM.label({'data-type': "sutra", className: "btn btn-success btn-xs"}, 
+                  React.DOM.label({'data-type': "sutra", className: "btn btn-default btn-xs", Checked: true}, 
                   React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "མདོ་ཡི་མཚན་འཚོལ་བ།")
                   ), 
-                  React.DOM.label({'data-type': "kacha", className: "btn btn-success btn-xs"}, 
+                  React.DOM.label({'data-type': "kacha", className: "btn btn-default btn-xs"}, 
                   React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "དཀར་ཆགས་འཚོལ་བ།")
                   ), 
-                  React.DOM.label({'data-type': "fulltext", className: "btn btn-success btn-xs"}, 
+                  React.DOM.label({'data-type': "fulltext", className: "btn btn-default btn-xs"}, 
                   React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "ནང་དོན་འཚོལ་བ།")
                   )
                 ), 
@@ -15003,10 +15003,10 @@ var resultlist=React.createClass({displayName: 'resultlist',  //should search re
     var tofind=this.props.tofind;
     return this.props.res.excerpt.map(function(r,i){ // excerpt is an array 
       var t = new RegExp(tofind,"g"); 
-      r.text=r.text.replace(t,function(tofind){return "<hl>"+tofind+"</hl>"});
+      var context=r.text.replace(t,function(tofind){return "<hl>"+tofind+"</hl>"});
       return React.DOM.div({'data-vpos': r.hits[0][0]}, 
       React.DOM.a({onClick: this.gotopage, className: "pagename"}, r.pagename), 
-        React.DOM.div({className: "resultitem", dangerouslySetInnerHTML: {__html:r.text}})
+        React.DOM.div({className: "resultitem", dangerouslySetInnerHTML: {__html:context}})
       )
     },this);
   }, 
@@ -15329,22 +15329,6 @@ require.register("adarsha-showtext/index.js", function(exports, require, module)
 /** @jsx React.DOM */
 
 //var othercomponent=Require("other"); 
-var controls = React.createClass({displayName: 'controls',
-  getInitialState: function() {
-    return {};
-  },
-
-  gotoToc: function(){
-    this.props.syncToc();       
-  },
-  render: function() { 
-   
-   return React.DOM.div(null
-
-          )
-  }  
-});
-
 var controlsFile = React.createClass({displayName: 'controlsFile',
   getInitialState: function() {
     return {address:0};
@@ -15453,7 +15437,7 @@ var showtext = React.createClass({displayName: 'showtext',
       var link='<br></br><a href="#" data-pb="'+m1+'">'+m1+'<img width="25" src="banner/imageicon.png"/></a>';
       if(m1 == that.state.clickedpb){
         var imgName=that.getImgName(m1);
-        link='<br></br>'+m1+'<img data-img="'+m1+'" width="100%" src="../adarsha_img/lijiang/'+imgName+'.jpg"/>';
+        link='<br></br>'+m1+'<img data-img="'+m1+'" width="100%" src="../adarsha_img/lijiang/'+imgName+'.jpg"/><br></br>';
       }
       return link;
     });
@@ -15461,13 +15445,12 @@ var showtext = React.createClass({displayName: 'showtext',
     return s;
   },
   render: function() {
-    var text=this.renderpb(this.props.text);
+    var content=this.renderpb(this.props.text);
     return (
       React.DOM.div({className: "cursor"}, 
-        controls({next: this.props.nextpage, prev: this.props.prevpage, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc, genToc: this.props.genToc, syncToc: this.props.syncToc}), 
         controlsFile({page: this.props.page, bodytext: this.props.bodytext, next: this.props.nextfile, prev: this.props.prevfile, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc}), 
         React.DOM.br(null), 
-        React.DOM.div({onClick: this.renderPageImg, className: "pagetext", dangerouslySetInnerHTML: {__html: text}})
+        React.DOM.div({onClick: this.renderPageImg, className: "pagetext", dangerouslySetInnerHTML: {__html: content}})
       )
     );
   }
@@ -15592,14 +15575,14 @@ var namelist = React.createClass({displayName: 'namelist',
     React.DOM.span(null, e.target.innerHTML)
     this.props.gotofile(voff);
   },
-  renderItem: function(item) {
+  renderNameItem: function(item) {
     var tofind=this.props.tofind;
-    item.text=item.text.replace(tofind,function(t){
+    var context=item.text.replace(tofind,function(t){
       return '<hl>'+t+"</hl>";
     });
     return (
       React.DOM.div(null, 
-        React.DOM.li(null, React.DOM.a({herf: "#", className: "item", 'data-voff': item.voff, onClick: this.onItemClick, dangerouslySetInnerHTML: {__html:item.text}}))
+        React.DOM.li(null, React.DOM.a({herf: "#", className: "item", 'data-voff': item.voff, onClick: this.onItemClick, dangerouslySetInnerHTML: {__html:context}}))
       ) 
       )
   },
@@ -15607,7 +15590,7 @@ var namelist = React.createClass({displayName: 'namelist',
 
     return (
       React.DOM.div(null, 
-        this.props.res_toc.map(this.renderItem)
+        this.props.res_toc.map(this.renderNameItem)
       )
     );
   }
