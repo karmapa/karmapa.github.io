@@ -7128,6 +7128,16 @@ td.visible-print {
 .search{
 	}
 
+.nav-tabs > li, .nav-pills > li {
+    float:none;
+    display:inline-block;
+}
+
+.nav-tabs {
+    text-align:center;
+}
+
+
 
 .btn:active,  
 .btn.active {
@@ -7149,10 +7159,12 @@ td.visible-print {
 .col-md-3{
 	line-height: 36px;
 	float: left;
+	padding-left: 0;
+	padding-right: 10px;
 	}
 
 .input-small{
-	width:340px;
+	width:315px;
 }
 
 .col-md-9{
@@ -7186,7 +7198,8 @@ a{color:#178918;}
 .comp1 {}
 .results {}
 .results{font-family: ctrc-uchen;
-	line-height: 26px;}
+	line-height: 26px;
+	padding-left: 10px;}
 .pagename{cursor: pointer;}
 hl{color:red;}
 hl[n="1"]{color: blue;}

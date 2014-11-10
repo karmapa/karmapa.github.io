@@ -14766,7 +14766,6 @@ var kse=Require('ksana-document').kse; // Ksana Search Engine (run at client sid
 var api=Require("api");
 var stacktoc=Require("stacktoc");  //載入目錄顯示元件
 var showtext=Require("showtext");
-var renderItem=Require("renderItem");
 var tibetan=Require("ksana-document").languages.tibetan; 
 var page2catalog=Require("page2catalog");
 var namelist=Require("namelist");
@@ -14828,7 +14827,7 @@ var main = React.createClass({displayName: 'main',
     if (this.state.db) {
       return (    
         React.DOM.div(null, 
-        React.DOM.input({className: "form-control input-small", ref: "tofind", onInput: this.searchtypechange, defaultValue: "byang chub"}), 
+        React.DOM.input({className: "form-control input-small col-lg-offset-1", ref: "tofind", onInput: this.searchtypechange, defaultValue: "byang chub"}), 
         React.DOM.span({className: "wylie"}, this.state.wylie)
         )
         )          
@@ -14920,7 +14919,7 @@ var main = React.createClass({displayName: 'main',
   React.DOM.div({className: "row"}, 
     React.DOM.div({className: "col-md-12"}, 
       React.DOM.div({className: "header"}, 
-        "  ", React.DOM.img({height: "80px", src: "./banner/banner-01.png"})
+        "  ", React.DOM.img({height: "80px", src: "./banner/banner-06.png"})
 
       ), 
 
@@ -14928,26 +14927,26 @@ var main = React.createClass({displayName: 'main',
         React.DOM.div({className: "col-md-3"}, 
           React.DOM.div({className: "borderright"}, 
             React.DOM.ul({className: "nav nav-tabs", role: "tablist"}, 
-              React.DOM.li({className: "active"}, React.DOM.a({href: "#Catalog", role: "tab", 'data-toggle': "tab"}, "དཀར་ཆག །")), 
-              React.DOM.li(null, React.DOM.a({href: "#Search", role: "tab", 'data-toggle': "tab"}, "འཚོལ་བ།"))
+              React.DOM.li({className: "active"}, React.DOM.a({href: "#Search", role: "tab", 'data-toggle': "tab"}, React.DOM.img({height: "30px", src: "./banner/search.png"}))), 
+              React.DOM.li(null, React.DOM.a({href: "#Catalog", role: "tab", 'data-toggle': "tab"}, React.DOM.img({height: "30px", src: "./banner/catalog.png"})))
             ), 
 
             React.DOM.div({className: "tab-content", ref: "tab-content"}, 
-              React.DOM.div({className: "tab-pane fade in active", id: "Catalog"}, 
+              React.DOM.div({className: "tab-pane fade", id: "Catalog"}, 
                 stacktoc({showText: this.showText, showExcerpt: this.showExcerpt, hits: this.state.res.rawresult, data: this.state.toc, goVoff: this.state.goVoff})
               ), 
 
-              React.DOM.div({className: "tab-pane fade", id: "Search"}, 
+              React.DOM.div({className: "tab-pane fade in active", id: "Search"}, 
                 this.renderinputs("title"), 
-                React.DOM.div({className: "btn-group", 'data-toggle': "buttons", ref: "searchtype", onClick: this.searchtypechange}, 
-                  React.DOM.label({'data-type': "sutra", className: "btn btn-default btn-xs", Checked: true}, 
-                  React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "མདོ་ཡི་མཚན་འཚོལ་བ།")
+                React.DOM.div({className: "btn-group col-sm-offset-1", 'data-toggle': "buttons", ref: "searchtype", onClick: this.searchtypechange}, 
+                  React.DOM.label({'data-type': "sutra", className: "btn btn-default btn-sm", Checked: true}, 
+                  React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, " མདོ་ཡི་མཚན་འཚོལ་བ། ")
                   ), 
-                  React.DOM.label({'data-type': "kacha", className: "btn btn-default btn-xs"}, 
-                  React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "དཀར་ཆགས་འཚོལ་བ།")
+                  React.DOM.label({'data-type': "kacha", className: "btn btn-default btn-sm"}, 
+                  React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, " དཀར་ཆགས་འཚོལ་བ། ")
                   ), 
-                  React.DOM.label({'data-type': "fulltext", className: "btn btn-default btn-xs"}, 
-                  React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "ནང་དོན་འཚོལ་བ།")
+                  React.DOM.label({'data-type': "fulltext", className: "btn btn-default btn-sm"}, 
+                  React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, " ནང་དོན་འཚོལ་བ། ")
                   )
                 ), 
                 namelist({res_toc: this.state.res_toc, tofind: this.state.tofind, gotofile: this.gotofile}), 
@@ -15475,12 +15474,13 @@ var renderItem = React.createClass({displayName: 'renderItem',
   },
   renderItem: function(item) {
     var tofind=this.props.tofind_toc;
-    item.text=item.text.replace(tofind,function(t){
+    var c=""
+    c=item.text.replace(tofind,function(t){
       return '<hl>'+t+"</hl>";
     });
     return (
       React.DOM.div(null, 
-        React.DOM.li(null, React.DOM.a({herf: "#", className: "item", 'data-voff': item.voff, onClick: this.onItemClick, dangerouslySetInnerHTML: {__html:item.text}}))
+        React.DOM.li(null, React.DOM.a({herf: "#", className: "item", 'data-voff': item.voff, onClick: this.onItemClick, dangerouslySetInnerHTML: {__html:c}}))
       ) 
       )
   },
