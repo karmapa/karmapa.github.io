@@ -14770,7 +14770,7 @@ var renderItem=Require("renderItem");
 var tibetan=Require("ksana-document").languages.tibetan; 
 var page2catalog=Require("page2catalog");
 var namelist=Require("namelist");
-var version="v0.1.07"
+var version="v0.1.10"
 var main = React.createClass({displayName: 'main',
   componentDidMount:function() {
     var that=this;
@@ -14828,7 +14828,7 @@ var main = React.createClass({displayName: 'main',
     if (this.state.db) {
       return (    
         React.DOM.div(null, 
-        React.DOM.input({className: "form-control", ref: "tofind", onInput: this.searchtypechange, defaultValue: "byang chub"}), 
+        React.DOM.input({className: "form-control input-small", ref: "tofind", onInput: this.searchtypechange, defaultValue: "byang chub"}), 
         React.DOM.span({className: "wylie"}, this.state.wylie)
         )
         )          
@@ -15003,7 +15003,8 @@ var resultlist=React.createClass({displayName: 'resultlist',  //should search re
     var tofind=this.props.tofind;
     return this.props.res.excerpt.map(function(r,i){ // excerpt is an array 
       var t = new RegExp(tofind,"g"); 
-      var context=r.text.replace(t,function(tofind){return "<hl>"+tofind+"</hl>"});
+      var context="";
+      context=r.text.replace(t,function(tofind){return "<hl>"+tofind+"</hl>"});
       return React.DOM.div({'data-vpos': r.hits[0][0]}, 
       React.DOM.a({onClick: this.gotopage, className: "pagename"}, r.pagename), 
         React.DOM.div({className: "resultitem", dangerouslySetInnerHTML: {__html:context}})
@@ -15577,7 +15578,8 @@ var namelist = React.createClass({displayName: 'namelist',
   },
   renderNameItem: function(item) {
     var tofind=this.props.tofind;
-    var context=item.text.replace(tofind,function(t){
+    var context="";
+    context=item.text.replace(tofind,function(t){
       return '<hl>'+t+"</hl>";
     });
     return (
