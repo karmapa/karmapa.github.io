@@ -235,7 +235,7 @@ var boot=function(appId,main,maindiv) {
 	main=main||"main";
 	maindiv=maindiv||"main";
 	ksana.appId=appId;
-	ksana.mainComponent=React.renderComponent(Require(main)(),document.getElementById(maindiv));
+	ksana.mainComponent=React.render(Require(main)(),document.getElementById(maindiv));
 }
 window.ksana=ksana;
 window.Require=Require;
@@ -7360,7 +7360,9 @@ var _highlightFile=function(engine,fileid,opts,cb){
 			api.excerpt.highlightFile(Q,fileid,opts,cb);
 		});
 	} else {
-		api.excerpt.getFile(engine,fileid,cb);
+		api.excerpt.getFile(engine,fileid,function(data) {
+			cb.apply(engine.context,[data]);
+		});
 	}
 }
 
@@ -9150,6 +9152,15 @@ var getPage=function(engine,fileid,pageid,cb) {
 	});
 }
 
+var getPageSync=function(engine,fileid,pageid) {
+	var fileOffsets=engine.get("fileOffsets");
+	var pagepaths=["fileContents",fileid,pageid];
+	var pagenames=engine.getFilePageNames(fileid);
+
+	var text=engine.get(pagepaths);
+	return {text:text,file:fileid,page:pageid,pagename:pagenames[pageid]};
+}
+
 var getRange=function(engine,start,end,cb) {
 	var fileOffsets=engine.get("fileOffsets");
 	//var pagepaths=["fileContents",];
@@ -9161,12 +9172,16 @@ var getRange=function(engine,start,end,cb) {
 var getFile=function(engine,fileid,cb) {
 	var filename=engine.get("fileNames")[fileid];
 	var pagenames=engine.getFilePageNames(fileid);
+	var filestart=engine.get("fileOffsets")[fileid];
+	var offsets=engine.getFilePageOffsets(fileid);
 	var pc=0;
 	engine.get(["fileContents",fileid],true,function(data){
-		var text=data.join("<pb>").replace(/<pb>/g,function(m){
-			return '\n<pb n="'+pagenames[++pc]+'"></pb>'; // skip _
-		})
-		cb({text:text,file:fileid,filename:filename}); //force different token
+		var text=data.map(function(t,idx) {
+			if (idx==0) return ""; 
+			var pb='<pb n="'+pagenames[idx]+'"></pb>';
+			return pb+t;
+		});
+		cb({texts:data,text:text.join(""),pagenames:pagenames,filestart:filestart,offsets:offsets,file:fileid,filename:filename}); //force different token
 	});
 }
 
@@ -9179,16 +9194,30 @@ var highlightFile=function(Q,fileid,opts,cb) {
 	if (typeof opts=="function") {
 		cb=opts;
 	}
+
 	if (!Q || !Q.engine) return cb(null);
-	var fileOffsets=Q.engine.get("fileOffsets");
-	var startvpos=fileOffsets[fileid];
-	var endvpos=fileOffsets[fileid+1];
+
+	var pageOffsets=Q.engine.getFilePageOffsets(fileid);
+	var output=[];	
 	//console.log(startvpos,endvpos)
-	this.getFile(Q.engine,fileid,function(res){
-		//console.log(res.text)
-		var opt={text:res.text,hits:null,tag:'hl',voff:startvpos,fulltext:true};
-		opt.hits=hitInRange(Q,startvpos,endvpos);
-		cb.apply(Q.engine.context,[{text:injectTag(Q,opt),file:fileid,hits:opt.hits}]);
+	Q.engine.get(["fileContents",fileid],true,function(data){
+		if (!data) {
+			console.error("wrong file id",fileid);
+		} else {
+			for (var i=0;i<data.length-1;i++ ){
+				var startvpos=pageOffsets[i];
+				var endvpos=pageOffsets[i+1];
+				var pagenames=Q.engine.getFilePageNames(fileid);
+				var page=getPageSync(Q.engine, fileid,i+1);
+					var opt={text:page.text,hits:null,tag:'hl',voff:startvpos,fulltext:true};
+				var pagename=pagenames[i+1];
+				opt.hits=hitInRange(Q,startvpos,endvpos);
+				var pb='<pb n="'+pagename+'"></pb>';
+				output.push(pb+injectTag(Q,opt));
+			}			
+		}
+
+		cb.apply(Q.engine.context,[{text:output.join(""),file:fileid}]);
 	})
 }
 var highlightPage=function(Q,fileid,pageid,opts,cb) {
@@ -9207,7 +9236,7 @@ var highlightPage=function(Q,fileid,pageid,opts,cb) {
 		opt.hits=hitInRange(Q,startvpos,endvpos);
 		var pagename=pagenames[pageid];
 		cb.apply(Q.engine.context,[{text:injectTag(Q,opt),page:pageid,file:fileid,hits:opt.hits,pagename:pagename}]);
-	})
+	});
 }
 module.exports={resultlist:resultlist, 
 	hitInRange:hitInRange, 
@@ -14265,18 +14294,18 @@ require.register("ksanaforge-fileinstaller/index.js", function(exports, require,
 
 /* todo , optional kdb */
 
-var htmlfs=Require("htmlfs");    
-var checkbrowser=Require("checkbrowser");  
+var HtmlFS=Require("htmlfs");    
+var CheckBrowser=Require("checkbrowser");  
   
 var html5fs=Require("ksana-document").html5fs;
-var filelist = React.createClass({displayName: 'filelist',
+var FileList = React.createClass({displayName: 'FileList',
 	getInitialState:function() {
 		return {downloading:false,progress:0};
 	},
 	updatable:function(f) {
         	var classes="btn btn-warning";
         	if (this.state.downloading) classes+=" disabled";
-		if (f.hasUpdate) return React.DOM.button({className: classes, 
+		if (f.hasUpdate) return React.createElement("button", {className: classes, 
 			'data-filename': f.filename, 'data-url': f.url, 
 	            onClick: this.download
 	       }, "Update")
@@ -14285,10 +14314,10 @@ var filelist = React.createClass({displayName: 'filelist',
 	showLocal:function(f) {
         var classes="btn btn-danger";
         if (this.state.downloading) classes+=" disabled";
-	  return React.DOM.tr(null, React.DOM.td(null, f.filename), 
-	      React.DOM.td(null), 
-	      React.DOM.td({className: "pull-right"}, 
-	      this.updatable(f), React.DOM.button({className: classes, 
+	  return React.createElement("tr", null, React.createElement("td", null, f.filename), 
+	      React.createElement("td", null), 
+	      React.createElement("td", {className: "pull-right"}, 
+	      this.updatable(f), React.createElement("button", {className: classes, 
 	               onClick: this.deleteFile, 'data-filename': f.filename}, "Delete")
 	        
 	      )
@@ -14297,11 +14326,11 @@ var filelist = React.createClass({displayName: 'filelist',
 	showRemote:function(f) { 
 	  var classes="btn btn-warning";
 	  if (this.state.downloading) classes+=" disabled";
-	  return (React.DOM.tr({'data-id': f.filename}, React.DOM.td(null, 
+	  return (React.createElement("tr", {'data-id': f.filename}, React.createElement("td", null, 
 	      f.filename), 
-	      React.DOM.td(null, f.desc), 
-	      React.DOM.td(null, 
-	      React.DOM.span({'data-filename': f.filename, 'data-url': f.url, 
+	      React.createElement("td", null, f.desc), 
+	      React.createElement("td", null, 
+	      React.createElement("span", {'data-filename': f.filename, 'data-url': f.url, 
 	            className: classes, 
 	            onClick: this.download}, "Download")
 	      )
@@ -14350,50 +14379,50 @@ var filelist = React.createClass({displayName: 'filelist',
 	     if (this.state.downloading) {
 	      var progress=Math.round(this.state.progress*100);
 	      return (
-	      	React.DOM.div(null, 
+	      	React.createElement("div", null, 
 	      	"Downloading from ", this.state.url, 
-	      React.DOM.div({key: "progress", className: "progress col-md-8"}, 
-	          React.DOM.div({className: "progress-bar", role: "progressbar", 
+	      React.createElement("div", {key: "progress", className: "progress col-md-8"}, 
+	          React.createElement("div", {className: "progress-bar", role: "progressbar", 
 	              'aria-valuenow': progress, 'aria-valuemin': "0", 
 	              'aria-valuemax': "100", style: {width: progress+"%"}}, 
 	            progress, "%"
 	          )
 	        ), 
-	        React.DOM.button({onClick: this.abortdownload, 
+	        React.createElement("button", {onClick: this.abortdownload, 
 	        	className: "btn btn-danger col-md-4"}, "Abort")
 	        )
 	        );
 	      } else {
 	      		if ( this.allFilesReady() ) {
-	      			return React.DOM.button({onClick: this.dismiss, className: "btn btn-success"}, "Ok")
+	      			return React.createElement("button", {onClick: this.dismiss, className: "btn btn-success"}, "Ok")
 	      		} else return null;
 	      		
 	      }
 	},
 	showUsage:function() {
 		var percent=this.props.remainPercent;
-           return (React.DOM.div(null, React.DOM.span({className: "pull-left"}, "Usage:"), React.DOM.div({className: "progress"}, 
-		  React.DOM.div({className: "progress-bar progress-bar-success progress-bar-striped", role: "progressbar", style: {width: percent+"%"}}, 
+           return (React.createElement("div", null, React.createElement("span", {className: "pull-left"}, "Usage:"), React.createElement("div", {className: "progress"}, 
+		  React.createElement("div", {className: "progress-bar progress-bar-success progress-bar-striped", role: "progressbar", style: {width: percent+"%"}}, 
 		    	percent+"%"
 		  )
 		)));
 	},
 	render:function() {
 	  	return (
-		React.DOM.div({ref: "dialog1", className: "modal fade", 'data-backdrop': "static"}, 
-		    React.DOM.div({className: "modal-dialog"}, 
-		      React.DOM.div({className: "modal-content"}, 
-		        React.DOM.div({className: "modal-header"}, 
-		          React.DOM.h4({className: "modal-title"}, "File Installer")
+		React.createElement("div", {ref: "dialog1", className: "modal fade", 'data-backdrop': "static"}, 
+		    React.createElement("div", {className: "modal-dialog"}, 
+		      React.createElement("div", {className: "modal-content"}, 
+		        React.createElement("div", {className: "modal-header"}, 
+		          React.createElement("h4", {className: "modal-title"}, "File Installer")
 		        ), 
-		        React.DOM.div({className: "modal-body"}, 
-		        	React.DOM.table({className: "table"}, 
-		        	React.DOM.tbody(null, 
+		        React.createElement("div", {className: "modal-body"}, 
+		        	React.createElement("table", {className: "table"}, 
+		        	React.createElement("tbody", null, 
 		          	this.props.files.map(this.showFile)
 		          	)
 		          )
 		        ), 
-		        React.DOM.div({className: "modal-footer"}, 
+		        React.createElement("div", {className: "modal-footer"}, 
 		        	this.showUsage(), 
 		           this.showProgress()
 		        )
@@ -14407,7 +14436,7 @@ var filelist = React.createClass({displayName: 'filelist',
 	}
 });
 /*TODO kdb check version*/
-var filemanager = React.createClass({displayName: 'filemanager',
+var Filemanager = React.createClass({displayName: 'Filemanager',
 	getInitialState:function() {
 		var quota=this.getQuota();
 		return {browserReady:false,noupdate:true,	requestQuota:quota,remain:0};
@@ -14527,20 +14556,20 @@ var filemanager = React.createClass({displayName: 'filemanager',
 	},
 	render:function(){
     		if (!this.state.browserReady) {   
-      			return checkbrowser({feature: "fs", onReady: this.onBrowserOk})
+      			return React.createElement(CheckBrowser, {feature: "fs", onReady: this.onBrowserOk})
     		} if (!this.state.quota || this.state.remain<this.state.requireSpace) {  
     			var quota=this.state.requestQuota;
     			if (this.state.usage+this.state.requireSpace>quota) {
     				quota=(this.state.usage+this.state.requireSpace)*1.5;
     			}
-      			return htmlfs({quota: quota, autoclose: "true", onReady: this.onQuoteOk})
+      			return React.createElement(HtmlFS, {quota: quota, autoclose: "true", onReady: this.onQuoteOk})
       		} else {
 			if (!this.state.noupdate || this.missingKdb().length || !this.state.autoclose) {
 				var remain=Math.round((this.state.usage/this.state.quota)*100);				
-				return filelist({action: this.action, files: this.state.files, remainPercent: remain})
+				return React.createElement(FileList, {action: this.action, files: this.state.files, remainPercent: remain})
 			} else {
 				setTimeout( this.dismiss ,0);
-				return React.DOM.span(null, "Success");
+				return React.createElement("span", null, "Success");
 			}
       		}
 	},
@@ -14558,7 +14587,7 @@ var filemanager = React.createClass({displayName: 'filemanager',
 	}
 });
 
-module.exports=filemanager;
+module.exports=Filemanager;
 });
 require.register("ksanaforge-checkbrowser/index.js", function(exports, require, module){
 /** @jsx React.DOM */
@@ -14596,22 +14625,22 @@ var checkbrowser = React.createClass({displayName: 'checkbrowser',
 	},
 	renderMissing:function() {
 		var showMissing=function(m) {
-			return React.DOM.div(null, m);
+			return React.createElement("div", null, m);
 		}
 		return (
-		 React.DOM.div({ref: "dialog1", className: "modal fade", 'data-backdrop': "static"}, 
-		    React.DOM.div({className: "modal-dialog"}, 
-		      React.DOM.div({className: "modal-content"}, 
-		        React.DOM.div({className: "modal-header"}, 
-		          React.DOM.button({type: "button", className: "close", 'data-dismiss': "modal", 'aria-hidden': "true"}, "×"), 
-		          React.DOM.h4({className: "modal-title"}, "Browser Check")
+		 React.createElement("div", {ref: "dialog1", className: "modal fade", 'data-backdrop': "static"}, 
+		    React.createElement("div", {className: "modal-dialog"}, 
+		      React.createElement("div", {className: "modal-content"}, 
+		        React.createElement("div", {className: "modal-header"}, 
+		          React.createElement("button", {type: "button", className: "close", 'data-dismiss': "modal", 'aria-hidden': "true"}, "×"), 
+		          React.createElement("h4", {className: "modal-title"}, "Browser Check")
 		        ), 
-		        React.DOM.div({className: "modal-body"}, 
-		          React.DOM.p(null, "Sorry but the following feature is missing"), 
+		        React.createElement("div", {className: "modal-body"}, 
+		          React.createElement("p", null, "Sorry but the following feature is missing"), 
 		          this.state.missing.map(showMissing)
 		        ), 
-		        React.DOM.div({className: "modal-footer"}, 
-		          React.DOM.button({onClick: this.downloadbrowser, type: "button", className: "btn btn-primary"}, "Download Google Chrome")
+		        React.createElement("div", {className: "modal-footer"}, 
+		          React.createElement("button", {onClick: this.downloadbrowser, type: "button", className: "btn btn-primary"}, "Download Google Chrome")
 		        )
 		      )
 		    )
@@ -14619,7 +14648,7 @@ var checkbrowser = React.createClass({displayName: 'checkbrowser',
 		 );
 	},
 	renderReady:function() {
-		return React.DOM.span(null, "browser ok")
+		return React.createElement("span", null, "browser ok")
 	},
 	render:function(){
 		return  (this.state.missing.length)?this.renderMissing():this.renderReady();
@@ -14653,17 +14682,17 @@ var htmlfs = React.createClass({displayName: 'htmlfs',
 	},
 	welcome:function() {
 		return (
-		React.DOM.div({ref: "dialog1", className: "modal fade", id: "myModal", 'data-backdrop': "static"}, 
-		    React.DOM.div({className: "modal-dialog"}, 
-		      React.DOM.div({className: "modal-content"}, 
-		        React.DOM.div({className: "modal-header"}, 
-		          React.DOM.h4({className: "modal-title"}, "Welcome")
+		React.createElement("div", {ref: "dialog1", className: "modal fade", id: "myModal", 'data-backdrop': "static"}, 
+		    React.createElement("div", {className: "modal-dialog"}, 
+		      React.createElement("div", {className: "modal-content"}, 
+		        React.createElement("div", {className: "modal-header"}, 
+		          React.createElement("h4", {className: "modal-title"}, "Welcome")
 		        ), 
-		        React.DOM.div({className: "modal-body"}, 
+		        React.createElement("div", {className: "modal-body"}, 
 		          "Browser will ask for your confirmation."
 		        ), 
-		        React.DOM.div({className: "modal-footer"}, 
-		          React.DOM.button({onClick: this.initFilesystem, type: "button", 
+		        React.createElement("div", {className: "modal-footer"}, 
+		          React.createElement("button", {onClick: this.initFilesystem, type: "button", 
 		            className: "btn btn-primary"}, "Initialize File System")
 		        )
 		      )
@@ -14674,26 +14703,26 @@ var htmlfs = React.createClass({displayName: 'htmlfs',
 	renderDefault:function(){
 		var used=Math.floor(this.state.usage/this.state.quota *100);
 		var more=function() {
-			if (used>50) return React.DOM.button({type: "button", className: "btn btn-primary"}, "Allocate More");
+			if (used>50) return React.createElement("button", {type: "button", className: "btn btn-primary"}, "Allocate More");
 			else null;
 		}
 		return (
-		React.DOM.div({ref: "dialog1", className: "modal fade", id: "myModal", 'data-backdrop': "static"}, 
-		    React.DOM.div({className: "modal-dialog"}, 
-		      React.DOM.div({className: "modal-content"}, 
-		        React.DOM.div({className: "modal-header"}, 
-		          React.DOM.h4({className: "modal-title"}, "Sandbox File System")
+		React.createElement("div", {ref: "dialog1", className: "modal fade", id: "myModal", 'data-backdrop': "static"}, 
+		    React.createElement("div", {className: "modal-dialog"}, 
+		      React.createElement("div", {className: "modal-content"}, 
+		        React.createElement("div", {className: "modal-header"}, 
+		          React.createElement("h4", {className: "modal-title"}, "Sandbox File System")
 		        ), 
-		        React.DOM.div({className: "modal-body"}, 
-		          React.DOM.div({className: "progress"}, 
-		            React.DOM.div({className: "progress-bar", role: "progressbar", style: {width: used+"%"}}, 
+		        React.createElement("div", {className: "modal-body"}, 
+		          React.createElement("div", {className: "progress"}, 
+		            React.createElement("div", {className: "progress-bar", role: "progressbar", style: {width: used+"%"}}, 
 		               used, "%"
 		            )
 		          ), 
-		          React.DOM.span(null, this.state.quota, " total , ", this.state.usage, " in used")
+		          React.createElement("span", null, this.state.quota, " total , ", this.state.usage, " in used")
 		        ), 
-		        React.DOM.div({className: "modal-footer"}, 
-		          React.DOM.button({onClick: this.dismiss, type: "button", className: "btn btn-default", 'data-dismiss': "modal"}, "Close"), 
+		        React.createElement("div", {className: "modal-footer"}, 
+		          React.createElement("button", {onClick: this.dismiss, type: "button", className: "btn btn-default", 'data-dismiss': "modal"}, "Close"), 
 		          more()
 		        )
 		      )
@@ -14723,7 +14752,7 @@ var htmlfs = React.createClass({displayName: 'htmlfs',
 				this.dialog=true;
 				return this.welcome();	
 			} else {
-				return React.DOM.span(null, "checking quota")
+				return React.createElement("span", null, "checking quota")
 			}			
 		} else {
 			if (!this.state.autoclose) {
@@ -14732,7 +14761,7 @@ var htmlfs = React.createClass({displayName: 'htmlfs',
 			}
 			this.dismiss();
 			this.dialog=false;
-			return React.DOM.span(null)
+			return React.createElement("span", null)
 		}
 	},
 	componentDidMount:function() {
@@ -14759,17 +14788,17 @@ var require_kdb=[{
 }];
 //var othercomponent=Require("other"); 
 var bootstrap=Require("bootstrap");  
-var resultlist=Require("resultlist");
-var fileinstaller=Require("fileinstaller");
+var Resultlist=Require("resultlist");
+var Fileinstaller=Require("fileinstaller");
 var kde=Require('ksana-document').kde;  // Ksana Database Engine
 var kse=Require('ksana-document').kse; // Ksana Search Engine (run at client side)
 var api=Require("api");
-var stacktoc=Require("stacktoc");  //載入目錄顯示元件
-var showtext=Require("showtext");
+var Stacktoc=Require("stacktoc");  //載入目錄顯示元件
+var Showtext=Require("showtext");
 var tibetan=Require("ksana-document").languages.tibetan; 
 var page2catalog=Require("page2catalog");
-var namelist=Require("namelist");
-var version="v0.1.10"
+var Namelist=Require("namelist");
+var version="v0.1.14"
 var main = React.createClass({displayName: 'main',
   componentDidMount:function() {
     var that=this;
@@ -14781,7 +14810,7 @@ var main = React.createClass({displayName: 'main',
   },
   componentDidUpdate:function()  {
     var ch=document.documentElement.clientHeight;
-    var banner=82;
+    var banner=52;
     this.refs["text-content"].getDOMNode().style.height=ch-banner+"px";
     this.refs["tab-content"].getDOMNode().style.height=(ch-banner-40)+"px";
   },  
@@ -14826,13 +14855,13 @@ var main = React.createClass({displayName: 'main',
   renderinputs:function(searcharea) {  // input interface for search // onInput={this.searchtypechange}
     if (this.state.db) {
       return (    
-        React.DOM.div(null, 
-        React.DOM.input({className: "form-control input-small col-lg-offset-1", ref: "tofind", onInput: this.searchtypechange, defaultValue: "byang chub"}), 
-        React.DOM.span({className: "wylie"}, this.state.wylie)
+        React.createElement("div", null, 
+        React.createElement("input", {className: "form-control input-small col-lg-offset-1", ref: "tofind", onInput: this.searchtypechange, defaultValue: "byang chub"}), 
+        React.createElement("span", {className: "wylie"}, this.state.wylie)
         )
         )          
     } else {
-      return React.DOM.span(null, "loading database....")
+      return React.createElement("span", null, "loading database....")
     }
   },   
   genToc:function(texts,depths,voffs){
@@ -14862,7 +14891,7 @@ var main = React.createClass({displayName: 'main',
     if (window.location.origin.indexOf("http://127.0.0.1")==0) {
       require_kdb[0].url=window.location.origin+window.location.pathname+"jiangkangyur.kdb";
     }
-    return fileinstaller({quota: "512M", autoclose: autoclose, needed: require_kdb, 
+    return React.createElement(Fileinstaller, {quota: "512M", autoclose: autoclose, needed: require_kdb, 
                      onReady: this.onReady})
   },
   showExcerpt:function(n) {
@@ -14916,49 +14945,49 @@ var main = React.createClass({displayName: 'main',
         pagename=this.state.bodytext.pagename;
     }
     return (
-  React.DOM.div({className: "row"}, 
-    React.DOM.div({className: "col-md-12"}, 
-      React.DOM.div({className: "header"}, 
-        "  ", React.DOM.img({height: "80px", src: "./banner/banner-06.png"})
+  React.createElement("div", {className: "row"}, 
+    React.createElement("div", {className: "col-md-12"}, 
+      React.createElement("div", {className: "header"}, 
+        React.createElement("span", null, "  "), React.createElement("img", {height: "80px", src: "./banner/banner-06.png"})
 
       ), 
 
-      React.DOM.div({className: "row"}, 
-        React.DOM.div({className: "col-md-3"}, 
-          React.DOM.div({className: "borderright"}, 
-            React.DOM.ul({className: "nav nav-tabs", role: "tablist"}, 
-              React.DOM.li({className: "active"}, React.DOM.a({href: "#Search", role: "tab", 'data-toggle': "tab"}, React.DOM.img({height: "30px", src: "./banner/search.png"}))), 
-              React.DOM.li(null, React.DOM.a({href: "#Catalog", role: "tab", 'data-toggle': "tab"}, React.DOM.img({height: "30px", src: "./banner/catalog.png"})))
+      React.createElement("div", {className: "row"}, 
+        React.createElement("div", {className: "col-md-3"}, 
+          React.createElement("div", {className: "borderright"}, 
+            React.createElement("ul", {className: "nav nav-tabs", role: "tablist"}, 
+              React.createElement("li", {className: "active"}, React.createElement("a", {href: "#Search", role: "tab", 'data-toggle': "tab"}, React.createElement("img", {height: "30px", src: "./banner/search.png"}))), 
+              React.createElement("li", null, React.createElement("a", {href: "#Catalog", role: "tab", 'data-toggle': "tab"}, React.createElement("img", {height: "30px", src: "./banner/catalog.png"})))
             ), 
 
-            React.DOM.div({className: "tab-content", ref: "tab-content"}, 
-              React.DOM.div({className: "tab-pane fade", id: "Catalog"}, 
-                stacktoc({showText: this.showText, showExcerpt: this.showExcerpt, hits: this.state.res.rawresult, data: this.state.toc, goVoff: this.state.goVoff})
+            React.createElement("div", {className: "tab-content", ref: "tab-content"}, 
+              React.createElement("div", {className: "tab-pane fade", id: "Catalog"}, 
+                React.createElement(Stacktoc, {showText: this.showText, showExcerpt: this.showExcerpt, hits: this.state.res.rawresult, data: this.state.toc, goVoff: this.state.goVoff})
               ), 
 
-              React.DOM.div({className: "tab-pane fade in active", id: "Search"}, 
+              React.createElement("div", {className: "tab-pane fade in active", id: "Search"}, 
                 this.renderinputs("title"), 
-                React.DOM.div({className: "btn-group col-sm-offset-1", 'data-toggle': "buttons", ref: "searchtype", onClick: this.searchtypechange}, 
-                  React.DOM.label({'data-type': "sutra", className: "btn btn-default btn-sm", Checked: true}, 
-                  React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, " མདོ་ཡི་མཚན་འཚོལ་བ། ")
+                React.createElement("div", {className: "btn-group col-sm-offset-1", 'data-toggle': "buttons", ref: "searchtype", onClick: this.searchtypechange}, 
+                  React.createElement("label", {'data-type': "sutra", className: "btn btn-default btn-xs", Checked: true}, 
+                  React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, " མདོ་མིང་འཚོལ་བ། ")
                   ), 
-                  React.DOM.label({'data-type': "kacha", className: "btn btn-default btn-sm"}, 
-                  React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, " དཀར་ཆགས་འཚོལ་བ། ")
+                  React.createElement("label", {'data-type': "kacha", className: "btn btn-default btn-xs"}, 
+                  React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, " དཀར་ཆག་འཚོལ་བ། ")
                   ), 
-                  React.DOM.label({'data-type': "fulltext", className: "btn btn-default btn-sm"}, 
-                  React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, " ནང་དོན་འཚོལ་བ། ")
+                  React.createElement("label", {'data-type': "fulltext", className: "btn btn-default btn-xs"}, 
+                  React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, " ནང་དོན་འཚོལ་བ། ")
                   )
                 ), 
-                namelist({res_toc: this.state.res_toc, tofind: this.state.tofind, gotofile: this.gotofile}), 
-                resultlist({res: this.state.res, tofind: this.state.tofind, gotofile: this.gotofile})
+                React.createElement(Namelist, {res_toc: this.state.res_toc, tofind: this.state.tofind, gotofile: this.gotofile}), 
+                React.createElement(Resultlist, {res: this.state.res, tofind: this.state.tofind, gotofile: this.gotofile})
               )
             )
           )
         ), 
 
-        React.DOM.div({className: "col-md-9"}, 
-          React.DOM.div({className: "text text-content", ref: "text-content"}, 
-          showtext({page: this.state.page, bodytext: this.state.bodytext, text: text, nextfile: this.nextfile, prevfile: this.prevfile, setpage: this.setPage, db: this.state.db, toc: this.state.toc, scrollto: this.state.scrollto})
+        React.createElement("div", {className: "col-md-9"}, 
+          React.createElement("div", {className: "text text-content", ref: "text-content"}, 
+          React.createElement(Showtext, {page: this.state.page, bodytext: this.state.bodytext, text: text, nextfile: this.nextfile, prevfile: this.prevfile, setpage: this.setPage, db: this.state.db, toc: this.state.toc, scrollto: this.state.scrollto})
           )
         )
       )
@@ -14983,7 +15012,7 @@ var comp1 = React.createClass({displayName: 'comp1',
   },
   render: function() {
     return (
-      React.DOM.div(null, 
+      React.createElement("div", null, 
         "Hello,", this.state.bar
       )
     );
@@ -15004,9 +15033,9 @@ var resultlist=React.createClass({displayName: 'resultlist',  //should search re
       var t = new RegExp(tofind,"g"); 
       var context="";
       context=r.text.replace(t,function(tofind){return "<hl>"+tofind+"</hl>"});
-      return React.DOM.div({'data-vpos': r.hits[0][0]}, 
-      React.DOM.a({onClick: this.gotopage, className: "pagename"}, r.pagename), 
-        React.DOM.div({className: "resultitem", dangerouslySetInnerHTML: {__html:context}})
+      return React.createElement("div", {'data-vpos': r.hits[0][0]}, 
+      React.createElement("a", {onClick: this.gotopage, className: "pagename"}, r.pagename), 
+        React.createElement("div", {className: "resultitem", dangerouslySetInnerHTML: {__html:context}})
       )
     },this);
   }, 
@@ -15017,14 +15046,14 @@ var resultlist=React.createClass({displayName: 'resultlist',  //should search re
   render:function() {
     if (this.props.res) {
       if (this.props.res.excerpt&&this.props.res.excerpt.length) {
-          return React.DOM.div({className: "results"}, this.show())
+          return React.createElement("div", {className: "results"}, this.show())
           debugger;
       } else {
-        return React.DOM.div(null)
+        return React.createElement("div", null)
       }
     }
     else {
-      return React.DOM.div(null, "type keyword to search")
+      return React.createElement("div", null, "type keyword to search")
     } 
   }
 });
@@ -15084,16 +15113,16 @@ var Ancestors=React.createClass({displayName: 'Ancestors',
     this.props.showExcerpt(n);
   }, 
   showHit:function(hit) {
-    if (hit)  return React.DOM.a({href: "#", onClick: this.showExcerpt, className: "pull-right badge hitbadge"}, trimHit(hit))
-    else return React.DOM.span(null);
+    if (hit)  return React.createElement("a", {href: "#", onClick: this.showExcerpt, className: "pull-right badge hitbadge"}, trimHit(hit))
+    else return React.createElement("span", null);
   },
   renderAncestor:function(n,idx) {
     var hit=this.props.toc[n].hit;
-    return React.DOM.div({key: "a"+n, className: "node parent", 'data-n': n}, idx+1, ".", React.DOM.a({className: "text", href: "#", onClick: this.goback}, this.props.toc[n].text), this.showHit(hit))
+    return React.createElement("div", {key: "a"+n, className: "node parent", 'data-n': n}, idx+1, ".", React.createElement("a", {className: "text", href: "#", onClick: this.goback}, this.props.toc[n].text), this.showHit(hit))
   },
   render:function() {
-    if (!this.props.data || !this.props.data.length) return React.DOM.div(null);
-    return React.DOM.div(null, this.props.data.map(this.renderAncestor))
+    if (!this.props.data || !this.props.data.length) return React.createElement("div", null);
+    return React.createElement("div", null, this.props.data.map(this.renderAncestor))
   } 
 }); 
 var Children=React.createClass({displayName: 'Children',
@@ -15111,8 +15140,8 @@ var Children=React.createClass({displayName: 'Children',
     if (typeof n!=="undefined") this.props.setCurrent(parseInt(n));
   }, 
   showHit:function(hit) {
-    if (hit)  return React.DOM.a({href: "#", onClick: this.showExcerpt, className: "pull-right badge hitbadge"}, trimHit(hit))
-    else return React.DOM.span(null);
+    if (hit)  return React.createElement("a", {href: "#", onClick: this.showExcerpt, className: "pull-right badge hitbadge"}, trimHit(hit))
+    else return React.createElement("span", null);
   },
   showExcerpt:function(e) {
     var n=parseInt(e.target.parentNode.dataset["n"]);
@@ -15139,7 +15168,7 @@ var Children=React.createClass({displayName: 'Children',
     var classes="btn btn-link"
     if (n==this.state.selected && haschild) classes="btn btn-default";
 
-    return React.DOM.div({'data-n': n}, React.DOM.a({'data-n': n, className: classes +" tocitem text", onClick: this.nodeClicked}, this.props.toc[n].text), this.showHit(hit))
+    return React.createElement("div", {'data-n': n}, React.createElement("a", {'data-n': n, className: classes +" tocitem text", onClick: this.nodeClicked}, this.props.toc[n].text), this.showHit(hit))
   },
   showText:function(e) {
     var n=e.target.dataset["n"];
@@ -15147,8 +15176,8 @@ var Children=React.createClass({displayName: 'Children',
     if (this.props.showText) this.props.showText(parseInt(n));
   },
   render:function() {
-    if (!this.props.data || !this.props.data.length) return React.DOM.div(null);
-    return React.DOM.div(null, this.props.data.map(this.renderChild))
+    if (!this.props.data || !this.props.data.length) return React.createElement("div", null);
+    return React.createElement("div", null, this.props.data.map(this.renderChild))
   }
 }); 
 var stacktoc = React.createClass({displayName: 'stacktoc',
@@ -15227,6 +15256,7 @@ var stacktoc = React.createClass({displayName: 'stacktoc',
   setCurrent:function(n) {
     n=parseInt(n);
     this.setState({cur:n});
+    this.props.showText(n);
   },
   findByVoff:function(voff) {
     for (var i=0;i<this.props.data.length;i++) {
@@ -15298,8 +15328,8 @@ var stacktoc = React.createClass({displayName: 'stacktoc',
     this.hitClick(this.state.cur);
   },
   showHit:function(hit) {
-    if (hit)  return React.DOM.a({href: "#", onClick: this.onHitClick, className: "pull-right badge hitbadge"}, trimHit(hit))
-    else return React.DOM.span(null);
+    if (hit)  return React.createElement("a", {href: "#", onClick: this.onHitClick, className: "pull-right badge hitbadge"}, trimHit(hit))
+    else return React.createElement("span", null);
   },
   showText:function(e) {
     var n=e.target.dataset["n"];
@@ -15308,17 +15338,17 @@ var stacktoc = React.createClass({displayName: 'stacktoc',
   },
 
   render: function() {
-    if (!this.props.data || !this.props.data.length) return React.DOM.div(null)
+    if (!this.props.data || !this.props.data.length) return React.createElement("div", null)
     var depth=this.props.data[this.state.cur].depth+1;
     var ancestors=this.enumAncestors();
     var children=this.enumChildren();
     var current=this.props.data[this.state.cur];
     if (this.props.hits && this.props.hits.length) this.fillHits(ancestors,children);
     return ( 
-      React.DOM.div({className: "stacktoc"}, 
-        Ancestors({showExcerpt: this.hitClick, setCurrent: this.setCurrent, toc: this.props.data, data: ancestors}), 
-        React.DOM.div({className: "node current"}, React.DOM.a({href: "#", onClick: this.showText, 'data-n': this.state.cur}, React.DOM.span(null, depth, "."), React.DOM.span({className: "text"}, current.text)), this.showHit(current.hit)), 
-        Children({showText: this.props.showText, hitClick: this.hitClick, setCurrent: this.setCurrent, toc: this.props.data, data: children})
+      React.createElement("div", {className: "stacktoc"}, 
+        React.createElement(Ancestors, {showExcerpt: this.hitClick, setCurrent: this.setCurrent, toc: this.props.data, data: ancestors}), 
+        React.createElement("div", {className: "node current"}, React.createElement("a", {href: "#", onClick: this.showText, 'data-n': this.state.cur}, React.createElement("span", null, depth, "."), React.createElement("span", {className: "text"}, current.text)), this.showHit(current.hit)), 
+        React.createElement(Children, {showText: this.props.showText, hitClick: this.hitClick, setCurrent: this.setCurrent, toc: this.props.data, data: children})
       )
     ); 
   }
@@ -15329,7 +15359,7 @@ require.register("adarsha-showtext/index.js", function(exports, require, module)
 /** @jsx React.DOM */
 
 //var othercomponent=Require("other"); 
-var controlsFile = React.createClass({displayName: 'controlsFile',
+var ControlsFile = React.createClass({displayName: 'ControlsFile',
   getInitialState: function() {
     return {address:0};
   },
@@ -15380,11 +15410,11 @@ var controlsFile = React.createClass({displayName: 'controlsFile',
     return res;
   },
   render: function() {   
-   return React.DOM.div({className: "cursor"}, 
+   return React.createElement("div", {className: "cursor"}, 
             "Bampo", 
-            React.DOM.a({href: "#", onClick: this.props.prev}, React.DOM.img({width: "25", src: "./banner/prev.png"})), 
-            React.DOM.a({href: "#", onClick: this.props.next}, React.DOM.img({width: "25", src: "./banner/next.png"})), 
-            React.DOM.br(null), React.DOM.span({id: "address"}, this.getAddress())
+            React.createElement("a", {href: "#", onClick: this.props.prev}, React.createElement("img", {width: "25", src: "./banner/prev.png"})), 
+            React.createElement("a", {href: "#", onClick: this.props.next}, React.createElement("img", {width: "25", src: "./banner/next.png"})), 
+            React.createElement("br", null), React.createElement("span", {id: "address"}, this.getAddress())
           )
   }  
 });
@@ -15447,10 +15477,10 @@ var showtext = React.createClass({displayName: 'showtext',
   render: function() {
     var content=this.renderpb(this.props.text);
     return (
-      React.DOM.div({className: "cursor"}, 
-        controlsFile({page: this.props.page, bodytext: this.props.bodytext, next: this.props.nextfile, prev: this.props.prevfile, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc}), 
-        React.DOM.br(null), 
-        React.DOM.div({onClick: this.renderPageImg, className: "pagetext", dangerouslySetInnerHTML: {__html: content}})
+      React.createElement("div", {className: "cursor"}, 
+        React.createElement(ControlsFile, {page: this.props.page, bodytext: this.props.bodytext, next: this.props.nextfile, prev: this.props.prevfile, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc}), 
+        React.createElement("br", null), 
+        React.createElement("div", {onClick: this.renderPageImg, className: "pagetext", dangerouslySetInnerHTML: {__html: content}})
       )
     );
   }
@@ -15469,7 +15499,7 @@ var renderItem = React.createClass({displayName: 'renderItem',
   },
   onItemClick:function(e) {
     var voff=parseInt(e.target.dataset.voff);
-    React.DOM.span(null, e.target.innerHTML)
+    React.createElement("span", null, e.target.innerHTML)
     this.props.gotopage(voff);
   },
   renderItem: function(item) {
@@ -15479,14 +15509,14 @@ var renderItem = React.createClass({displayName: 'renderItem',
       return '<hl>'+t+"</hl>";
     });
     return (
-      React.DOM.div(null, 
-        React.DOM.li(null, React.DOM.a({herf: "#", className: "item", 'data-voff': item.voff, onClick: this.onItemClick, dangerouslySetInnerHTML: {__html:c}}))
+      React.createElement("div", null, 
+        React.createElement("li", null, React.createElement("a", {herf: "#", className: "item", 'data-voff': item.voff, onClick: this.onItemClick, dangerouslySetInnerHTML: {__html:c}}))
       ) 
       )
   },
   render: function() {
     return (
-      React.DOM.div(null, 
+      React.createElement("div", null, 
         this.props.data.map(this.renderItem)
       )
     );
@@ -15522,20 +15552,20 @@ var renderinputs = React.createClass({displayName: 'renderinputs',
     if (this.props.db) {
       if(this.props.searcharea == "text"){
         return (    
-          React.DOM.div(null, React.DOM.input({className: "form-control", onInput: this.props.dosearch, ref: "tofind", defaultValue: "byang chub m"}), 
-          React.DOM.button({onClick: this.clear, title: "clear input box", className: "btn btn-danger"}, "xl"), React.DOM.span({className: "wylie"}, this.state.wylie)
+          React.createElement("div", null, React.createElement("input", {className: "form-control", onInput: this.props.dosearch, ref: "tofind", defaultValue: "byang chub m"}), 
+          React.createElement("button", {onClick: this.clear, title: "clear input box", className: "btn btn-danger"}, "xl"), React.createElement("span", {className: "wylie"}, this.state.wylie)
           )
           )    
       }
       if(this.props.searcharea == "title"){
         return (    
-          React.DOM.div(null, React.DOM.input({className: "form-control", onInput: this.props.dosearch_toc, ref: "tofind_toc", defaultValue: "byang chub"}), 
-          React.DOM.span({className: "wylie"}, this.state.wylie_toc)
+          React.createElement("div", null, React.createElement("input", {className: "form-control", onInput: this.props.dosearch_toc, ref: "tofind_toc", defaultValue: "byang chub"}), 
+          React.createElement("span", {className: "wylie"}, this.state.wylie_toc)
           )
           ) 
       }
     } else {
-      return React.DOM.span(null, "loading database....")
+      return React.createElement("span", null, "loading database....")
     }
   }
 });
@@ -15553,7 +15583,7 @@ var page2catalog = React.createClass({displayName: 'page2catalog',
   },
   render: function() {
     return (
-      React.DOM.div(null, 
+      React.createElement("div", null, 
         "Hello,", this.state.bar
       )
     );
@@ -15572,8 +15602,9 @@ var namelist = React.createClass({displayName: 'namelist',
     return {};
   },
   onItemClick:function(e) {
-    var voff=parseInt(e.target.dataset.voff);
-    React.DOM.span(null, e.target.innerHTML)
+    if (e.target.nodeName == "HL") var voff=parseInt(e.target.parentElement.dataset.voff);
+    else voff=parseInt(e.target.dataset.voff);
+    React.createElement("span", null, e.target.innerHTML)
     this.props.gotofile(voff);
   },
   renderNameItem: function(item) {
@@ -15583,15 +15614,15 @@ var namelist = React.createClass({displayName: 'namelist',
       return '<hl>'+t+"</hl>";
     });
     return (
-      React.DOM.div(null, 
-        React.DOM.li(null, React.DOM.a({herf: "#", className: "item", 'data-voff': item.voff, onClick: this.onItemClick, dangerouslySetInnerHTML: {__html:context}}))
+      React.createElement("div", null, 
+        React.createElement("li", null, React.createElement("a", {herf: "#", className: "item", 'data-voff': item.voff, onClick: this.onItemClick, dangerouslySetInnerHTML: {__html:context}}))
       ) 
       )
   },
   render: function() {
 
     return (
-      React.DOM.div(null, 
+      React.createElement("div", null, 
         this.props.res_toc.map(this.renderNameItem)
       )
     );
@@ -15619,17 +15650,17 @@ var searchbar = React.createClass({displayName: 'searchbar',
   },
   render: function() {
     return (
-      React.DOM.div(null, 
-        React.DOM.input({className: "form-control", onInput: this.gettofind, ref: "tofind", defaultValue: "byang chub"}), 
-        React.DOM.div({className: "btn-group", 'data-toggle': "buttons", ref: "searchtype", onClick: this.getfield}, 
-          React.DOM.label({'data-type': "sutra", className: "btn btn-success"}, 
-          React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "Sutra")
+      React.createElement("div", null, 
+        React.createElement("input", {className: "form-control", onInput: this.gettofind, ref: "tofind", defaultValue: "byang chub"}), 
+        React.createElement("div", {className: "btn-group", 'data-toggle': "buttons", ref: "searchtype", onClick: this.getfield}, 
+          React.createElement("label", {'data-type': "sutra", className: "btn btn-success"}, 
+          React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, "Sutra")
           ), 
-          React.DOM.label({'data-type': "kacha", className: "btn btn-success"}, 
-          React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "Kacha")
+          React.createElement("label", {'data-type': "kacha", className: "btn btn-success"}, 
+          React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, "Kacha")
           ), 
-          React.DOM.label({'data-type': "fulltext", className: "btn btn-success"}, 
-          React.DOM.input({type: "radio", name: "field", autocomplete: "off"}, "Text")
+          React.createElement("label", {'data-type': "fulltext", className: "btn btn-success"}, 
+          React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, "Text")
           )
         ), 
         this.props.dosearch(null,null,0,this.state.field,this.state.tofind)
