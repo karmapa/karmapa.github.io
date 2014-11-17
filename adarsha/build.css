@@ -7137,6 +7137,12 @@ td.visible-print {
     text-align:center;
 }
 
+input {
+	margin: 0 auto;
+    float: none;
+}
+
+
 
 
 .btn:active,  
@@ -7159,13 +7165,14 @@ td.visible-print {
 .col-md-3{
 	width: 25%;
 	line-height: 36px;
+	font-size: 12px;
 	float: left;
 	padding-left: 0;
 	padding-right: 10px;
 	}
 
 .input-small{
-	width:315px;
+	width:260px;
 }
 
 .col-md-9{
@@ -7207,7 +7214,7 @@ hl[n="1"]{color: blue;}
 hl[n="2"]{color: green;}
 
 .stacktoc {font-size:150%;}
-.stacktoc a {color:black;}
+.stacktoc a {color:black;word-wrap: break-word;}
 .stacktoc a.hitbadge {color:white;}
 div.parent{background:#FFFFCC; }
 div.parent:hover { background:#FFF380;}

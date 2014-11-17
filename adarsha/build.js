@@ -14810,7 +14810,7 @@ var main = React.createClass({displayName: 'main',
   },
   componentDidUpdate:function()  {
     var ch=document.documentElement.clientHeight;
-    var banner=52;
+    var banner=100;
     this.refs["text-content"].getDOMNode().style.height=ch-banner+"px";
     this.refs["tab-content"].getDOMNode().style.height=(ch-banner-40)+"px";
   },  
@@ -14856,7 +14856,7 @@ var main = React.createClass({displayName: 'main',
     if (this.state.db) {
       return (    
         React.createElement("div", null, 
-        React.createElement("input", {className: "form-control input-small col-lg-offset-1", ref: "tofind", onInput: this.searchtypechange, defaultValue: "byang chub"}), 
+        React.createElement("input", {className: "form-control input-small", ref: "tofind", onInput: this.searchtypechange, defaultValue: "byang chub"}), 
         React.createElement("span", {className: "wylie"}, this.state.wylie)
         )
         )          
@@ -14902,7 +14902,7 @@ var main = React.createClass({displayName: 'main',
     var res=kse.vpos2filepage(this.state.db,vpos);
     this.showPage(res.file,res.page,false);
   },
-  showPage:function(f,p,hideResultlist) {    
+  showPage:function(f,p,hideResultlist) {  
     window.location.hash = this.encodeHashTag(f,p);
     var that=this;
     var pagename=this.state.db.getFilePageNames(f)[p];
@@ -14915,7 +14915,7 @@ var main = React.createClass({displayName: 'main',
   }, 
   showText:function(n) {
     var res=kse.vpos2filepage(this.state.db,this.state.toc[n].voff);
-    this.showPage(res.file,res.page,true);
+    if(res.file != -1) this.showPage(res.file,res.page,true);    
   },
   nextfile:function() {
     var file=this.state.bodytext.file+1;
@@ -14967,7 +14967,7 @@ var main = React.createClass({displayName: 'main',
 
               React.createElement("div", {className: "tab-pane fade in active", id: "Search"}, 
                 this.renderinputs("title"), 
-                React.createElement("div", {className: "btn-group col-sm-offset-1", 'data-toggle': "buttons", ref: "searchtype", onClick: this.searchtypechange}, 
+                React.createElement("div", {className: "btn-group", 'data-toggle': "buttons", ref: "searchtype", onClick: this.searchtypechange}, 
                   React.createElement("label", {'data-type': "sutra", className: "btn btn-default btn-xs", Checked: true}, 
                   React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, " མདོ་མིང་འཚོལ་བ། ")
                   ), 
@@ -15170,10 +15170,15 @@ var Children=React.createClass({displayName: 'Children',
 
     return React.createElement("div", {'data-n': n}, React.createElement("a", {'data-n': n, className: classes +" tocitem text", onClick: this.nodeClicked}, this.props.toc[n].text), this.showHit(hit))
   },
-  showText:function(e) {
-    var n=e.target.dataset["n"];
-    if (typeof n=="undefined") n=e.target.parentNode.dataset["n"];
-    if (this.props.showText) this.props.showText(parseInt(n));
+  showText:function(e) { 
+    var target=e.target;
+    var n=e.target.dataset.n;
+    while (target && typeof target.dataset.n=="undefined") {
+      target=target.parentNode;
+    }
+    if (target && target.dataset.n && this.props.showText) {
+      this.props.showText(parseInt(target.dataset.n));
+    }
   },
   render:function() {
     if (!this.props.data || !this.props.data.length) return React.createElement("div", null);
@@ -15332,9 +15337,14 @@ var stacktoc = React.createClass({displayName: 'stacktoc',
     else return React.createElement("span", null);
   },
   showText:function(e) {
-    var n=e.target.dataset["n"];
-    if (typeof n=="undefined") n=e.target.parentNode.dataset["n"];
-    this.props.showText(parseInt(n));
+    var target=e.target;
+    var n=e.target.dataset.n;
+    while (target && typeof target.dataset.n=="undefined") {
+      target=target.parentNode;
+    }
+    if (target && target.dataset.n && this.props.showText) {
+      this.props.showText(parseInt(target.dataset.n));
+    }
   },
 
   render: function() {
@@ -15379,7 +15389,7 @@ var ControlsFile = React.createClass({displayName: 'ControlsFile',
     if(!this.props.toc) return 0;
     for (var i=0;i<this.props.toc.length;i++) {
       var t=this.props.toc[i];
-      if (t.voff>voff) return i-1;
+      if (t.voff>=voff) return i;
     }
     return 0; //return root node
   },
@@ -15423,7 +15433,7 @@ var showtext = React.createClass({displayName: 'showtext',
   getInitialState: function() {
     return {bar: "world", pageImg:"", scroll:true};
   },
-  componentDidUpdate:function()  {    
+  componentDidUpdate:function()  {
     if(this.props.scrollto && this.props.scrollto.match(/[ab]/) && this.state.scroll){
       var p=this.props.scrollto.match(/\d+.(\d+)[ab]/);
       $(".text-content").scrollTop( 0 );
@@ -15439,7 +15449,7 @@ var showtext = React.createClass({displayName: 'showtext',
   },
   renderPageImg: function(e) {
     var pb=e.target.dataset.pb;
-    if (pb) {
+    if (pb || e.target.nodeName == "IMG") {
       this.setState({clickedpb:pb});  
       this.setState({scroll:false});
     }
@@ -15464,7 +15474,7 @@ var showtext = React.createClass({displayName: 'showtext',
     var that=this;
     if(typeof s == "undefined") return "";
     s= s.replace(/<pb n="(.*?)"><\/pb>/g,function(m,m1){
-      var link='<br></br><a href="#" data-pb="'+m1+'">'+m1+'<img width="25" src="banner/imageicon.png"/></a>';
+      var link='<br></br><a href="#" data-pb="'+m1+'">'+m1+'<img width="25" data-pb="'+m1+'" src="banner/imageicon.png"/></a>';
       if(m1 == that.state.clickedpb){
         var imgName=that.getImgName(m1);
         link='<br></br>'+m1+'<img data-img="'+m1+'" width="100%" src="../adarsha_img/lijiang/'+imgName+'.jpg"/><br></br>';
