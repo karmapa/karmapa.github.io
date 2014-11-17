@@ -14798,7 +14798,7 @@ var Showtext=Require("showtext");
 var tibetan=Require("ksana-document").languages.tibetan; 
 var page2catalog=Require("page2catalog");
 var Namelist=Require("namelist");
-var version="v0.1.14"
+var version="v0.1.17"
 var main = React.createClass({displayName: 'main',
   componentDidMount:function() {
     var that=this;
