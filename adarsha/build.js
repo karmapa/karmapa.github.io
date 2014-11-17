@@ -14948,7 +14948,7 @@ var main = React.createClass({displayName: 'main',
   React.createElement("div", {className: "row"}, 
     React.createElement("div", {className: "col-md-12"}, 
       React.createElement("div", {className: "header"}, 
-        React.createElement("span", null, "  "), React.createElement("img", {height: "80px", src: "./banner/banner-06.png"})
+        " ", React.createElement("img", {height: "80px", src: "./banner/banner-06.png"})
 
       ), 
 
@@ -14967,6 +14967,7 @@ var main = React.createClass({displayName: 'main',
 
               React.createElement("div", {className: "tab-pane fade in active", id: "Search"}, 
                 this.renderinputs("title"), 
+                React.createElement("div", {className: "center"}, 
                 React.createElement("div", {className: "btn-group", 'data-toggle': "buttons", ref: "searchtype", onClick: this.searchtypechange}, 
                   React.createElement("label", {'data-type': "sutra", className: "btn btn-default btn-xs", Checked: true}, 
                   React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, " མདོ་མིང་འཚོལ་བ། ")
@@ -14977,6 +14978,7 @@ var main = React.createClass({displayName: 'main',
                   React.createElement("label", {'data-type': "fulltext", className: "btn btn-default btn-xs"}, 
                   React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, " ནང་དོན་འཚོལ་བ། ")
                   )
+                )
                 ), 
                 React.createElement(Namelist, {res_toc: this.state.res_toc, tofind: this.state.tofind, gotofile: this.gotofile}), 
                 React.createElement(Resultlist, {res: this.state.res, tofind: this.state.tofind, gotofile: this.gotofile})
