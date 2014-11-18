@@ -14786,7 +14786,7 @@ var require_kdb=[{
   filename:"jiangkangyur.kdb"  , 
   url:"http://ya.ksana.tw/kdb/jiangkangyur.kdb" , desc:"jiangkangyur"
 }];
-//var othercomponent=Require("other"); 
+//var othercomponent=Require("other");
 var bootstrap=Require("bootstrap");  
 var Resultlist=Require("resultlist");
 var Fileinstaller=Require("fileinstaller");
@@ -14798,7 +14798,7 @@ var Showtext=Require("showtext");
 var tibetan=Require("ksana-document").languages.tibetan; 
 var page2catalog=Require("page2catalog");
 var Namelist=Require("namelist");
-var version="v0.1.17"
+var version="v0.1.18"
 var main = React.createClass({displayName: 'main',
   componentDidMount:function() {
     var that=this;
@@ -14947,8 +14947,8 @@ var main = React.createClass({displayName: 'main',
     return (
   React.createElement("div", {className: "row"}, 
     React.createElement("div", {className: "col-md-12"}, 
-      React.createElement("div", {className: "header"}, 
-        " ", React.createElement("img", {height: "80px", src: "./banner/banner-06.png"})
+      React.createElement("div", {className: "header", background: "./banner/banner_back.png"}, 
+        React.createElement("img", {width: "100%", src: "./banner/banner-06.png"})
 
       ), 
 
@@ -15152,7 +15152,10 @@ var Children=React.createClass({displayName: 'Children',
     this.props.hitClick(n);
   }, 
   nodeClicked:function(e) {
-    var n=parseInt(e.target.dataset.n);
+    var target=e.target;
+    while (target && typeof target.dataset.n=="undefined")target=target.parentNode;
+    if (!target) return;
+    var n=parseInt(target.dataset.n);
     if (n!=this.state.selected) {
       this.setState({selected:n});
       this.showText(e);

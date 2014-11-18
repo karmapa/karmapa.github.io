@@ -7142,6 +7142,7 @@ input {
     float: none;
 }
 
+
 .center{text-align: center;}
 
 
@@ -7186,7 +7187,7 @@ input {
 
 a{color:#178918;}
 
-.header{background-color: #E0E0E0;
+.header{
 	letter-spacing:8px;
 	font-size: 40px;
 	color: #8E8E8E;
@@ -7214,7 +7215,7 @@ hl[n="1"]{color: blue;}
 hl[n="2"]{color: green;}
 
 .stacktoc {font-size:150%;}
-.stacktoc a {color:black;word-wrap: break-word;}
+.stacktoc a {color:black;word-wrap: break-word; white-space: normal;text-align:left;}
 .stacktoc a.hitbadge {color:white;}
 div.parent{background:#FFFFCC; }
 div.parent:hover { background:#FFF380;}
@@ -7254,3 +7255,5 @@ hl[n="2"]{color: green;}
 @font-face { font-family: 'tibetan1'; font-style: normal; font-weight: normal; src: url("fonts/himalaya_2.ttf"); }
 .text , .tocitem {font-family: 'tibetan1';text-decoration: none;cursor:pointer;}
 .stacktoc , .results , .item , .nav-tabs {font-family: 'tibetan1';}
+div.current {color:black; background:#95CB85;border-bottom-right-radius:10px 10px;}
+div.current:hover {background:#BDEBAD;}
