@@ -7187,7 +7187,12 @@ input {
 
 a{color:#178918;}
 
+.center a:hover {
+	cursor: pointer;
+}
+
 .header{
+	background-color: #d0d0d0;
 	letter-spacing:8px;
 	font-size: 40px;
 	color: #8E8E8E;
@@ -7204,6 +7209,8 @@ a{color:#178918;}
     margin-bottom: 0px;
     width:99.99%;
 }
+
+
 .comp1 {}
 .results {}
 .results{font-family: ctrc-uchen;
@@ -7249,6 +7256,7 @@ hl[n="2"]{color: green;}
 .page2catalog {}
 .namelist {}
 .searchbar {}
+
 #main {}
 
 
