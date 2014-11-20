@@ -7187,6 +7187,10 @@ input {
 
 a{color:#178918;}
 
+.center a:hover {
+	cursor: pointer;
+}
+
 .header{
 	background-color: #d0d0d0;
 	letter-spacing:8px;
@@ -7205,6 +7209,8 @@ a{color:#178918;}
     margin-bottom: 0px;
     width:99.99%;
 }
+
+
 .comp1 {}
 .results {}
 .results{font-family: ctrc-uchen;

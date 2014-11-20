@@ -14807,7 +14807,7 @@ var main = React.createClass({displayName: 'main',
   }, 
   getInitialState: function() {
     document.title=version+"-adarsha";
-    return {dialog:null,res:{},res_toc:[],bodytext:{file:0,page:0},db:null,toc_result:[],page:0,field:"sutra",scrollto:0};
+    return {dialog:null,res:{},res_toc:[],bodytext:{file:0,page:0},db:null,toc_result:[],page:0,field:"sutra",scrollto:0,hide:false};
   },
   componentDidUpdate:function()  {
     var ch=document.documentElement.clientHeight;
@@ -14833,6 +14833,9 @@ var main = React.createClass({displayName: 'main',
     var field=e.target.dataset.type;
     var w=this.refs.tofind.getDOMNode().value;
     var tofind=tibetan.romanize.fromWylie(w);
+    if (w!=tofind && !this.state.hide) {
+      this.setState({wylie:tofind});
+    } else this.setState({wylie:null});
     this.dosearch(null,null,0,field,tofind);
     if(field) this.setState({field:field});
   },
@@ -14845,11 +14848,13 @@ var main = React.createClass({displayName: 'main',
     }
     if(field == "kacha"){
       var res_kacha=api.search_api.searchKacha(tofind,this.state.toc);
-      this.setState({res_toc:res_kacha, tofind:tofind, res:[]});
+      if(tofind != "") this.setState({res_toc:res_kacha, tofind:tofind, res:[]});
+      else this.setState({res_toc:[], tofind:tofind, res:[]});
     }
     if(field == "sutra"){
       var res_sutra=api.search_api.searchSutra(tofind,this.state.toc);
-      this.setState({res_toc:res_sutra, tofind:tofind, res:[]});
+      if(tofind != "") this.setState({res_toc:res_sutra, tofind:tofind, res:[]});
+      else this.setState({res_toc:[], tofind:tofind, res:[]});
     }
     
   },
@@ -14857,8 +14862,7 @@ var main = React.createClass({displayName: 'main',
     if (this.state.db) {
       return (    
         React.createElement("div", null, 
-        React.createElement("input", {className: "form-control input-small", ref: "tofind", onInput: this.searchtypechange, defaultValue: "byang chub"}), 
-        React.createElement("span", {className: "wylie"}, this.state.wylie)
+        React.createElement("input", {className: "form-control input-small", ref: "tofind", onInput: this.searchtypechange, defaultValue: "byang chub"})
         )
         )          
     } else {
@@ -14936,6 +14940,11 @@ var main = React.createClass({displayName: 'main',
     }
     console.log(newpagename);
   },
+  hideinputrender: function(e) {
+    if(e.target.checked){
+      this.setState({wylie:[],hide:true});
+    } else this.setState({hide:false});
+  },
   render: function() {
     if (!this.state.quota) { // install required db
         return this.openFileinstaller(true);
@@ -14969,17 +14978,25 @@ var main = React.createClass({displayName: 'main',
               React.createElement("div", {className: "tab-pane fade in active", id: "Search"}, 
                 this.renderinputs("title"), 
                 React.createElement("div", {className: "center"}, 
-                React.createElement("div", {className: "btn-group", 'data-toggle': "buttons", ref: "searchtype", onClick: this.searchtypechange}, 
-                  React.createElement("label", {'data-type': "sutra", className: "btn btn-default btn-xs", Checked: true}, 
-                  React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, " མདོ་མིང་འཚོལ་བ། ")
+                  React.createElement("div", {className: "btn-group", 'data-toggle': "buttons", ref: "searchtype", onClick: this.searchtypechange}, 
+                    React.createElement("label", {'data-type': "sutra", className: "btn btn-default btn-xs", Checked: true}, 
+                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, " མདོ་མིང་འཚོལ་བ། ")
+                    ), 
+                    React.createElement("label", {'data-type': "kacha", className: "btn btn-default btn-xs"}, 
+                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, " དཀར་ཆག་འཚོལ་བ། ")
+                    ), 
+                    React.createElement("label", {'data-type': "fulltext", className: "btn btn-default btn-xs"}, 
+                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, " ནང་དོན་འཚོལ་བ། ")
+                    )
                   ), 
-                  React.createElement("label", {'data-type': "kacha", className: "btn btn-default btn-xs"}, 
-                  React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, " དཀར་ཆག་འཚོལ་བ། ")
+                  React.createElement("br", null), React.createElement("div", {className: "btn-group"}, 
+                    React.createElement("label", null, 
+                      React.createElement("input", {type: "checkbox", onClick: this.hideinputrender}, "Hide input")
+                    )
                   ), 
-                  React.createElement("label", {'data-type': "fulltext", className: "btn btn-default btn-xs"}, 
-                  React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, " ནང་དོན་འཚོལ་བ། ")
-                  )
-                )
+                  
+                  "   ", React.createElement("span", {className: "wylie"}, this.state.wylie)
+                                    
                 ), 
                 React.createElement(Namelist, {res_toc: this.state.res_toc, tofind: this.state.tofind, gotofile: this.gotofile}), 
                 React.createElement(Resultlist, {res: this.state.res, tofind: this.state.tofind, gotofile: this.gotofile})
