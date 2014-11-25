@@ -14928,12 +14928,14 @@ var main = React.createClass({displayName: 'main',
     var file=this.state.bodytext.file+1;
     var page=this.state.bodytext.page || 1;
     this.showPage(file,page,false);
+    this.setState({scrollto:null});
   },
   prevfile:function() {
     var file=this.state.bodytext.file-1;
     var page=this.state.bodytext.page || 1;
     if (file<0) file=0;
     this.showPage(file,page,false);
+    this.setState({scrollto:null});
   },
   setPage:function(newpagename,file) {
     var fp=this.state.db.findPage(newpagename);
@@ -14942,17 +14944,9 @@ var main = React.createClass({displayName: 'main',
     }
     console.log(newpagename);
   },
-  hideinputrender: function(e) {
-    if(e.target.checked){
-      this.setState({tofind_wylie:[],hide:true});
-    } else {
-      var w=this.refs.tofind.getDOMNode().value;
-      var tofind=tibetan.romanize.fromWylie(w);
-      this.setState({tofind_wylie:tofind,hide:false});
-    }
-  },
   setwylie: function() {
     this.setState({wylie:!this.state.wylie});
+    this.setState({scrollto:null});
   },
   textConverter:function(t) {
     if(this.state.wylie == true) return tibetan.romanize.toWylie(t,null,false); 
@@ -14995,6 +14989,7 @@ var main = React.createClass({displayName: 'main',
               ), 
 
               React.createElement("div", {className: "tab-pane fade in active", id: "Search"}, 
+                React.createElement("div", {className: "slight"}, React.createElement("br", null)), 
                 this.renderinputs("title"), 
                 React.createElement("div", {className: "center"}, 
                   React.createElement("div", {className: "btn-group", 'data-toggle': "buttons", ref: "searchtype", onClick: this.searchtypechange}, 
@@ -15665,7 +15660,7 @@ var api=Require("api");
 var dataset=Require("dataset");
 var tibetan=Require("ksana-document").languages.tibetan; 
 var mappings={"J":dataset.jPedurma,"D":dataset.dPedurma};
-var ControlsFile = React.createClass({displayName: 'ControlsFile',
+var Controlsfile = React.createClass({displayName: 'Controlsfile',
   getInitialState: function() {
     return {address:0};
   },
@@ -15724,8 +15719,8 @@ var ControlsFile = React.createClass({displayName: 'ControlsFile',
             React.createElement("button", {className: "btn btn-default", onClick: this.props.prev}, React.createElement("img", {width: "25", src: "./banner/prev.png"})), 
             React.createElement("button", {className: "btn btn-default", onClick: this.props.next}, React.createElement("img", {width: "25", src: "./banner/next.png"})), 
             
-              " ", React.createElement("button", {className: "btn btn-default transfer", onClick: this.props.setwylie}, React.createElement("img", {width: "25", src: "./banner/icon-towylie.png"})), 
-            
+            React.createElement("button", {className: "btn btn-default transfer", onClick: this.props.setwylie}, React.createElement("img", {width: "25", src: "./banner/icon-towylie.png"})), 
+
             React.createElement("br", null), React.createElement("span", {id: "address"}, this.getAddress())
 
           )
@@ -15734,13 +15729,13 @@ var ControlsFile = React.createClass({displayName: 'ControlsFile',
 
 var showtext = React.createClass({displayName: 'showtext',
   getInitialState: function() {
-    return {bar: "world", pageImg:"", scroll:true};
+    return {bar: "world", pageImg:""};
   },
   componentDidUpdate:function()  {
-    if(this.props.scrollto && this.props.scrollto.match(/[ab]/) && this.state.scroll){
+    if(this.props.scrollto && this.props.scrollto.match(/[ab]/)){
       var p=this.props.scrollto.match(/\d+.(\d+)[ab]/);
       $(".text-content").scrollTop( 0 );
-      if(p[1]!=1){       
+      if(p[1]!=1){      
         var pb=$("a[data-pb='"+this.props.scrollto+"']");
         if(pb.length) $(".text-content").scrollTop( pb.position().top-20 );
       }          
@@ -15754,12 +15749,12 @@ var showtext = React.createClass({displayName: 'showtext',
     var pb=e.target.dataset.pb;
     if (pb || e.target.nodeName == "IMG") {
       this.setState({clickedpb:pb});  
-      this.setState({scroll:false});
+      this.setState({scrollto:null});
     }
     var img=e.target.dataset.img;
     if (img) {
       this.setState({clickedpb:null});  
-      this.setState({scroll:true}); 
+       
     }
     
   },
@@ -15805,7 +15800,7 @@ var showtext = React.createClass({displayName: 'showtext',
     if(this.props.wylie == true && this.props.text) var content=this.renderpb(tibetan.romanize.toWylie(this.props.text,null,false));
     return (
       React.createElement("div", {className: "cursor"}, 
-        React.createElement(ControlsFile, {setwylie: this.props.setwylie, wylie: this.props.wylie, page: this.props.page, bodytext: this.props.bodytext, next: this.props.nextfile, prev: this.props.prevfile, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc}), 
+        React.createElement(Controlsfile, {setwylie: this.props.setwylie, wylie: this.props.wylie, page: this.props.page, bodytext: this.props.bodytext, next: this.props.nextfile, prev: this.props.prevfile, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc}), 
         React.createElement("br", null), 
         React.createElement("div", {onClick: this.renderPageImg, className: "pagetext", dangerouslySetInnerHTML: {__html: content}})
       )
