@@ -7250,6 +7250,7 @@ division:after{content: attr(t);
 #address{font-size: 120%;
 	cursor:default;}
 
+.transfer{float: right;}
 
 .btn.searchmode:active,  
 .btn.active.searchmode {

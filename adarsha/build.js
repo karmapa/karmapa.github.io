@@ -15724,7 +15724,7 @@ var ControlsFile = React.createClass({displayName: 'ControlsFile',
             React.createElement("button", {className: "btn btn-default", onClick: this.props.prev}, React.createElement("img", {width: "25", src: "./banner/prev.png"})), 
             React.createElement("button", {className: "btn btn-default", onClick: this.props.next}, React.createElement("img", {width: "25", src: "./banner/next.png"})), 
             
-              " ", React.createElement("button", {className: "btn btn-default", onClick: this.props.setwylie}, React.createElement("img", {className: "transfer", width: "25", src: "./banner/icon-towylie.png"})), 
+              " ", React.createElement("button", {className: "btn btn-default transfer", onClick: this.props.setwylie}, React.createElement("img", {width: "25", src: "./banner/icon-towylie.png"})), 
             
             React.createElement("br", null), React.createElement("span", {id: "address"}, this.getAddress())
 
@@ -15784,9 +15784,9 @@ var showtext = React.createClass({displayName: 'showtext',
     var that=this;
     if(typeof s == "undefined") return "";
     s= s.replace(/<pb n="(.*?)"><\/pb>/g,function(m,m1){
-      var p=m1.match(/\d+.(\d+)[ab]/);
-      if(p[1] != 1) var link='<br></br><a href="#" data-pb="'+m1+'">'+m1+'<img width="25" data-pb="'+m1+'" src="banner/imageicon.png"/></a>';
-      if(p[1] == 1) var link='<a href="#" data-pb="'+m1+'">'+m1+'<img width="25" data-pb="'+m1+'" src="banner/imageicon.png"/></a>';
+      var p=m1.match(/\d+.(\d+[ab])/);
+      if(p[1] != "1a") var link='<br></br><a href="#" data-pb="'+m1+'">'+m1+'<img width="25" data-pb="'+m1+'" src="banner/imageicon.png"/></a>';
+      if(p[1] == "1a") var link='<a href="#" data-pb="'+m1+'">'+m1+'<img width="25" data-pb="'+m1+'" src="banner/imageicon.png"/></a>';
       if(m1 == that.state.clickedpb){
         var imgName=that.getImgName(m1);
         var corresPage=that.getCorresPage(m1);
