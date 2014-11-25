@@ -14971,7 +14971,7 @@ var main = React.createClass({displayName: 'main',
   React.createElement("div", {className: "row"}, 
     React.createElement("div", {className: "col-md-12"}, 
       React.createElement("div", {className: "header"}, 
-        React.createElement("img", {width: "100%", src: "./banner/banner-06.png"})
+        React.createElement("img", {width: "100%", src: "./banner/banner-007.jpg"})
       ), 
 
       React.createElement("div", {className: "row"}, 

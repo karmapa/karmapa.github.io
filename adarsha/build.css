@@ -7273,7 +7273,7 @@ hl[n="2"]{color: green;}
 .namelist {}
 .searchbar {}
 
-#main {}
+#main {overflow-x: hidden;}
 
 
 @font-face { font-family: 'tibetan1'; font-style: normal; font-weight: normal; src: url("fonts/himalaya_2.ttf"); }
