@@ -4715,7 +4715,7 @@ var processTags=function(captureTags,tags,texts) {
 	}
 }
 var resolveTagsVpos=function(parsed) {
-	var bsearch=require("ksana-document").bsearch;
+	var bsearch=nodeRequire("ksana-document").bsearch;
 	for (var i=0;i<parsed.tags.length;i++) {
 		for (var j=0;j<parsed.tags[i].length;j++) {
 			var t=parsed.tags[i][j];
@@ -4805,7 +4805,7 @@ var initIndexer=function(mkdbconfig) {
 	tokenize=api["tokenize"];
 
 	var folder=session.config.outdir||".";
-	session.kdbfn=require("path").resolve(folder, session.config.name+'.kdb');
+	session.kdbfn=nodeRequire("path").resolve(folder, session.config.name+'.kdb');
 
 	if (!session.config.reset && nodeRequire("fs").existsSync(session.kdbfn)) {
 		//if old kdb exists and not reset 
@@ -7373,14 +7373,16 @@ var vpos2filepage=function(engine,vpos) {
     var fileid=bsearch(fileOffsets,vpos+1,true);
     fileid--;
     var pageid=bsearch(pageOffsets,vpos+1,true);
+    
+/*
     pageid--;
     while (pageid&&pageid<pageOffsets.length-1&&
     	pageOffsets[pageid-1]==pageOffsets[pageid]) {
     	pageid++;
     }
-
+*/
     var fileOffset=fileOffsets[fileid];
-    var pageOffset=bsearch(pageOffsets,fileOffset+1,true);
+    var pageOffset=bsearch(pageOffsets,fileOffset+2,true); //quick fix for jiangkangyur
     pageOffset--;
     pageid-=pageOffset;
     return {file:fileid,page:pageid};
@@ -14799,7 +14801,7 @@ var Showtext=Require("showtext");
 var tibetan=Require("ksana-document").languages.tibetan; 
 var page2catalog=Require("page2catalog");
 var Namelist=Require("namelist");
-var version="v0.1.18"
+var version="v0.1.25"
 var main = React.createClass({displayName: 'main',
   componentDidMount:function() {
     var that=this;
@@ -14807,7 +14809,7 @@ var main = React.createClass({displayName: 'main',
   }, 
   getInitialState: function() {
     document.title=version+"-adarsha";
-    return {dialog:null,res:{},res_toc:[],bodytext:{file:0,page:0},db:null,toc_result:[],page:0,field:"sutra",scrollto:0,hide:false};
+    return {dialog:null,res:{},res_toc:[],bodytext:{file:0,page:0},db:null,toc_result:[],page:0,field:"sutra",scrollto:0,hide:false, wylie:false};
   },
   componentDidUpdate:function()  {
     var ch=document.documentElement.clientHeight;
@@ -14830,12 +14832,12 @@ var main = React.createClass({displayName: 'main',
     this.decodeHashTag(window.location.hash || "#1.1");
   },
   searchtypechange:function(e) {
-    var field=e.target.dataset.type;
+    var field=e.target.parentElement.dataset.type;
     var w=this.refs.tofind.getDOMNode().value;
     var tofind=tibetan.romanize.fromWylie(w);
     if (w!=tofind && !this.state.hide) {
-      this.setState({wylie:tofind});
-    } else this.setState({wylie:null});
+      this.setState({tofind_wylie:tofind});
+    } else this.setState({tofind_wylie:null});
     this.dosearch(null,null,0,field,tofind);
     if(field) this.setState({field:field});
   },
@@ -14942,12 +14944,19 @@ var main = React.createClass({displayName: 'main',
   },
   hideinputrender: function(e) {
     if(e.target.checked){
-      this.setState({wylie:[],hide:true});
+      this.setState({tofind_wylie:[],hide:true});
     } else {
       var w=this.refs.tofind.getDOMNode().value;
       var tofind=tibetan.romanize.fromWylie(w);
-      this.setState({wylie:tofind,hide:false});
+      this.setState({tofind_wylie:tofind,hide:false});
     }
+  },
+  setwylie: function() {
+    this.setState({wylie:!this.state.wylie});
+  },
+  textConverter:function(t) {
+    if(this.state.wylie == true) return tibetan.romanize.toWylie(t,null,false); 
+    return t; 
   },
   render: function() {
     if (!this.state.quota) { // install required db
@@ -14962,8 +14971,7 @@ var main = React.createClass({displayName: 'main',
   React.createElement("div", {className: "row"}, 
     React.createElement("div", {className: "col-md-12"}, 
       React.createElement("div", {className: "header"}, 
-        React.createElement("img", {width: "100%", src: "./banner/banner-06.png"})
-
+        React.createElement("img", {width: "100%", src: "./banner/banner-007.jpg"})
       ), 
 
       React.createElement("div", {className: "row"}, 
@@ -14971,47 +14979,50 @@ var main = React.createClass({displayName: 'main',
           React.createElement("div", {className: "borderright"}, 
             React.createElement("ul", {className: "nav nav-tabs", role: "tablist"}, 
               React.createElement("li", {className: "active"}, React.createElement("a", {href: "#Search", role: "tab", 'data-toggle': "tab"}, React.createElement("img", {height: "30px", src: "./banner/search.png"}))), 
-              React.createElement("li", null, React.createElement("a", {href: "#Catalog", role: "tab", 'data-toggle': "tab"}, React.createElement("img", {height: "30px", src: "./banner/catalog.png"})))
+              React.createElement("li", null, React.createElement("a", {href: "#Catalog", role: "tab", 'data-toggle': "tab"}, React.createElement("img", {height: "30px", src: "./banner/icon-read.png"}))), 
+              React.createElement("li", null, React.createElement("a", {href: "#about", role: "tab", 'data-toggle': "tab"}, React.createElement("img", {height: "30px", src: "./banner/icon-info.png"})))
             ), 
 
             React.createElement("div", {className: "tab-content", ref: "tab-content"}, 
               React.createElement("div", {className: "tab-pane fade", id: "Catalog"}, 
-                React.createElement(Stacktoc, {showText: this.showText, showExcerpt: this.showExcerpt, hits: this.state.res.rawresult, data: this.state.toc, goVoff: this.state.goVoff})
+                React.createElement(Stacktoc, {textConverter: this.textConverter, showText: this.showText, showExcerpt: this.showExcerpt, hits: this.state.res.rawresult, data: this.state.toc, goVoff: this.state.goVoff})
+              ), 
+
+              React.createElement("div", {className: "tab-pane fade", id: "about"}, 
+                React.createElement("div", {className: "center"}, 
+                  React.createElement("br", null), React.createElement("img", {width: "100", src: "./banner/treasure_logo.png"})
+                )
               ), 
 
               React.createElement("div", {className: "tab-pane fade in active", id: "Search"}, 
                 this.renderinputs("title"), 
                 React.createElement("div", {className: "center"}, 
                   React.createElement("div", {className: "btn-group", 'data-toggle': "buttons", ref: "searchtype", onClick: this.searchtypechange}, 
-                    React.createElement("label", {'data-type': "sutra", className: "btn btn-default btn-xs", Checked: true}, 
-                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, " མདོ་མིང་འཚོལ་བ། ")
+                    React.createElement("label", {'data-type': "sutra", className: "btn btn-default btn-xs searchmode", Checked: true}, 
+                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, React.createElement("img", {title: "sutra search", width: "25", src: "./banner/icon-sutra.png"}))
                     ), 
-                    React.createElement("label", {'data-type': "kacha", className: "btn btn-default btn-xs"}, 
-                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, " དཀར་ཆག་འཚོལ་བ། ")
+                    React.createElement("label", {'data-type': "kacha", className: "btn btn-default btn-xs searchmode"}, 
+                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, React.createElement("img", {title: "kacha search", width: "25", src: "./banner/icon-kacha.png"}))
                     ), 
-                    React.createElement("label", {'data-type': "fulltext", className: "btn btn-default btn-xs"}, 
-                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, " ནང་དོན་འཚོལ་བ། ")
+                    React.createElement("label", {'data-type': "fulltext", className: "btn btn-default btn-xs searchmode"}, 
+                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, React.createElement("img", {title: "full text search", width: "25", src: "./banner/icon-fulltext.png"}))
                     )
-                  ), 
-                  React.createElement("br", null), React.createElement("div", {className: "btn-group"}, 
-                    React.createElement("label", null, 
-                      React.createElement("input", {type: "checkbox", onClick: this.hideinputrender}, "Hide input")
-                    )
-                  ), 
+                  )
                   
-                  "   ", React.createElement("span", {className: "wylie"}, this.state.wylie)
+              
                                     
                 ), 
-                React.createElement(Namelist, {res_toc: this.state.res_toc, tofind: this.state.tofind, gotofile: this.gotofile}), 
-                React.createElement(Resultlist, {res: this.state.res, tofind: this.state.tofind, gotofile: this.gotofile})
+                React.createElement(Namelist, {wylie: this.state.wylie, res_toc: this.state.res_toc, tofind: this.state.tofind, gotofile: this.gotofile}), 
+                React.createElement(Resultlist, {wylie: this.state.wylie, res: this.state.res, tofind: this.state.tofind, gotofile: this.gotofile})
               )
             )
           )
         ), 
 
         React.createElement("div", {className: "col-md-9"}, 
+          
           React.createElement("div", {className: "text text-content", ref: "text-content"}, 
-          React.createElement(Showtext, {page: this.state.page, bodytext: this.state.bodytext, text: text, nextfile: this.nextfile, prevfile: this.prevfile, setpage: this.setPage, db: this.state.db, toc: this.state.toc, scrollto: this.state.scrollto})
+          React.createElement(Showtext, {setwylie: this.setwylie, wylie: this.state.wylie, page: this.state.page, bodytext: this.state.bodytext, text: text, nextfile: this.nextfile, prevfile: this.prevfile, setpage: this.setPage, db: this.state.db, toc: this.state.toc, scrollto: this.state.scrollto})
           )
         )
       )
@@ -15050,13 +15061,17 @@ require.register("adarsha-resultlist/index.js", function(exports, require, modul
 /* to rename the component, change name of ./component.js and  "dependencies" section of ../../component.js */
 
 //var othercomponent=Require("other"); 
+var tibetan=Require("ksana-document").languages.tibetan; 
 var resultlist=React.createClass({displayName: 'resultlist',  //should search result
   show:function() {
-    var tofind=this.props.tofind;
+    if(this.props.wylie == false) var tofind=this.props.tofind;
+    if(this.props.wylie == true ) var tofind=tibetan.romanize.toWylie(this.props.tofind,null,false);
+    
     return this.props.res.excerpt.map(function(r,i){ // excerpt is an array 
       var t = new RegExp(tofind,"g"); 
       var context="";
-      context=r.text.replace(t,function(tofind){return "<hl>"+tofind+"</hl>"});
+      if(this.props.wylie == false) context=r.text.replace(t,function(tofind){return "<hl>"+tofind+"</hl>"});
+      if(this.props.wylie == true) context=tibetan.romanize.toWylie(r.text,null,false).replace(t,function(tofind){return "<hl>"+tofind+"</hl>"});
       return React.createElement("div", {'data-vpos': r.hits[0][0]}, 
       React.createElement("a", {onClick: this.gotopage, className: "pagename"}, r.pagename), 
         React.createElement("div", {className: "resultitem", dangerouslySetInnerHTML: {__html:context}})
@@ -15367,7 +15382,9 @@ var Ancestors=React.createClass({displayName: 'Ancestors',
   },
   renderAncestor:function(n,idx) {
     var hit=this.props.toc[n].hit;
-    return React.createElement("div", {key: "a"+n, className: "node parent", 'data-n': n}, idx+1, ".", React.createElement("a", {className: "text", href: "#", onClick: this.goback}, this.props.toc[n].text), this.showHit(hit))
+    var text=this.props.toc[n].text.trim();
+    if (this.props.textConverter) text=this.props.textConverter(text);
+    return React.createElement("div", {key: "a"+n, className: "node parent", 'data-n': n}, idx+1, ".", React.createElement("a", {className: "text", href: "#", onClick: this.goback}, text), this.showHit(hit))
   },
   render:function() {
     if (!this.props.data || !this.props.data.length) return React.createElement("div", null);
@@ -15403,12 +15420,21 @@ var Children=React.createClass({displayName: 'Children',
     while (target && typeof target.dataset.n=="undefined")target=target.parentNode;
     if (!target) return;
     var n=parseInt(target.dataset.n);
-    if (n!=this.state.selected) {
-      this.setState({selected:n});
-      this.showText(e);
+    var child=this.props.toc[n];
+    if (this.props.showTextOnLeafNodeOnly) {
+      if (child.hasChild) {
+        this.open(e);
+      } else {
+        this.showText(e);
+      }
     } else {
-      this.open(e);
+      if (n!=this.state.selected) {
+        this.showText(e);
+      } else {
+        this.open(e);
+      }
     }
+    this.setState({selected:n});
   },
   renderChild:function(n) {
     var child=this.props.toc[n];
@@ -15417,10 +15443,16 @@ var Children=React.createClass({displayName: 'Children',
     //if (child.extra) extra="<extra>"+child.extra+"</extra>";
     if (!child.hasChild) classes+=" nochild";
     else haschild=true;
-    var classes="btn btn-link"
-    if (n==this.state.selected && haschild) classes="btn btn-default";
+    var selected=this.state.selected;
+    if (this.props.showTextOnLeafNodeOnly) {
+      selected=n;
+    }
 
-    return React.createElement("div", {'data-n': n}, React.createElement("a", {'data-n': n, className: classes +" tocitem text", onClick: this.nodeClicked}, this.props.toc[n].text), this.showHit(hit))
+    var classes="btn btn-link";
+    if (n==selected && haschild) classes="btn btn-default";
+    var text=this.props.toc[n].text.trim();
+    if (this.props.textConverter) text=this.props.textConverter(text);
+    return React.createElement("div", {'data-n': n}, React.createElement("a", {'data-n': n, className: classes +" tocitem text", onClick: this.nodeClicked}, text), this.showHit(hit))
   },
   showText:function(e) { 
     var target=e.target;
@@ -15513,7 +15545,10 @@ var stacktoc = React.createClass({displayName: 'stacktoc',
   setCurrent:function(n) {
     n=parseInt(n);
     this.setState({cur:n});
-    this.props.showText(n);
+    var child=this.props.data[n];
+    if (!(child.hasChild && this.props.showTextOnLeafNodeOnly)) {
+      this.props.showText(n);
+    }
   },
   findByVoff:function(voff) {
     for (var i=0;i<this.props.data.length;i++) {
@@ -15606,11 +15641,16 @@ var stacktoc = React.createClass({displayName: 'stacktoc',
     var children=this.enumChildren();
     var current=this.props.data[this.state.cur];
     if (this.props.hits && this.props.hits.length) this.fillHits(ancestors,children);
+
+    var text=current.text.trim();
+    if (this.props.textConverter) text=this.props.textConverter(text);
+
     return ( 
       React.createElement("div", {className: "stacktoc"}, 
-        React.createElement(Ancestors, {showExcerpt: this.hitClick, setCurrent: this.setCurrent, toc: this.props.data, data: ancestors}), 
-        React.createElement("div", {className: "node current"}, React.createElement("a", {href: "#", onClick: this.showText, 'data-n': this.state.cur}, React.createElement("span", null, depth, "."), React.createElement("span", {className: "text"}, current.text)), this.showHit(current.hit)), 
-        React.createElement(Children, {showText: this.props.showText, hitClick: this.hitClick, setCurrent: this.setCurrent, toc: this.props.data, data: children})
+        React.createElement(Ancestors, {textConverter: this.props.textConverter, showExcerpt: this.hitClick, setCurrent: this.setCurrent, toc: this.props.data, data: ancestors}), 
+        React.createElement("div", {className: "node current"}, React.createElement("a", {href: "#", onClick: this.showText, 'data-n': this.state.cur}, React.createElement("span", null, depth, "."), React.createElement("span", {className: "text"}, text)), this.showHit(current.hit)), 
+        React.createElement(Children, {textConverter: this.props.textConverter, showTextOnLeafNodeOnly: this.props.showTextOnLeafNodeOnly, 
+                  showText: this.props.showText, hitClick: this.hitClick, setCurrent: this.setCurrent, toc: this.props.data, data: children})
       )
     ); 
   }
@@ -15623,6 +15663,7 @@ require.register("adarsha-showtext/index.js", function(exports, require, module)
 //var othercomponent=Require("other"); 
 var api=Require("api");
 var dataset=Require("dataset");
+var tibetan=Require("ksana-document").languages.tibetan; 
 var mappings={"J":dataset.jPedurma,"D":dataset.dPedurma};
 var ControlsFile = React.createClass({displayName: 'ControlsFile',
   getInitialState: function() {
@@ -15672,14 +15713,21 @@ var ControlsFile = React.createClass({displayName: 'ControlsFile',
     var page=this.props.page;
     var res=this.filepage2vpos(file,page);
    // this.setState({address:res});
-    return res;
+   if(this.props.wylie == false) return res;
+   if(this.props.wylie == true) return tibetan.romanize.toWylie(res,null,false);
+    
   },
+
   render: function() {   
    return React.createElement("div", {className: "cursor"}, 
-            "Bampo", 
-            React.createElement("a", {href: "#", onClick: this.props.prev}, React.createElement("img", {width: "25", src: "./banner/prev.png"})), 
-            React.createElement("a", {href: "#", onClick: this.props.next}, React.createElement("img", {width: "25", src: "./banner/next.png"})), 
+           
+            React.createElement("button", {className: "btn btn-default", onClick: this.props.prev}, React.createElement("img", {width: "25", src: "./banner/prev.png"})), 
+            React.createElement("button", {className: "btn btn-default", onClick: this.props.next}, React.createElement("img", {width: "25", src: "./banner/next.png"})), 
+            
+              " ", React.createElement("button", {className: "btn btn-default", onClick: this.props.setwylie}, React.createElement("img", {className: "transfer", width: "25", src: "./banner/icon-towylie.png"})), 
+            
             React.createElement("br", null), React.createElement("span", {id: "address"}, this.getAddress())
+
           )
   }  
 });
@@ -15715,6 +15763,7 @@ var showtext = React.createClass({displayName: 'showtext',
     }
     
   },
+
   getImgName: function(volpage) {
     var p=volpage.split(".");
     var v="000"+p[0];
@@ -15735,7 +15784,9 @@ var showtext = React.createClass({displayName: 'showtext',
     var that=this;
     if(typeof s == "undefined") return "";
     s= s.replace(/<pb n="(.*?)"><\/pb>/g,function(m,m1){
-      var link='<br></br><a href="#" data-pb="'+m1+'">'+m1+'<img width="25" data-pb="'+m1+'" src="banner/imageicon.png"/></a>';
+      var p=m1.match(/\d+.(\d+)[ab]/);
+      if(p[1] != 1) var link='<br></br><a href="#" data-pb="'+m1+'">'+m1+'<img width="25" data-pb="'+m1+'" src="banner/imageicon.png"/></a>';
+      if(p[1] == 1) var link='<a href="#" data-pb="'+m1+'">'+m1+'<img width="25" data-pb="'+m1+'" src="banner/imageicon.png"/></a>';
       if(m1 == that.state.clickedpb){
         var imgName=that.getImgName(m1);
         var corresPage=that.getCorresPage(m1);
@@ -15747,10 +15798,14 @@ var showtext = React.createClass({displayName: 'showtext',
     return s;
   },
   render: function() {
-    var content=this.renderpb(this.props.text);
+    if(this.props.wylie == false) {
+      var c=this.renderpb(this.props.text);
+      var content = c.replace(/[^།]\n/,"");
+    }
+    if(this.props.wylie == true && this.props.text) var content=this.renderpb(tibetan.romanize.toWylie(this.props.text,null,false));
     return (
       React.createElement("div", {className: "cursor"}, 
-        React.createElement(ControlsFile, {page: this.props.page, bodytext: this.props.bodytext, next: this.props.nextfile, prev: this.props.prevfile, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc}), 
+        React.createElement(ControlsFile, {setwylie: this.props.setwylie, wylie: this.props.wylie, page: this.props.page, bodytext: this.props.bodytext, next: this.props.nextfile, prev: this.props.prevfile, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc}), 
         React.createElement("br", null), 
         React.createElement("div", {onClick: this.renderPageImg, className: "pagetext", dangerouslySetInnerHTML: {__html: content}})
       )
@@ -15869,6 +15924,7 @@ require.register("adarsha-namelist/index.js", function(exports, require, module)
 /* to rename the component, change name of ./component.js and  "dependencies" section of ../../component.js */
 
 //var othercomponent=Require("other"); 
+var tibetan=Require("ksana-document").languages.tibetan; 
 var namelist = React.createClass({displayName: 'namelist',
   getInitialState: function() {
     return {};
@@ -15880,11 +15936,16 @@ var namelist = React.createClass({displayName: 'namelist',
     this.props.gotofile(voff);
   },
   renderNameItem: function(item) {
-    var tofind=this.props.tofind;
     var context="";
-    context=item.text.replace(tofind,function(t){
-      return '<hl>'+t+"</hl>";
-    });
+    if(this.props.wylie == false){
+      var tofind=this.props.tofind;
+      context=item.text.replace(tofind,function(t){return '<hl>'+t+"</hl>";});
+    }
+    if(this.props.wylie == true){
+      var tofind=tibetan.romanize.toWylie(this.props.tofind,null,false);
+      context=tibetan.romanize.toWylie(item.text,null,false).replace(tofind,function(t){return '<hl>'+t+"</hl>";});
+    }
+      
     return (
       React.createElement("div", null, 
         React.createElement("li", null, React.createElement("a", {herf: "#", className: "item", 'data-voff': item.voff, onClick: this.onItemClick, dangerouslySetInnerHTML: {__html:context}}))
@@ -15892,7 +15953,7 @@ var namelist = React.createClass({displayName: 'namelist',
       )
   },
   render: function() {
-
+    
     return (
       React.createElement("div", null, 
         this.props.res_toc.map(this.renderNameItem)

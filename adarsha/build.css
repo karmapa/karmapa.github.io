@@ -7150,7 +7150,7 @@ input {
 .btn.active {
   background-image: none;              
   color: #ffffff;
-  background-color: #5cb85c;           /*點擊&選取色彩  設綠色*/
+  background-color: #C2E8AB;           /*點擊&選取色彩  設綠色*/
   border: 1px solid #5cb85c;
   outline: 0;
   -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
@@ -7242,11 +7242,27 @@ div.child span.text:hover {text-decoration:underline;cursor:pointer;color:#85BB6
 }
 .cursor{cursor:default;}
 
+.setwylie{text-align: right;}
+
 pb:after{content: attr(n);}
 division:after{content: attr(t);
 	}
 #address{font-size: 120%;
 	cursor:default;}
+
+
+.btn.searchmode:active,  
+.btn.active.searchmode {
+  background-image: none;              
+  color: #ffffff;
+  background-color: #C2E8AB;           /*點擊&選取色彩  設綠色*/
+  border: 1px solid #5cb85c;
+  outline: 0;
+  -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+          box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+}
+
+.transfer{text-align: right;}
 .renderItem {}
 .item{cursor: pointer;}
 hl{color:red;}
@@ -7257,7 +7273,7 @@ hl[n="2"]{color: green;}
 .namelist {}
 .searchbar {}
 
-#main {}
+#main {overflow-x: hidden;}
 
 
 @font-face { font-family: 'tibetan1'; font-style: normal; font-weight: normal; src: url("fonts/himalaya_2.ttf"); }
