@@ -4550,7 +4550,10 @@ var putPages_new=function(parsed,cb) { //25% faster than create a new document
 		session.json.pageNames.push(t.n);
 		session.json.pageOffsets.push(session.vpos);
 	}
-	
+	var lastfilecount=0;
+	if (session.json.filePageCount.length) lastfilecount=session.json.filePageCount[session.json.filePageCount.length-1];
+	session.json.filePageCount.push(lastfilecount+parsed.texts.length); //accurate page count
+
 	if (fileContent.length==0 || (fileContent.length==1&&!fileContent[0])) {
 		console.log("no content in"+status.filename);
 		fileContent[0]=" "; //work around to avoid empty string array throw in kdbw
@@ -4652,6 +4655,7 @@ var storeFields=function(fields,json) {
 */
 var tagStack=[];
 var processTags=function(captureTags,tags,texts) {
+
 	var getTextBetween=function(from,to,startoffset,endoffset) {
 		if (from==to) return texts[from].t.substring(startoffset,endoffset);
 		var first=texts[from].t.substr(startoffset-1);
@@ -4681,6 +4685,7 @@ var processTags=function(captureTags,tags,texts) {
 			}
 
 			if (captureTags[tagname]) {
+
 				var attr=parseAttributesString(attributes);
 				if (!nulltag) {
 					tagStack.push([tagname,tagoffset,attr,i]);
@@ -4733,6 +4738,9 @@ var putFile=function(fn,cb) {
 		return;
 	}
 	var texts=fs.readFileSync(fn,session.config.inputEncoding).replace(/\r\n/g,"\n");
+	if (texts.charCodeAt(0)==0xfeff) {
+		texts=texts.substring(1);
+	}
 	var bodyend=session.config.bodyend;
 	var bodystart=session.config.bodystart;
 	var captureTags=session.config.captureTags;
@@ -4781,6 +4789,7 @@ var initSession=function(config) {
 		,fileContents:[]
 		,fileNames:[]
 		,fileOffsets:[]
+		,filePageCount:[] //2014/11/26
 		,pageNames:[]
 		,pageOffsets:[]
 		,tokens:{}
@@ -4882,6 +4891,7 @@ var createMeta=function() {
 	meta.name=session.config.name;
 	meta.vsize=session.vpos;
 	meta.pagecount=status.pageCount;
+	meta.version=0x20141126;
 	return meta;
 }
 var guessSize=function() {
@@ -7468,6 +7478,17 @@ var toDoc=function(pagenames,texts,others) {
 }
 var getFileRange=function(i) {
 	var engine=this;
+
+	var filePageCount=engine.get(["filePageCount"]);
+	if (filePageCount) {
+		if (i==0) {
+			return {start:0,end:filePageCount[0]-1};
+		} else {
+			return {start:filePageCount[i-1],end:filePageCount[i]-1};
+		}
+	}
+
+	//old buggy code
 	var fileNames=engine.get(["fileNames"]);
 	var fileOffsets=engine.get(["fileOffsets"]);
 	var pageOffsets=engine.get(["pageOffsets"]);
@@ -7488,8 +7509,7 @@ var getFileRange=function(i) {
 	//in case of items with same value
 	//return the last one
 	
-	
-	
+
 	//while (pageOffsets[end+1]==pageOffsets[end]) end--;
 	/*
 	if (i==0) {
@@ -7615,7 +7635,7 @@ var createLocalEngine=function(kdb,cb,context) {
 	}
 	
 	var preload=[["meta"],["fileNames"],["fileOffsets"],
-	["tokens"],["postingslen"],["pageNames"],["pageOffsets"]];
+	["tokens"],["postingslen"],["pageNames"],["pageOffsets"],["filePageCount"]];
 
 	var setPreload=function(res) {
 		engine.dbname=res[0].name;
@@ -7749,7 +7769,8 @@ var createEngine=function(kdbid,context,cb) {
 	if (typeof context=="object") engine.context=context;
 
 	//engine.findLinkBy=link.findLinkBy;
-	$kse("get",{key:[["meta"],["fileNames"],["fileOffsets"],["tokens"],["postingslen"],,["pageNames"],["pageOffsets"]], 
+	$kse("get",{key:[["meta"],["fileNames"],["fileOffsets"],
+		["tokens"],["postingslen"],,["pageNames"],["pageOffsets"],["filePageCount"]], 
 		recursive:true,db:kdbid}).done(function(res){
 		engine.dbname=res[0].name;
 
@@ -7759,6 +7780,7 @@ var createEngine=function(kdbid,context,cb) {
 		engine.cache["postingslen"]=res[4];
 		engine.cache["pageNames"]=res[5];
 		engine.cache["pageOffsets"]=res[6];
+		engine.cache["filePageCount"]=res[7];
 
 //		engine.cache["tokenId"]=res[4];
 //		engine.cache["files"]=res[2];
@@ -14965,7 +14987,7 @@ var main = React.createClass({displayName: 'main',
   React.createElement("div", {className: "row"}, 
     React.createElement("div", {className: "col-md-12"}, 
       React.createElement("div", {className: "header"}, 
-        React.createElement("img", {width: "100%", src: "./banner/banner-007.jpg"})
+        React.createElement("img", {width: "100%", src: "./banner/banner.png"})
       ), 
 
       React.createElement("div", {className: "row"}, 
@@ -14994,13 +15016,13 @@ var main = React.createClass({displayName: 'main',
                 React.createElement("div", {className: "center"}, 
                   React.createElement("div", {className: "btn-group", 'data-toggle': "buttons", ref: "searchtype", onClick: this.searchtypechange}, 
                     React.createElement("label", {'data-type': "sutra", className: "btn btn-default btn-xs searchmode", Checked: true}, 
-                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, React.createElement("img", {title: "sutra search", width: "25", src: "./banner/icon-sutra.png"}))
+                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, React.createElement("img", {title: "མདོ་ཡི་མཚན་འཚོལ་བ། Sutra Search", width: "25", src: "./banner/icon-sutra.png"}))
                     ), 
                     React.createElement("label", {'data-type': "kacha", className: "btn btn-default btn-xs searchmode"}, 
-                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, React.createElement("img", {title: "kacha search", width: "25", src: "./banner/icon-kacha.png"}))
+                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, React.createElement("img", {title: "དཀར་ཆགས་འཚོལ་བ། Karchak Search", width: "25", src: "./banner/icon-kacha.png"}))
                     ), 
                     React.createElement("label", {'data-type': "fulltext", className: "btn btn-default btn-xs searchmode"}, 
-                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, React.createElement("img", {title: "full text search", width: "25", src: "./banner/icon-fulltext.png"}))
+                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, React.createElement("img", {title: "ནང་དོན་འཚོལ་བ།  Full Text search", width: "25", src: "./banner/icon-fulltext.png"}))
                     )
                   )
                   
@@ -15716,10 +15738,10 @@ var Controlsfile = React.createClass({displayName: 'Controlsfile',
   render: function() {   
    return React.createElement("div", {className: "cursor"}, 
            
-            React.createElement("button", {className: "btn btn-default", onClick: this.props.prev}, React.createElement("img", {width: "25", src: "./banner/prev.png"})), 
-            React.createElement("button", {className: "btn btn-default", onClick: this.props.next}, React.createElement("img", {width: "25", src: "./banner/next.png"})), 
+            React.createElement("button", {className: "btn btn-default", onClick: this.props.prev}, React.createElement("img", {width: "20", src: "./banner/prev.png"})), 
+            React.createElement("button", {className: "btn btn-default", onClick: this.props.next}, React.createElement("img", {width: "20", src: "./banner/next.png"})), 
             
-            React.createElement("button", {className: "btn btn-default transfer", onClick: this.props.setwylie}, React.createElement("img", {width: "25", src: "./banner/icon-towylie.png"})), 
+            React.createElement("button", {className: "btn btn-default transfer", onClick: this.props.setwylie}, React.createElement("img", {width: "20", src: "./banner/icon-towylie.png"})), 
 
             React.createElement("br", null), React.createElement("span", {id: "address"}, this.getAddress())
 
@@ -15732,8 +15754,8 @@ var showtext = React.createClass({displayName: 'showtext',
     return {bar: "world", pageImg:""};
   },
   componentDidUpdate:function()  {
-    if(this.props.scrollto && this.props.scrollto.match(/[ab]/)){
-      var p=this.props.scrollto.match(/\d+.(\d+)[ab]/);
+    if(this.props.scrollto && this.props.scrollto.match(/[abc]/)){
+      var p=this.props.scrollto.match(/\d+.(\d+)[abc]/);
       $(".text-content").scrollTop( 0 );
       if(p[1]!=1){      
         var pb=$("a[data-pb='"+this.props.scrollto+"']");
@@ -15779,9 +15801,9 @@ var showtext = React.createClass({displayName: 'showtext',
     var that=this;
     if(typeof s == "undefined") return "";
     s= s.replace(/<pb n="(.*?)"><\/pb>/g,function(m,m1){
-      var p=m1.match(/\d+.(\d+[ab])/);
+      var p=m1.match(/\d+.(\d+[ab])/) || ["",""];
       if(p[1] != "1a") var link='<br></br><a href="#" data-pb="'+m1+'">'+m1+'<img width="25" data-pb="'+m1+'" src="banner/imageicon.png"/></a>';
-      if(p[1] == "1a") var link='<a href="#" data-pb="'+m1+'">'+m1+'<img width="25" data-pb="'+m1+'" src="banner/imageicon.png"/></a>';
+      else var link='<a href="#" data-pb="'+m1+'">'+m1+'<img width="25" data-pb="'+m1+'" src="banner/imageicon.png"/></a>';
       if(m1 == that.state.clickedpb){
         var imgName=that.getImgName(m1);
         var corresPage=that.getCorresPage(m1);
