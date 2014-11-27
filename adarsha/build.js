@@ -15741,7 +15741,7 @@ var Controlsfile = React.createClass({displayName: 'Controlsfile',
             React.createElement("button", {className: "btn btn-default", onClick: this.props.prev}, React.createElement("img", {width: "20", src: "./banner/prev.png"})), 
             React.createElement("button", {className: "btn btn-default", onClick: this.props.next}, React.createElement("img", {width: "20", src: "./banner/next.png"})), 
             
-            React.createElement("button", {className: "btn btn-default transfer", onClick: this.props.setwylie}, React.createElement("img", {width: "20", src: "./banner/icon-towylie.png"})), 
+            React.createElement("button", {className: "btn btn-default transfer", onClick: this.props.setwylie}, React.createElement("img", {width: "25", src: "./banner/icon-towylie.png"})), 
 
             React.createElement("br", null), React.createElement("span", {id: "address"}, this.getAddress())
 

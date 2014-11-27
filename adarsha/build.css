@@ -7286,3 +7286,4 @@ hl[n="2"]{color: green;}
 .stacktoc , .results , .item , .nav-tabs {font-family: 'tibetan1';}
 div.current {color:black; background:#95CB85;border-bottom-right-radius:10px 10px;}
 div.current:hover {background:#BDEBAD;}
+body { overflow: hidden;}
