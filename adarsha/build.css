@@ -7246,7 +7246,18 @@ div.child span.text:hover {text-decoration:underline;cursor:pointer;color:#85BB6
 }
 .cursor{cursor:default;}
 
-.setwylie{text-align: right;}
+.controlbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 10px;
+  z-index: 999;
+  width: 97%;
+  height: 100px;
+  background-color: rgba(255,255,255,0.9);
+}
+
+.scrolled{border:1px solid #5cb85c;}
 
 pb:after{content: attr(n);}
 division:after{content: attr(t);
@@ -7254,7 +7265,7 @@ division:after{content: attr(t);
 #address{font-size: 120%;
 	cursor:default;}
 
-.transfer{float: right;}
+.right{float: right;}
 
 .btn.searchmode:active,  
 .btn.active.searchmode {
