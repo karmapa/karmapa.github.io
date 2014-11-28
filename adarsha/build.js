@@ -14886,7 +14886,7 @@ var main = React.createClass({displayName: 'main',
     if (this.state.db) {
       return (    
         React.createElement("div", null, 
-        React.createElement("input", {className: "form-control input-small", ref: "tofind", onInput: this.searchtypechange, defaultValue: "byang chub"})
+        React.createElement("input", {className: "form-control input-small", ref: "tofind", onInput: this.searchtypechange, placeholder: "Type something to start searching"})
         )
         )          
     } else {
@@ -14994,20 +14994,13 @@ var main = React.createClass({displayName: 'main',
         React.createElement("div", {className: "col-md-3"}, 
           React.createElement("div", {className: "borderright"}, 
             React.createElement("ul", {className: "nav nav-tabs", role: "tablist"}, 
-              React.createElement("li", {className: "active"}, React.createElement("a", {href: "#Search", role: "tab", 'data-toggle': "tab"}, React.createElement("img", {height: "30px", src: "./banner/search.png"}))), 
-              React.createElement("li", null, React.createElement("a", {href: "#Catalog", role: "tab", 'data-toggle': "tab"}, React.createElement("img", {height: "30px", src: "./banner/icon-read.png"}))), 
-              React.createElement("li", null, React.createElement("a", {href: "#about", role: "tab", 'data-toggle': "tab"}, React.createElement("img", {height: "30px", src: "./banner/icon-info.png"})))
+              React.createElement("li", {className: "active"}, React.createElement("a", {href: "#Search", role: "tab", 'data-toggle': "tab"}, React.createElement("img", {width: "25", src: "./banner/search.png"}))), 
+              React.createElement("li", null, React.createElement("a", {href: "#Catalog", role: "tab", 'data-toggle': "tab"}, React.createElement("img", {width: "25", src: "./banner/icon-read.png"})))
             ), 
 
             React.createElement("div", {className: "tab-content", ref: "tab-content"}, 
               React.createElement("div", {className: "tab-pane fade", id: "Catalog"}, 
                 React.createElement(Stacktoc, {textConverter: this.textConverter, showText: this.showText, showExcerpt: this.showExcerpt, hits: this.state.res.rawresult, data: this.state.toc, goVoff: this.state.goVoff})
-              ), 
-
-              React.createElement("div", {className: "tab-pane fade", id: "about"}, 
-                React.createElement("div", {className: "center"}, 
-                  React.createElement("br", null), React.createElement("img", {width: "100", src: "./banner/treasure_logo.png"})
-                )
               ), 
 
               React.createElement("div", {className: "tab-pane fade in active", id: "Search"}, 
@@ -15736,13 +15729,13 @@ var Controlsfile = React.createClass({displayName: 'Controlsfile',
   },
 
   render: function() {   
-   return React.createElement("div", {className: "cursor"}, 
-           
+   return React.createElement("div", {className: "cursor controlbar"}, 
+            
             React.createElement("button", {className: "btn btn-default", onClick: this.props.prev}, React.createElement("img", {width: "20", src: "./banner/prev.png"})), 
             React.createElement("button", {className: "btn btn-default", onClick: this.props.next}, React.createElement("img", {width: "20", src: "./banner/next.png"})), 
-            
-            React.createElement("button", {className: "btn btn-default transfer", onClick: this.props.setwylie}, React.createElement("img", {width: "25", src: "./banner/icon-towylie.png"})), 
-
+            React.createElement("button", {className: "btn btn-default right"}, React.createElement("a", {Target: "_new", href: "http://www.dharma-treasure.org/en/contact-us/"}, React.createElement("img", {width: "20", src: "./banner/icon-info.png"}))), 
+            React.createElement("button", {className: "btn btn-default right", onClick: this.props.setwylie}, React.createElement("img", {width: "20", src: "./banner/icon-towylie.png"})), 
+            React.createElement("br", null), 
             React.createElement("br", null), React.createElement("span", {id: "address"}, this.getAddress())
 
           )
@@ -15751,27 +15744,39 @@ var Controlsfile = React.createClass({displayName: 'Controlsfile',
 
 var showtext = React.createClass({displayName: 'showtext',
   getInitialState: function() {
-    return {bar: "world", pageImg:""};
+    return {bar: "world", pageImg:"",scroll:true};
   },
-  componentDidUpdate:function()  {
-    if(this.props.scrollto && this.props.scrollto.match(/[abc]/)){
+  componentWillReceiveProps: function() {
+    this.shouldscroll=true;
+  },
+  componentDidUpdate: function()  {
+    if(this.shouldscroll && this.props.scrollto && this.props.scrollto.match(/[abc]/) ){
       var p=this.props.scrollto.match(/\d+.(\d+)[abc]/);
       $(".text-content").scrollTop( 0 );
-      if(p[1]!=1){      
+      if(p[1]!=1){
+        $("a[data-pb]").removeClass("scrolled");      
         var pb=$("a[data-pb='"+this.props.scrollto+"']");
-        if(pb.length) $(".text-content").scrollTop( pb.position().top-20 );
-      }          
-    }  
-
+        if(pb.length) {
+          $(".text-content").scrollTop( pb.position().top-120 );
+          pb.addClass("scrolled");
+        }
+        this.shouldscroll=false;
+      }         
+    } 
+    if(this.shouldscroll && this.props.scrollto && this.props.scrollto.match("_")) {
+      $(".text-content").scrollTop( 0 );
+      this.shouldscroll=false;
+    }
   },
   hitClick: function(n){
     if(this.props.showExcerpt) this.props.showExcerpt(n);
   },
   renderPageImg: function(e) {
     var pb=e.target.dataset.pb;
+    if(pb == "1.1a") return;
     if (pb || e.target.nodeName == "IMG") {
       this.setState({clickedpb:pb});  
-      this.setState({scrollto:null});
+      this.setState({scroll:null});
     }
     var img=e.target.dataset.img;
     if (img) {
@@ -15802,8 +15807,7 @@ var showtext = React.createClass({displayName: 'showtext',
     if(typeof s == "undefined") return "";
     s= s.replace(/<pb n="(.*?)"><\/pb>/g,function(m,m1){
       var p=m1.match(/\d+.(\d+[ab])/) || ["",""];
-      if(p[1] != "1a") var link='<br></br><a href="#" data-pb="'+m1+'">'+m1+'<img width="25" data-pb="'+m1+'" src="banner/imageicon.png"/></a>';
-      else var link='<a href="#" data-pb="'+m1+'">'+m1+'<img width="25" data-pb="'+m1+'" src="banner/imageicon.png"/></a>';
+      var link='<br></br><a href="#" data-pb="'+m1+'">'+m1+'<img width="25" data-pb="'+m1+'" src="banner/imageicon.png"/></a>';
       if(m1 == that.state.clickedpb){
         var imgName=that.getImgName(m1);
         var corresPage=that.getCorresPage(m1);
@@ -15823,6 +15827,7 @@ var showtext = React.createClass({displayName: 'showtext',
     return (
       React.createElement("div", {className: "cursor"}, 
         React.createElement(Controlsfile, {setwylie: this.props.setwylie, wylie: this.props.wylie, page: this.props.page, bodytext: this.props.bodytext, next: this.props.nextfile, prev: this.props.prevfile, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc}), 
+        React.createElement("br", null), 
         React.createElement("br", null), 
         React.createElement("div", {onClick: this.renderPageImg, className: "pagetext", dangerouslySetInnerHTML: {__html: content}})
       )
