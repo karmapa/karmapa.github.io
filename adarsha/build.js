@@ -205,6 +205,7 @@ require.relative = function(parent) {
 };
 require.register("ksanaforge-boot/index.js", function(exports, require, module){
 var ksana={"platform":"remote"};
+window.ksana=ksana;
 
 if (typeof process !="undefined") {
 	if (process.versions["node-webkit"]) {
@@ -219,7 +220,9 @@ if (typeof process !="undefined") {
 	window.kfs=require("./kfs_html5");
 	ksana.platform="chrome";
 } else {
-	if (typeof ksanagap!="undefined" ) {
+	if (typeof ksanagap!="undefined" ) {//mobile
+		var ksanajs=fs.readFileSync("ksana.js","utf8").trim(); //android extra \n at the end
+		ksana.js=JSON.parse(ksanajs.substring(14,ksanajs.length-1));
 		ksana.platform=ksanagap.platform;
 		if (typeof ksanagap.android !="undefined") {
 			ksana.platform="android";
@@ -231,30 +234,40 @@ if (typeof process !="undefined") {
 
 //require("../cortex");
 var Require=function(arg){return require("../"+arg)};
-var boot=function(appId,main,maindiv) {
-	main=main||"main";
-	maindiv=maindiv||"main";
-	ksana.appId=appId;
+var timer=null;
+var enterMainComponent=function() {
+	var main=main||"main";
+	var maindiv=maindiv||"main";
 	ksana.mainComponent=React.render(Require(main)(),document.getElementById(maindiv));
 }
-window.ksana=ksana;
+var boot=function(appId,main,maindiv) {
+	ksana.appId=appId;
+	if (ksanagap.platform=="chrome") { //need to wait for jsonp ksana.js
+		timer=setInterval(function(){
+			if (ksana.ready){
+				clearInterval(timer);
+				enterMainComponent();
+			}
+		},300);
+	} else {
+		enterMainComponent();
+	}
+}
 window.Require=Require;
 module.exports=boot;
 });
 require.register("ksanaforge-boot/ksanagap.js", function(exports, require, module){
+var appname="installer";
 var switchApp=function(path) {
 	var fs=nodeRequire("fs");
 	path="../"+path;
+	appname=path;
 	document.location.href= path+"/index.html"; 
 	process.chdir(path);
 }
 var downloader={};
 var rootPath="";
-if (typeof process!="undefined") {
-	downloader=require("./downloader");
-	rootPath=process.cwd();
-	rootPath=nodeRequire("path").resolve(rootPath,"..").replace(/\\/g,"/")+'/';
-}
+
 var deleteApp=function(app) {
 	console.error("not allow on PC, do it in File Explorer/ Finder");
 }
@@ -265,8 +278,33 @@ var useremail=function() {
 	return ""
 }
 var runtime_version=function() {
-	return "1.2";
+	return "1.4";
 }
+
+//copy from liveupdate
+var jsonp=function(url,dbid,callback,context) {
+  var script=document.getElementById("jsonp2");
+  if (script) {
+    script.parentNode.removeChild(script);
+  }
+  window.jsonp_handler=function(data) {
+    if (typeof data=="object") {
+      data.dbid=dbid;
+      callback.apply(context,[data]);    
+    }  
+  }
+  window.jsonp_error_handler=function() {
+    console.error("url unreachable",url);
+    callback.apply(context,[null]);
+  }
+  script=document.createElement('script');
+  script.setAttribute('id', "jsonp2");
+  script.setAttribute('onerror', "jsonp_error_handler()");
+  url=url+'?'+(new Date().getTime());
+  script.setAttribute('src', url);
+  document.getElementsByTagName('head')[0].appendChild(script); 
+}
+
 var ksanagap={
 	platform:"node-webkit",
 	startDownload:downloader.startDownload,
@@ -279,10 +317,24 @@ var ksanagap={
 	deleteApp: deleteApp,
 	username:username, //not support on PC
 	useremail:username,
-	runtime_version:runtime_version
+	runtime_version:runtime_version,
+	
 }
 
-
+if (typeof process!="undefined") {
+	var ksanajs=nodeRequire("fs").readFileSync("./ksana.js","utf8");
+	downloader=require("./downloader");
+	ksana.js=JSON.parse(ksanajs.substring(14,ksanajs.length-1));
+	rootPath=process.cwd();
+	rootPath=nodeRequire("path").resolve(rootPath,"..").replace(/\\/g,"/")+'/';
+	ksana.ready=true;
+} else{
+	var url=window.location.origin+window.location.pathname+"ksana.js";
+	jsonp(url,appname,function(data){
+		ksana.js=data;
+		ksana.ready=true;
+	});
+}
 module.exports=ksanagap;
 });
 require.register("ksanaforge-boot/downloader.js", function(exports, require, module){
@@ -14831,7 +14883,7 @@ var main = React.createClass({displayName: 'main',
   }, 
   getInitialState: function() {
     document.title=version+"-adarsha";
-    return {dialog:null,res:{},res_toc:[],bodytext:{file:0,page:0},db:null,toc_result:[],page:0,field:"sutra",scrollto:0,hide:false, wylie:false};
+    return {dialog:null,res:{},res_toc:[],bodytext:{file:0,page:0},db:null,toc_result:[],page:0,field:"sutra",scrollto:0,hide:false, wylie:false, dataN:null};
   },
   componentDidUpdate:function()  {
     var ch=document.documentElement.clientHeight;
@@ -14925,7 +14977,9 @@ var main = React.createClass({displayName: 'main',
   },
   showExcerpt:function(n) {
     var voff=this.state.toc[n].voff;
-    this.dosearch(null,null,voff);
+    this.dosearch(null,null,voff,"fulltext",this.state.tofind);
+    var searchtabid=$(".tab-pane#Search").attr("id");
+    $('[href=#'+searchtabid+']').tab('show');
   },
   gotofile:function(vpos){
     var res=kse.vpos2filepage(this.state.db,vpos);
@@ -14944,7 +14998,8 @@ var main = React.createClass({displayName: 'main',
   }, 
   showText:function(n) {
     var res=kse.vpos2filepage(this.state.db,this.state.toc[n].voff);
-    if(res.file != -1) this.showPage(res.file,res.page,true);    
+    if(res.file != -1) this.showPage(res.file,res.page,true);
+    this.setState({dataN:n});    
   },
   nextfile:function() {
     var file=this.state.bodytext.file+1;
@@ -14994,28 +15049,28 @@ var main = React.createClass({displayName: 'main',
         React.createElement("div", {className: "col-md-3"}, 
           React.createElement("div", {className: "borderright"}, 
             React.createElement("ul", {className: "nav nav-tabs", role: "tablist"}, 
-              React.createElement("li", {className: "active"}, React.createElement("a", {href: "#Search", role: "tab", 'data-toggle': "tab"}, React.createElement("img", {width: "25", src: "./banner/search.png"}))), 
-              React.createElement("li", null, React.createElement("a", {href: "#Catalog", role: "tab", 'data-toggle': "tab"}, React.createElement("img", {width: "25", src: "./banner/icon-read.png"})))
+              React.createElement("li", {className: "active"}, React.createElement("a", {href: "#Catalog", role: "tab", 'data-toggle': "tab"}, React.createElement("img", {width: "25", src: "./banner/icon-read.png"}))), 
+              React.createElement("li", null, React.createElement("a", {href: "#Search", role: "tab", 'data-toggle': "tab"}, React.createElement("img", {width: "25", src: "./banner/search.png"})))
             ), 
 
             React.createElement("div", {className: "tab-content", ref: "tab-content"}, 
-              React.createElement("div", {className: "tab-pane fade", id: "Catalog"}, 
+              React.createElement("div", {className: "tab-pane fade in active", id: "Catalog"}, 
                 React.createElement(Stacktoc, {textConverter: this.textConverter, showText: this.showText, showExcerpt: this.showExcerpt, hits: this.state.res.rawresult, data: this.state.toc, goVoff: this.state.goVoff})
               ), 
 
-              React.createElement("div", {className: "tab-pane fade in active", id: "Search"}, 
+              React.createElement("div", {className: "tab-pane fade", id: "Search"}, 
                 React.createElement("div", {className: "slight"}, React.createElement("br", null)), 
                 this.renderinputs("title"), 
                 React.createElement("div", {className: "center"}, 
                   React.createElement("div", {className: "btn-group", 'data-toggle': "buttons", ref: "searchtype", onClick: this.searchtypechange}, 
                     React.createElement("label", {'data-type': "sutra", className: "btn btn-default btn-xs searchmode", Checked: true}, 
-                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, React.createElement("img", {title: "མདོ་ཡི་མཚན་འཚོལ་བ། Sutra Search", width: "25", src: "./banner/icon-sutra.png"}))
+                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, React.createElement("img", {title: "མདོ་མིང་འཚོལ་བ། Sutra Search", width: "25", src: "./banner/icon-sutra.png"}))
                     ), 
                     React.createElement("label", {'data-type': "kacha", className: "btn btn-default btn-xs searchmode"}, 
-                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, React.createElement("img", {title: "དཀར་ཆགས་འཚོལ་བ། Karchak Search", width: "25", src: "./banner/icon-kacha.png"}))
+                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, React.createElement("img", {title: "དཀར་ཆག་འཚོལ་བ། Karchak Search", width: "25", src: "./banner/icon-kacha.png"}))
                     ), 
                     React.createElement("label", {'data-type': "fulltext", className: "btn btn-default btn-xs searchmode"}, 
-                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, React.createElement("img", {title: "ནང་དོན་འཚོལ་བ།  Full Text search", width: "25", src: "./banner/icon-fulltext.png"}))
+                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, React.createElement("img", {title: "ནང་དོན་འཚོལ་བ།  Full Text Search", width: "25", src: "./banner/icon-fulltext.png"}))
                     )
                   )
                   
@@ -15032,7 +15087,7 @@ var main = React.createClass({displayName: 'main',
         React.createElement("div", {className: "col-md-9"}, 
           
           React.createElement("div", {className: "text text-content", ref: "text-content"}, 
-          React.createElement(Showtext, {setwylie: this.setwylie, wylie: this.state.wylie, page: this.state.page, bodytext: this.state.bodytext, text: text, nextfile: this.nextfile, prevfile: this.prevfile, setpage: this.setPage, db: this.state.db, toc: this.state.toc, scrollto: this.state.scrollto})
+          React.createElement(Showtext, {dataN: this.state.dataN, setwylie: this.setwylie, wylie: this.state.wylie, page: this.state.page, bodytext: this.state.bodytext, text: text, nextfile: this.nextfile, prevfile: this.prevfile, setpage: this.setPage, db: this.state.db, toc: this.state.toc, scrollto: this.state.scrollto})
           )
         )
       )
@@ -15146,18 +15201,25 @@ require.register("adarsha-api/corres_api.js", function(exports, require, module)
 var dosearch=function(volpage,from,to) {
   var tmp=fromVolpage(volpage,from,to);
     //corresFromVolpage= [經號],[範圍],[對照經號],[對照範圍],[對照行],[K經號]
-  var parse_tmp=parseVolPage(tmp);
-  var corresPage=snap2realpage(parse_tmp);
-  return corresPage.vol+"."+corresPage.page+corresPage.side;
+  if(tmp){
+	  var parse_tmp=parseVolPage(tmp);
+	  var corresPage=snap2realpage(parse_tmp);
+	  return corresPage.vol+"."+corresPage.page+corresPage.side;
+	} else {
+		console.log("no corres page");
+		return "";
+	}
 }
 
 var fromVolpage=function(volpage,from,to){
   //var volpage=document.getElementById("input").value;
   var out=[];
   var range=findRange(volpage,from);//range=[J經號,J範圍,K經號]
-  var corres_range=findCorresRange(range[2],to);//corres_range=[D經號,D範圍,下一項D經號,下一項D範圍]
+  if(range) {
+  	var corres_range=findCorresRange(range[2],to);//corres_range=[D經號,D範圍,下一項D經號,下一項D範圍]
+  } else return null;
   //算J和D的範圍
-  if(corres_range.length != 0){
+  if(corres_range.length != 0 ){
     var vRange=countRange(range[1],range[3],range[0],range[2]);
     //vRange input為D範圍, 下一項D範圍, D經, 下一項D經 //output為[vStart,vEnd-vStart]
     var corres_vRange=countRange(corres_range[0][1],corres_range[corres_range.length-1][1]);//[vStart,vEnd-vStart]
@@ -15166,7 +15228,7 @@ var fromVolpage=function(volpage,from,to){
     //out.push([range[0]],[range[1]],[corres_range[0][0]],[corres_range[0][1]],[corresLine],[range[2]]);
           // [經號],[範圍],[對照經號],[對照範圍],[對照行],[K經號]
     return corresLine;
-  }
+  } else return null;
 }
 
 var countCorresLine=function(volpage,range,corres_range,start,corres_start){//volpage=使用者輸入的volpage
@@ -15438,10 +15500,11 @@ var Children=React.createClass({displayName: 'Children',
         this.showText(e);
       }
     } else {
-      if (n!=this.state.selected) {
-        this.showText(e);
+      if (n==this.state.selected) {
+        if (child.hasChild) this.open(e);
+        else this.showText(e);
       } else {
-        this.open(e);
+        this.showText(e);
       }
     }
     this.setState({selected:n});
@@ -15462,7 +15525,7 @@ var Children=React.createClass({displayName: 'Children',
     if (n==selected && haschild) classes="btn btn-default";
     var text=this.props.toc[n].text.trim();
     if (this.props.textConverter) text=this.props.textConverter(text);
-    return React.createElement("div", {'data-n': n}, React.createElement("a", {'data-n': n, className: classes +" tocitem text", onClick: this.nodeClicked}, text), this.showHit(hit))
+    return React.createElement("div", {key: "child"+n, 'data-n': n}, React.createElement("a", {'data-n': n, className: classes +" tocitem text", onClick: this.nodeClicked}, text), this.showHit(hit))
   },
   showText:function(e) { 
     var target=e.target;
@@ -15485,7 +15548,8 @@ var stacktoc = React.createClass({displayName: 'stacktoc',
   },
   buildtoc: function() {
       var toc=this.props.data;
-      if (!toc || !toc.length) return;      var depths=[];
+      if (!toc || !toc.length) return;  
+      var depths=[];
       var prev=0;
       for (var i=0;i<toc.length;i++) {
         var depth=toc[i].depth;
@@ -15699,7 +15763,6 @@ var Controlsfile = React.createClass({displayName: 'Controlsfile',
     }
     return 0; //return root node
   },
-
   enumAncestors: function(cur) {
     var toc=this.props.toc;
     if (!toc || !toc.length) return;
@@ -15716,6 +15779,10 @@ var Controlsfile = React.createClass({displayName: 'Controlsfile',
       n--;
     }
     parents.unshift(0); //first ancestor is root node
+    if(this.props.dataN && toc[this.props.dataN].depth==toc[this.props.dataN+1].depth){
+      parents.push(this.props.dataN);
+    }
+
     return parents;
   },
   getAddress: function() {
@@ -15733,7 +15800,7 @@ var Controlsfile = React.createClass({displayName: 'Controlsfile',
             
             React.createElement("button", {className: "btn btn-default", onClick: this.props.prev}, React.createElement("img", {width: "20", src: "./banner/prev.png"})), 
             React.createElement("button", {className: "btn btn-default", onClick: this.props.next}, React.createElement("img", {width: "20", src: "./banner/next.png"})), 
-            React.createElement("button", {className: "btn btn-default right"}, React.createElement("a", {Target: "_new", href: "http://www.dharma-treasure.org/en/contact-us/"}, React.createElement("img", {width: "20", src: "./banner/icon-info.png"}))), 
+            React.createElement("button", {className: "btn btn-default right"}, React.createElement("a", {href: "http://www.dharma-treasure.org/en/contact-us/", target: "_new"}, React.createElement("img", {width: "20", src: "./banner/icon-info.png"}))), 
             React.createElement("button", {className: "btn btn-default right", onClick: this.props.setwylie}, React.createElement("img", {width: "20", src: "./banner/icon-towylie.png"})), 
             React.createElement("br", null), 
             React.createElement("br", null), React.createElement("span", {id: "address"}, this.getAddress())
@@ -15744,7 +15811,7 @@ var Controlsfile = React.createClass({displayName: 'Controlsfile',
 
 var showtext = React.createClass({displayName: 'showtext',
   getInitialState: function() {
-    return {bar: "world", pageImg:"",scroll:true};
+    return {bar: "world", pageImg:""};
   },
   componentWillReceiveProps: function() {
     this.shouldscroll=true;
@@ -15773,10 +15840,8 @@ var showtext = React.createClass({displayName: 'showtext',
   },
   renderPageImg: function(e) {
     var pb=e.target.dataset.pb;
-    if(pb == "1.1a") return;
     if (pb || e.target.nodeName == "IMG") {
       this.setState({clickedpb:pb});  
-      this.setState({scroll:null});
     }
     var img=e.target.dataset.img;
     if (img) {
@@ -15811,7 +15876,7 @@ var showtext = React.createClass({displayName: 'showtext',
       if(m1 == that.state.clickedpb){
         var imgName=that.getImgName(m1);
         var corresPage=that.getCorresPage(m1);
-        link='<br></br>'+m1+'&nbsp;(Derge:'+corresPage+')<img data-img="'+m1+'" width="100%" src="../adarsha_img/lijiang/'+imgName+'.jpg"/><br></br>';
+        link='<br></br><a href="#" data-pb="'+m1+'">'+m1+'</a>&nbsp;(Derge:'+corresPage+')<img data-img="'+m1+'" width="100%" src="../adarsha_img/lijiang/'+imgName+'.jpg"/><br></br>';
       }
       return link;
     });
@@ -15819,14 +15884,14 @@ var showtext = React.createClass({displayName: 'showtext',
     return s;
   },
   render: function() {
-    if(this.props.wylie == false) {
-      var c=this.renderpb(this.props.text);
-      var content = c.replace(/[^།]\n/,"");
-    }
-    if(this.props.wylie == true && this.props.text) var content=this.renderpb(tibetan.romanize.toWylie(this.props.text,null,false));
+
+    var content=this.props.text||"";
+    if (this.props.wylie) content=tibetan.romanize.toWylie(content,null,false);
+    content=this.renderpb(content.replace(/[^།]\n/,""));
+ 
     return (
       React.createElement("div", {className: "cursor"}, 
-        React.createElement(Controlsfile, {setwylie: this.props.setwylie, wylie: this.props.wylie, page: this.props.page, bodytext: this.props.bodytext, next: this.props.nextfile, prev: this.props.prevfile, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc}), 
+        React.createElement(Controlsfile, {dataN: this.props.dataN, setwylie: this.props.setwylie, wylie: this.props.wylie, page: this.props.page, bodytext: this.props.bodytext, next: this.props.nextfile, prev: this.props.prevfile, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc}), 
         React.createElement("br", null), 
         React.createElement("br", null), 
         React.createElement("div", {onClick: this.renderPageImg, className: "pagetext", dangerouslySetInnerHTML: {__html: content}})

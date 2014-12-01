@@ -7255,6 +7255,7 @@ div.child span.text:hover {text-decoration:underline;cursor:pointer;color:#85BB6
   width: 97%;
   height: 100px;
   background-color: rgba(255,255,255,0.9);
+  color: #178918;
 }
 
 .scrolled{border:1px solid #5cb85c;}
