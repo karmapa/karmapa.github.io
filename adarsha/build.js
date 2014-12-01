@@ -14823,7 +14823,7 @@ var Showtext=Require("showtext");
 var tibetan=Require("ksana-document").languages.tibetan; 
 var page2catalog=Require("page2catalog");
 var Namelist=Require("namelist");
-var version="v0.1.25"
+var version="v1.0.1"
 var main = React.createClass({displayName: 'main',
   componentDidMount:function() {
     var that=this;
@@ -14994,28 +14994,28 @@ var main = React.createClass({displayName: 'main',
         React.createElement("div", {className: "col-md-3"}, 
           React.createElement("div", {className: "borderright"}, 
             React.createElement("ul", {className: "nav nav-tabs", role: "tablist"}, 
-              React.createElement("li", {className: "active"}, React.createElement("a", {href: "#Search", role: "tab", 'data-toggle': "tab"}, React.createElement("img", {width: "25", src: "./banner/search.png"}))), 
-              React.createElement("li", null, React.createElement("a", {href: "#Catalog", role: "tab", 'data-toggle': "tab"}, React.createElement("img", {width: "25", src: "./banner/icon-read.png"})))
+              React.createElement("li", {className: "active"}, React.createElement("a", {href: "#Catalog", role: "tab", 'data-toggle': "tab"}, React.createElement("img", {width: "25", src: "./banner/icon-read.png"}))), 
+              React.createElement("li", null, React.createElement("a", {href: "#Search", role: "tab", 'data-toggle': "tab"}, React.createElement("img", {width: "25", src: "./banner/search.png"})))
             ), 
 
             React.createElement("div", {className: "tab-content", ref: "tab-content"}, 
-              React.createElement("div", {className: "tab-pane fade", id: "Catalog"}, 
+              React.createElement("div", {className: "tab-pane fade in active", id: "Catalog"}, 
                 React.createElement(Stacktoc, {textConverter: this.textConverter, showText: this.showText, showExcerpt: this.showExcerpt, hits: this.state.res.rawresult, data: this.state.toc, goVoff: this.state.goVoff})
               ), 
 
-              React.createElement("div", {className: "tab-pane fade in active", id: "Search"}, 
+              React.createElement("div", {className: "tab-pane fade", id: "Search"}, 
                 React.createElement("div", {className: "slight"}, React.createElement("br", null)), 
                 this.renderinputs("title"), 
                 React.createElement("div", {className: "center"}, 
                   React.createElement("div", {className: "btn-group", 'data-toggle': "buttons", ref: "searchtype", onClick: this.searchtypechange}, 
                     React.createElement("label", {'data-type': "sutra", className: "btn btn-default btn-xs searchmode", Checked: true}, 
-                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, React.createElement("img", {title: "མདོ་ཡི་མཚན་འཚོལ་བ། Sutra Search", width: "25", src: "./banner/icon-sutra.png"}))
+                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, React.createElement("img", {title: "མདོ་མིང་འཚོལ་བ། Sutra Search", width: "25", src: "./banner/icon-sutra.png"}))
                     ), 
                     React.createElement("label", {'data-type': "kacha", className: "btn btn-default btn-xs searchmode"}, 
-                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, React.createElement("img", {title: "དཀར་ཆགས་འཚོལ་བ། Karchak Search", width: "25", src: "./banner/icon-kacha.png"}))
+                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, React.createElement("img", {title: "དཀར་ཆག་འཚོལ་བ། Karchak Search", width: "25", src: "./banner/icon-kacha.png"}))
                     ), 
                     React.createElement("label", {'data-type': "fulltext", className: "btn btn-default btn-xs searchmode"}, 
-                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, React.createElement("img", {title: "ནང་དོན་འཚོལ་བ།  Full Text search", width: "25", src: "./banner/icon-fulltext.png"}))
+                    React.createElement("input", {type: "radio", name: "field", autocomplete: "off"}, React.createElement("img", {title: "ནང་དོན་འཚོལ་བ།  Full Text Search", width: "25", src: "./banner/icon-fulltext.png"}))
                     )
                   )
                   
@@ -15146,18 +15146,25 @@ require.register("adarsha-api/corres_api.js", function(exports, require, module)
 var dosearch=function(volpage,from,to) {
   var tmp=fromVolpage(volpage,from,to);
     //corresFromVolpage= [經號],[範圍],[對照經號],[對照範圍],[對照行],[K經號]
-  var parse_tmp=parseVolPage(tmp);
-  var corresPage=snap2realpage(parse_tmp);
-  return corresPage.vol+"."+corresPage.page+corresPage.side;
+  if(tmp){
+	  var parse_tmp=parseVolPage(tmp);
+	  var corresPage=snap2realpage(parse_tmp);
+	  return corresPage.vol+"."+corresPage.page+corresPage.side;
+	} else {
+		console.log("no corres page");
+		return "";
+	}
 }
 
 var fromVolpage=function(volpage,from,to){
   //var volpage=document.getElementById("input").value;
   var out=[];
   var range=findRange(volpage,from);//range=[J經號,J範圍,K經號]
-  var corres_range=findCorresRange(range[2],to);//corres_range=[D經號,D範圍,下一項D經號,下一項D範圍]
+  if(range) {
+  	var corres_range=findCorresRange(range[2],to);//corres_range=[D經號,D範圍,下一項D經號,下一項D範圍]
+  } else return null;
   //算J和D的範圍
-  if(corres_range.length != 0){
+  if(corres_range.length != 0 ){
     var vRange=countRange(range[1],range[3],range[0],range[2]);
     //vRange input為D範圍, 下一項D範圍, D經, 下一項D經 //output為[vStart,vEnd-vStart]
     var corres_vRange=countRange(corres_range[0][1],corres_range[corres_range.length-1][1]);//[vStart,vEnd-vStart]
@@ -15166,7 +15173,7 @@ var fromVolpage=function(volpage,from,to){
     //out.push([range[0]],[range[1]],[corres_range[0][0]],[corres_range[0][1]],[corresLine],[range[2]]);
           // [經號],[範圍],[對照經號],[對照範圍],[對照行],[K經號]
     return corresLine;
-  }
+  } else return null;
 }
 
 var countCorresLine=function(volpage,range,corres_range,start,corres_start){//volpage=使用者輸入的volpage
@@ -15441,7 +15448,7 @@ var Children=React.createClass({displayName: 'Children',
       if (n!=this.state.selected) {
         this.showText(e);
       } else {
-        this.open(e);
+        if (child.hasChild) this.open(e);
       }
     }
     this.setState({selected:n});
@@ -15733,7 +15740,7 @@ var Controlsfile = React.createClass({displayName: 'Controlsfile',
             
             React.createElement("button", {className: "btn btn-default", onClick: this.props.prev}, React.createElement("img", {width: "20", src: "./banner/prev.png"})), 
             React.createElement("button", {className: "btn btn-default", onClick: this.props.next}, React.createElement("img", {width: "20", src: "./banner/next.png"})), 
-            React.createElement("button", {className: "btn btn-default right"}, React.createElement("a", {Target: "_new", href: "http://www.dharma-treasure.org/en/contact-us/"}, React.createElement("img", {width: "20", src: "./banner/icon-info.png"}))), 
+            React.createElement("button", {className: "btn btn-default right"}, React.createElement("a", {href: "http://www.dharma-treasure.org/en/contact-us/", target: "_new"}, React.createElement("img", {width: "20", src: "./banner/icon-info.png"}))), 
             React.createElement("button", {className: "btn btn-default right", onClick: this.props.setwylie}, React.createElement("img", {width: "20", src: "./banner/icon-towylie.png"})), 
             React.createElement("br", null), 
             React.createElement("br", null), React.createElement("span", {id: "address"}, this.getAddress())
@@ -15744,7 +15751,7 @@ var Controlsfile = React.createClass({displayName: 'Controlsfile',
 
 var showtext = React.createClass({displayName: 'showtext',
   getInitialState: function() {
-    return {bar: "world", pageImg:"",scroll:true};
+    return {bar: "world", pageImg:""};
   },
   componentWillReceiveProps: function() {
     this.shouldscroll=true;
@@ -15773,10 +15780,8 @@ var showtext = React.createClass({displayName: 'showtext',
   },
   renderPageImg: function(e) {
     var pb=e.target.dataset.pb;
-    if(pb == "1.1a") return;
     if (pb || e.target.nodeName == "IMG") {
       this.setState({clickedpb:pb});  
-      this.setState({scroll:null});
     }
     var img=e.target.dataset.img;
     if (img) {
@@ -15811,7 +15816,7 @@ var showtext = React.createClass({displayName: 'showtext',
       if(m1 == that.state.clickedpb){
         var imgName=that.getImgName(m1);
         var corresPage=that.getCorresPage(m1);
-        link='<br></br>'+m1+'&nbsp;(Derge:'+corresPage+')<img data-img="'+m1+'" width="100%" src="../adarsha_img/lijiang/'+imgName+'.jpg"/><br></br>';
+        link='<br></br><a href="#" data-pb="'+m1+'">'+m1+'</a>&nbsp;(Derge:'+corresPage+')<img data-img="'+m1+'" width="100%" src="../adarsha_img/lijiang/'+imgName+'.jpg"/><br></br>';
       }
       return link;
     });
@@ -15819,11 +15824,11 @@ var showtext = React.createClass({displayName: 'showtext',
     return s;
   },
   render: function() {
-    if(this.props.wylie == false) {
-      var c=this.renderpb(this.props.text);
-      var content = c.replace(/[^།]\n/,"");
-    }
-    if(this.props.wylie == true && this.props.text) var content=this.renderpb(tibetan.romanize.toWylie(this.props.text,null,false));
+
+    var content=this.props.text||"";
+    if (this.props.wylie) content=tibetan.romanize.toWylie(content,null,false);
+    content=this.renderpb(content.replace(/[^།]\n/,""));
+ 
     return (
       React.createElement("div", {className: "cursor"}, 
         React.createElement(Controlsfile, {setwylie: this.props.setwylie, wylie: this.props.wylie, page: this.props.page, bodytext: this.props.bodytext, next: this.props.nextfile, prev: this.props.prevfile, setpage: this.props.setpage, db: this.props.db, toc: this.props.toc}), 
