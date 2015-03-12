@@ -24,7 +24,8 @@ var searchSutra=function(tofind,language,linkOrNot){//linkOrNot用途：若搜�
 					var result="<li>第"+language[i][0]+"經："+result_color+chNameLink+"</li>";//+chNameLink
 				}
 				else{
-					var result=addLink(language[i][0],result_color);//linkOrNot用途：若搜尋藏文則先不用加連結
+					var KJing=parseInt(language[i][0].substr(4));
+					var result=addLink(language[i][0],result_color,KJing);//linkOrNot用途：若搜尋藏文則先不用加連結
 				}
 				
 				 out.push(result);//若是搜尋中文則不用顯示經號
@@ -51,8 +52,26 @@ var corresName=function(KJing){
 	return out;
 }
 
-var addLink=function(link,name){//linkOrNot用途：若搜尋藏文則先不用加連結
-	return '<li><a target=_new href="http://tripitaka.cbeta.org/'+link+'">'+name+"</a></li>";
+var addLink=function(link,name,KJing){//linkOrNot用途：若搜尋藏文則先不用加連結
+	var res="";
+	for(var i=0; i<pedurma_taisho.length; i++){
+		var taishoJing=pedurma_taisho[i][1].split(",");
+		for(var k=0; k<taishoJing.length; k++){
+			if(parseInt(taishoJing[k])==KJing){
+				var sutra=parseInt(pedurma_taisho[i][0]);
+				for(var j=0; j<sutranames.length; j++){
+					var sutraNum=parseInt(sutranames[j][0]);
+					if(sutra == sutraNum){
+						res='<li>第'+sutranames[j][0]+'經：<a target=_new href="http://tripitaka.cbeta.org/'+link+'">'+name+"</a>("+sutranames[j][1]+")</li>";
+						//out=[taishonames[j][0],taishonames[j][1]];//中文經號,中文經名
+						
+					} 
+				}
+			}
+		}
+	}
+	if(!res) res='<li><a target=_new href="http://tripitaka.cbeta.org/'+link+'">'+name+"</a></li>";
+	return res;
 }
 
 var addLink_no_li=function(link,name){
