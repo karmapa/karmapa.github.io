@@ -1,7 +1,9 @@
 <html charset="utf-8">
+  <script src="./dump/bampo0302_001.js" charset="utf-8"></script>
   <script src="./dump/bampo0303_001.js" charset="utf-8"></script>
   <script src="./dump/bampo0304_001.js" charset="utf-8"></script>
-  <script src="./dump/bampo0308_001.js" charset="utf-8"></script>
+  <script src="./dump/bampo0305_001.js" charset="utf-8"></script>
+  <script src="./dump/bampo0306_001.js" charset="utf-8"></script>
   <style>
     body{margin:30px;}
     .delete{color:red;text-decoration: line-through;}
@@ -10,9 +12,11 @@
   </style>
   <body>
     <div id="menu">
-      <a onClick="renderBampo(this.textContent)">bampo0303_001</a>
+      <!--<a onClick="renderBampo(this.textContent)">bampo0302_001</a>-->
+      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0303_001</a>
       &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0304_001</a>
-      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0308_001</a>
+      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0305_001</a>
+      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0306_001</a>
     </div>
     <div id="page"></div>
 
@@ -22,9 +26,11 @@
       var out="";
       var arr;
       console.log(bampo);
-      if(bampo=="bampo0303_001") arr=bampo0303_001;
+      if(bampo=="bampo0302_001") arr=bampo0302_001;
+      else if(bampo=="bampo0303_001") arr=bampo0303_001;
       else if(bampo=="bampo0304_001") arr=bampo0304_001;
-      else if(bampo=="bampo0308_001") arr=bampo0308_001;
+      else if(bampo=="bampo0305_001") arr=bampo0305_001;
+      else if(bampo=="bampo0306_001") arr=bampo0306_001;
 
       arr.sort(function(a,b) {
         if(a[0]>b[0]) return 1;
