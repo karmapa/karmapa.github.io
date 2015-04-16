@@ -1,31 +1,22 @@
 <html charset="utf-8">
-  <script src="text1.js" charset="utf-8"></script>
-  <script src="text2.js" charset="utf-8"></script>
-  <script src="markup1.js" charset="utf-8"></script>
-  <script src="markup2.js" charset="utf-8"></script>
+  <script src="./dump/bampo0303_001.js" charset="utf-8"></script>
   <style>
     body{margin:30px;}
     .delete{color:red;text-decoration: line-through;}
     .add{color: green;}
   </style>
   <body>
-    <h2>1.2a</h2>
-    <div id="page1"></div>
-    <h2>1.2b</h2>
-    <div id="page2"></div>
+    <div id="page"></div>
+
   </body>
   <script>
-    //data.text.substr(0,start) + data.text.substr(start+1,len) + string + data.text.substr(start);
-    for(var i=0; i<markup1.length; i++){
-      var start=markup1[i][1], len=markup1[i][2], string=markup1[i][4];
-      text1=text1.substr(0,start)+'<span class="delete">'+text1.substr(start+1,len)+'</span>'+'<span class="add">  '+string+'  </span>'+text1.substr(start+1);
-    }
-    for(var i=0; i<markup2.length; i++){
-      var start=markup2[i][1], len=markup2[i][2], string=markup2[i][4];
-      text2=text2.substr(0,start)+'<span class="delete">'+text2.substr(start+1,len)+'</span>'+'<span class="add">  '+string+'  </span>'+text2.substr(start+1);
-    }
-    document.getElementById("page1").innerHTML=text1;
-    document.getElementById("page2").innerHTML=text2;
+  var out="";
+    bampo0303_001.sort(function(a,b) {return a[0]>b[0]});
+    bampo0303_001.map(function(item){
+      out+="<br><h2>"+item[0]+"</h2><br>"+item[1];
+    });
+    document.getElementById("page").innerHTML=out;
+
 
   </script>
 
