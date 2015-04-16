@@ -1,23 +1,41 @@
 <html charset="utf-8">
   <script src="./dump/bampo0303_001.js" charset="utf-8"></script>
+  <script src="./dump/bampo0304_001.js" charset="utf-8"></script>
+  <script src="./dump/bampo0308_001.js" charset="utf-8"></script>
   <style>
     body{margin:30px;}
     .delete{color:red;text-decoration: line-through;}
     .add{color: green;}
+    a{color:#6A6AFF;cursor: pointer;}
   </style>
   <body>
+    <div id="menu">
+      <a onClick="renderBampo(this.textContent)">bampo0303_001</a>
+      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0304_001</a>
+      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0308_001</a>
+    </div>
     <div id="page"></div>
 
   </body>
   <script>
-  var out="";
-    bampo0303_001.sort(function(a,b) {return a[0]>b[0]});
-    bampo0303_001.map(function(item){
-      out+="<br><h2>"+item[0]+"</h2><br>"+item[1];
-    });
-    document.getElementById("page").innerHTML=out;
+  var renderBampo = function(bampo){
+      var out="";
+      var arr;
+      console.log(bampo);
+      if(bampo=="bampo0303_001") arr=bampo0303_001;
+      else if(bampo=="bampo0304_001") arr=bampo0304_001;
+      else if(bampo=="bampo0308_001") arr=bampo0308_001;
 
+      arr.sort(function(a,b) {
+        if(a[0]>b[0]) return 1;
+        else return -1;
+      });
+      arr.map(function(item){
+        out+="<br><h2>"+item[0]+"</h2><br>"+item[1];
+      });
 
+      document.getElementById("page").innerHTML=out;
+  }
   </script>
 
 </html>
