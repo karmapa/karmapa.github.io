@@ -12,7 +12,7 @@
   </style>
   <body>
     <div id="menu">
-      <!--<a onClick="renderBampo(this.textContent)">bampo0302_001</a>-->
+      <a onClick="renderBampo(this.textContent)">bampo0302_001</a>
       &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0303_001</a>
       &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0304_001</a>
       &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0305_001</a>
@@ -33,9 +33,15 @@
       else if(bampo=="bampo0306_001") arr=bampo0306_001;
 
       arr.sort(function(a,b) {
-        if(a[0]>b[0]) return 1;
-        else return -1;
+        var x=parseInt(a[0].substr(a[0].indexOf(".")+1).replace(/[ab]/,""));
+        var y=parseInt(b[0].substr(b[0].indexOf(".")+1).replace(/[ab]/,""));
+        if(x>y) return 1;
+        else if(x<y) return -1;
+        else if(x==y) {
+          return a[0]>b[0];
+        }
       });
+
       arr.map(function(item){
         out+="<br><h2>"+item[0]+"</h2><br>"+item[1];
       });
