@@ -1,0 +1,53 @@
+<html charset="utf-8">
+  <script src="./dump/bampo0302_001.js" charset="utf-8"></script>
+  <script src="./dump/bampo0303_001.js" charset="utf-8"></script>
+  <script src="./dump/bampo0304_001.js" charset="utf-8"></script>
+  <script src="./dump/bampo0305_001.js" charset="utf-8"></script>
+  <script src="./dump/bampo0306_001.js" charset="utf-8"></script>
+  <style>
+    body{margin:30px;}
+    .delete{color:red;text-decoration: line-through;}
+    .add{color: green;}
+    a{color:#6A6AFF;cursor: pointer;}
+  </style>
+  <body>
+    <div id="menu">
+      <a onClick="renderBampo(this.textContent)">bampo0302_001</a>
+      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0303_001</a>
+      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0304_001</a>
+      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0305_001</a>
+      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0306_001</a>
+    </div>
+    <div id="page"></div>
+
+  </body>
+  <script>
+  var renderBampo = function(bampo){
+      var out="";
+      var arr;
+      console.log(bampo);
+      if(bampo=="bampo0302_001") arr=bampo0302_001;
+      else if(bampo=="bampo0303_001") arr=bampo0303_001;
+      else if(bampo=="bampo0304_001") arr=bampo0304_001;
+      else if(bampo=="bampo0305_001") arr=bampo0305_001;
+      else if(bampo=="bampo0306_001") arr=bampo0306_001;
+
+      arr.sort(function(a,b) {
+        var x=parseInt(a[0].substr(a[0].indexOf(".")+1).replace(/[ab]/,""));
+        var y=parseInt(b[0].substr(b[0].indexOf(".")+1).replace(/[ab]/,""));
+        if(x>y) return 1;
+        else if(x<y) return -1;
+        else if(x==y) {
+          return a[0]>b[0];
+        }
+      });
+
+      arr.map(function(item){
+        out+="<br><h2>"+item[0]+"</h2><br>"+item[1];
+      });
+
+      document.getElementById("page").innerHTML=out;
+  }
+  </script>
+
+</html>

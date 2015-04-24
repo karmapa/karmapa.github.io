@@ -1,9 +1,13 @@
 <html charset="utf-8">
-  <script src="./dump/bampo0302_001.js" charset="utf-8"></script>
-  <script src="./dump/bampo0303_001.js" charset="utf-8"></script>
-  <script src="./dump/bampo0304_001.js" charset="utf-8"></script>
-  <script src="./dump/bampo0305_001.js" charset="utf-8"></script>
-  <script src="./dump/bampo0306_001.js" charset="utf-8"></script>
+  <script src="./dump/bampo0307_001.js" charset="utf-8"></script>
+  <script src="./dump/bampo0308_001.js" charset="utf-8"></script>
+  <script src="./dump/bampo0309_001.js" charset="utf-8"></script>
+  <script src="./dump/bampo0310_001.js" charset="utf-8"></script>
+  <script src="./dump/bampo0311_001.js" charset="utf-8"></script>
+  <script src="./dump/bampo0312_001.js" charset="utf-8"></script>
+  <script src="./dump/bampo0313_001.js" charset="utf-8"></script>
+  <script src="./dump/bampo0313_002.js" charset="utf-8"></script>
+  <script src="./dump/bampo0313_003.js" charset="utf-8"></script>
   <style>
     body{margin:30px;}
     .delete{color:red;text-decoration: line-through;}
@@ -12,11 +16,15 @@
   </style>
   <body>
     <div id="menu">
-      <a onClick="renderBampo(this.textContent)">bampo0302_001</a>
-      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0303_001</a>
-      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0304_001</a>
-      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0305_001</a>
-      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0306_001</a>
+      <a onClick="renderBampo(this.textContent)">bampo0307_001</a>
+      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0308_001</a>
+      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0309_001</a>
+      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0310_001</a>
+      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0311_001</a>
+      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0312_001</a>
+      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0313_001</a>
+      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0313_002</a>
+      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0313_003</a>
     </div>
     <div id="page"></div>
 
@@ -26,12 +34,15 @@
       var out="";
       var arr;
       console.log(bampo);
-      if(bampo=="bampo0302_001") arr=bampo0302_001;
-      else if(bampo=="bampo0303_001") arr=bampo0303_001;
-      else if(bampo=="bampo0304_001") arr=bampo0304_001;
-      else if(bampo=="bampo0305_001") arr=bampo0305_001;
-      else if(bampo=="bampo0306_001") arr=bampo0306_001;
-
+      if(bampo=="bampo0307_001") arr=bampo0307_001;
+      else if(bampo=="bampo0308_001") arr=bampo0308_001;
+      else if(bampo=="bampo0309_001") arr=bampo0309_001;
+      else if(bampo=="bampo0310_001") arr=bampo0310_001;
+      else if(bampo=="bampo0311_001") arr=bampo0311_001;
+      else if(bampo=="bampo0312_001") arr=bampo0312_001;
+      else if(bampo=="bampo0313_001") arr=bampo0313_001;
+      else if(bampo=="bampo0313_002") arr=bampo0313_002;
+      else if(bampo=="bampo0313_003") arr=bampo0313_003;
       arr.sort(function(a,b) {
         var x=parseInt(a[0].substr(a[0].indexOf(".")+1).replace(/[ab]/,""));
         var y=parseInt(b[0].substr(b[0].indexOf(".")+1).replace(/[ab]/,""));
