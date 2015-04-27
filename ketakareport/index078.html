@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html charset="utf-8">
   <script src="./dump/bampo0302_001.js" charset="utf-8"></script>
   <script src="./dump/bampo0303_001.js" charset="utf-8"></script>
@@ -18,13 +19,20 @@
       &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0305_001</a>
       &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0306_001</a>
     </div>
+    <div id="checkdo">
+      <input type="button" value="Reveal" onclick="showdo(this.value)">
+      <input type="button" value="Hide" onclick="showdo(this.value)">
+    </div>
     <div id="page"></div>
 
   </body>
   <script>
+
+  var filename='';
   var renderBampo = function(bampo){
+    filename=bampo;
       var out="";
-      var arr;
+        var arr;
       console.log(bampo);
       if(bampo=="bampo0302_001") arr=bampo0302_001;
       else if(bampo=="bampo0303_001") arr=bampo0303_001;
@@ -48,6 +56,31 @@
 
       document.getElementById("page").innerHTML=out;
   }
+
+
+  function showdo(m){
+    //var cont=document.getElementsByTagName("span").length;
+    var del_count= document.getElementsByClassName("delete").length;
+    var add_count= document.getElementsByClassName("add").length;
+  
+       if(m=='Hide')
+       {   
+          for(var i=0;i<del_count;i++)
+          {
+            //var rmtag=document.getElementsByClassName("delete")[i]
+            document.getElementsByClassName("delete")[i].innerHTML='';
+          //document.getElementsByTagName("span")[i].removeAttribute("class");
+          //document.getElementsByTagName("span")[i].style.visibility='hidden'; //removeAttribute('class');
+             }
+          for(var i=0;i<add_count;i++)
+          {
+            document.getElementsByClassName("add")[i].style.color='Black';
+          }
+        }else
+            renderBampo(filename);
+ 
+  }
+   
   </script>
 
 </html>
