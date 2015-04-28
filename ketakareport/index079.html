@@ -17,15 +17,15 @@
   </style>
   <body>
     <div id="menu">
-      <a onClick="renderBampo(this.textContent)">bampo0307_001</a>
-      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0308_001</a>
-      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0309_001</a>
-      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0310_001</a>
-      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0311_001</a>
-      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0312_001</a>
-      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0313_001</a>
-      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0313_002</a>
-      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent)">bampo0313_003</a>
+      <a onClick="renderBampo(this.textContent,true)">bampo0307_001</a>
+      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent,true)">bampo0308_001</a>
+      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent,true)">bampo0309_001</a>
+      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent,true)">bampo0310_001</a>
+      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent,true)">bampo0311_001</a>
+      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent,true)">bampo0312_001</a>
+      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent,true)">bampo0313_001</a>
+      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent,true)">bampo0313_002</a>
+      &nbsp;&nbsp;<a onClick="renderBampo(this.textContent,true)">bampo0313_003</a>
     </div>
     <div id="checkdo">
       <input type="button" value="Reveal" onclick="showdo(this.value)">
@@ -35,8 +35,9 @@
 
   </body>
   <script>
+
   var filename='';
-  var renderBampo = function(bampo){
+  var renderBampo = function(bampo,hide){
       filename=bampo;
       var out="";
       var arr;
@@ -65,25 +66,25 @@
       });
 
       document.getElementById("page").innerHTML=out;
+      if(hide)HideReplace();
   }
 
-   function showdo(m){
+  function HideReplace()
+  {
     var del_count= document.getElementsByClassName("delete").length;
     var add_count= document.getElementsByClassName("add").length;
-  
-       if(m=='Hide')
-       {   
-          for(var i=0;i<del_count;i++)
-          {
-            document.getElementsByClassName("delete")[i].innerHTML='';
-          }
-          for(var i=0;i<add_count;i++)
-          {
-            document.getElementsByClassName("add")[i].style.color='Black';
-          }
-        }else
-            renderBampo(filename);
+    for(var i=0;i<del_count;i++){
+      document.getElementsByClassName("delete")[i].innerHTML='';
+    }
+    for(var i=0;i<add_count;i++){
+        document.getElementsByClassName("add")[i].style.color='Black';
+    }           
   }
+
+  function showdo(m){
+      (m=='Reveal')?renderBampo(filename):HideReplace();
+  }
+  
   </script>
 
 </html>
