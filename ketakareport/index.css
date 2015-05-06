@@ -1,0 +1,6 @@
+/* application css */
+body{margin:30px;}
+#main {font-size:200%;}
+.hl {color:red;}
+.delete{color:red;text-decoration: line-through;}
+.add{color: green;}
