@@ -1,0 +1,26 @@
+{
+  "name": "ksana2015-scaffold-default",
+  "description": "New Ksana application",
+  "version": "0.0.1",
+  "main": "index.html",
+  "inject-js-start": "nwmain.js",
+  "single-instance": true,
+  "window": {
+    "toolbar": true,
+    "width": 1060,
+    "height": 700
+  },
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/karmapa/ketakareport.git"
+  },
+  "gitHead": "0402d2395fef1e310043a8942748788d653ee6bf",
+  "readme": "scaffold for ksana2015 app\n====\n\ninstall github.com/ksanaforge/ksana2015\n\nks mkdb sample\n\nreact-bundle.js is created with \n\n    browserify -r react -r react/addons > react-bundle.js",
+  "readmeFilename": "README.md",
+  "_id": "ksana2015-scaffold-default@0.0.1",
+  "_shasum": "071e6a6df28ac4d695aa2e24fda06b5d34c55ad5",
+  "_from": "git://github.com/ksanaforge/ksana2015-scaffold-default.git",
+  "_resolved": "git://github.com/ksanaforge/ksana2015-scaffold-default.git#0402d2395fef1e310043a8942748788d653ee6bf",
+  "_fromGithub": true
+}
