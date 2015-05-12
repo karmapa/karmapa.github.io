@@ -51,15 +51,15 @@
       else if(bampo=="bampo0313_001") arr=bampo0313_001;
       else if(bampo=="bampo0313_002") arr=bampo0313_002;
       else if(bampo=="bampo0313_003") arr=bampo0313_003;
-      arr.sort(function(a,b) {
-        var x=parseInt(a[0].substr(a[0].indexOf(".")+1).replace(/[ab]/,""));
-        var y=parseInt(b[0].substr(b[0].indexOf(".")+1).replace(/[ab]/,""));
-        if(x>y) return 1;
-        else if(x<y) return -1;
-        else if(x==y) {
-          return a[0]>b[0];
-        }
-      });
+      // arr.sort(function(a,b) {
+      //   var x=parseInt(a[0].substr(a[0].indexOf(".")+1).replace(/[ab]/,""));
+      //   var y=parseInt(b[0].substr(b[0].indexOf(".")+1).replace(/[ab]/,""));
+      //   if(x>y) return 1;
+      //   else if(x<y) return -1;
+      //   else if(x==y) {
+      //     return a[0]>b[0];
+      //   }
+      // });
 
       arr.map(function(item){
         out+="<br><h2>"+item[0]+"</h2><br>"+item[1];
