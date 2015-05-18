@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.axis text {
+  font: 14px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
+
+</style>
+<body>
+<script src="./analyze82.js"></script>
+      <select id="menu" onChange="getReport()">
+        <option value=''>--select--</option>
+        <option value="lj0321-001">lj0321-001</option>
+        <option value="lj0322-001">lj0322-001</option>
+        <option value="lj0322-002">lj0322-002</option>
+        <option value="lj0323-001">lj0323-001</option>
+        <option value="lj0323-002">lj0323-002</option>
+        <option value="lj0323-003">lj0323-003</option>
+        <option value="lj0324-001">lj0324-001</option>
+        <option value="lj0324-002">lj0324-002</option>
+        <option value="lj0324-003">lj0324-003</option>
+        <option value="lj0324-004">lj0324-004</option>
+        <option value="lj0325-001">lj0325-001</option>
+        <option value="lj0325-002">lj0325-002</option>
+        <option value="lj0326-001">lj0326-001</option>
+        <option value="lj0326-002">lj0326-002</option>
+        <option value="lj0327-001">lj0327-001</option>
+        <option value="lj0327-002">lj0327-002</option>
+        <option value="lj0328-001">lj0328-001</option>
+        <option value="lj0329-001">lj0329-001</option>
+        <option value="lj0330-001">lj0330-001</option>
+        <option value="lj0331-001">lj0331-001</option>
+        <option value="lj0332-001">lj0332-001</option>
+        <option value="lj0333-001">lj0333-001</option>
+        <option value="lj0334-001">lj0334-001</option>
+        <option value="lj0335-001">lj0335-001</option>
+        <option value="lj0336-001">lj0336-001</option>
+        <option value="lj0336-002">lj0336-002</option>
+        <option value="lj0337-001">lj0337-001</option>
+      </select>
+
+<script>
+getReport();
+// var analyze={ 
+//           A:{
+//             pr:["PR A","PR B","PR C","PR D"],
+//             rate:[ [0.22,0.62,0.15,0.42], 
+//                    [0.71,0.51,0.8 ,0.58] ]    
+//             },
+//           B:{
+//             pr:["PR E","PR F","PR G","PR H"],
+//             rate:[ [0.1,0.2,0.3,0.4], 
+//                    [0.4,0.3,0.2 ,0.1] ]   
+//             }
+//           };
+
+//var getReport = function(){
+function getReport(){
+  var e = document.getElementById("menu");
+    var bampo = e.options[e.selectedIndex].value;
+    getChart(bampo);
+}
+//}
+
+
+
+
+
+</script>

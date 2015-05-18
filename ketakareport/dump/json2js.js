@@ -1,7 +1,5 @@
 var fs = require("fs");
 var glob = require("glob");
-var kde=require("ksana-database");  // Ksana Database Engine
-var kse=require("ksana-search"); // Ksana Search Engine (run at client side)
 
 var sortSeg = function(fn) {
 	var arr=JSON.parse(fs.readFileSync(fn,"utf8"))
@@ -22,15 +20,13 @@ var json2js = function(arr, fn){
 	var filename = "bampo" + fn;
 	out = "var " + filename + " = \n" + JSON.stringify(arr,""," ") + "\nmodule.exports = " + filename;
 
-	fs.writeFileSync(filename+".js",out,"utf8");
+	//fs.writeFileSync(filename+".js",out,"utf8");
+	fs.writeFileSync(filename+"_s.json", JSON.stringify(arr,""," "),"utf8");
 }
 
 //checkContent(JSON.parse(fs.readFileSync("d0303_001.json","utf8")),"0303_001");
-// glob("./bampo*.json",function(err, files){
-// 	files.map(sortSeg);
-// })
-sortSeg("./bampo0303_001.json");
+glob("./bampo*.json",function(err, files){
+	files.map(sortSeg);
+})
+//sortSeg("./bampo0303_001.json");
 module.exports = json2js;
-
-
-

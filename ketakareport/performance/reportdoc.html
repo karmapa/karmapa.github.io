@@ -1,0 +1,22 @@
+1. original json file -> getPerformance -> performance.json
+2. performance.json   -> getAnalyze     -> analyze.js
+
+程式碼在./performance/report
+getChart.js: 產生chart的程式碼，使用d3
+analyze.js: report的資料
+在該目錄下http-server跑程式
+
+analyze資料結構為
+{ 
+	bampo1:{
+		name:["PR A","PR B","PR C","PR D"],
+		rate:[ [A's precision, B's precision, C's precision, D's precision], 
+		       [A's recall, B's recall, C's recall, D's recall] ] 
+	},
+	bampo2:{
+		name:["PR A","PR B","PR C","PR D"],
+		rate:[ [A's precision, B's precision, C's precision, D's precision], 
+		       [A's recall, B's recall, C's recall, D's recall] ] 
+	}
+
+}
