@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Report</title>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="./getChart.js"></script>
+<script src="./scripts/jquery-1.11.3.min.js"></script>
+</head>
+
+<body>
+<a href='#' class='links' name='index78.html'>vol.78</a>
+<a href='#' class='links' name='index79.html'>vol.79</a>
+<a href='#' class='links' name='index81.html'>vol.81</a>
+<a href='#' class='links' name='index82.html'>vol.82</a>
+
+<div id='bottle'></div>
+</body>
+
+<script type="text/javascript">
+$('.links').click(function(){
+	$('#bottle').html("");
+	$.ajax({
+	   url: this.name,
+	   cache:false,
+	   type:'GET',
+	   dataType:'html',
+	   success:function(result){
+        $('#bottle').html(result);
+	   }
+
+  });
+});
+
+</script>
+</html>

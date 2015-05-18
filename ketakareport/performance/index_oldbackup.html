@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+.axis text {
+  font: 14px sans-serif;
+}
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+.x.axis path {
+  display: none;
+}
+</style>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="./getChart.js"></script>
+<script src="./analyze.js"></script>
+      <select id="menu" onChange="getReport()">
+        <option>--select--</option>
+        <option value="lj0304-001">lj0304-001</option>
+        <option value="lj0305-001">lj0305-001</option>
+      </select>
+
+<script>
+// var analyze={ 
+//           A:{
+//             pr:["PR A","PR B","PR C","PR D"],
+//             rate:[ [0.22,0.62,0.15,0.42], 
+//                    [0.71,0.51,0.8 ,0.58] ]    
+//             },
+//           B:{
+//             pr:["PR E","PR F","PR G","PR H"],
+//             rate:[ [0.1,0.2,0.3,0.4], 
+//                    [0.4,0.3,0.2 ,0.1] ]   
+//             }
+//           };
+var getReport = function(){
+  var e = document.getElementById("menu");
+  var bampo = e.options[e.selectedIndex].value;
+  getChart(bampo);
+}
+</script>
