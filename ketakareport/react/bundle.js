@@ -24,17 +24,24 @@ var Bampomenu = React.createClass({displayName: "Bampomenu",
     return {};
   },
   doGetTextByBampo: function(e){
-    this.props.getTextByBampo(e);
+    var bampo = e.target.value;
+    this.setState({selected:bampo});
+    this.props.getTextByBampo(bampo);
+  },
+  componentWillReceiveProps: function(nextProps){
+    if(nextProps.vol !== this.props.vol){
+     this.setState({selected:"select"});
+    }
   },
   renderBampo: function(item){
     return(
     React.createElement("option", {value: item}, item)
-    )
+    )      
   },
   render: function() {
     var bampos = filelist[this.props.vol].map(this.renderBampo);
     return React.createElement("div", null, 
-      React.createElement("select", {onChange: this.doGetTextByBampo}, 
+      React.createElement("select", {onChange: this.doGetTextByBampo, value: this.state.selected}, 
         bampos
       )
     );
@@ -52,19 +59,12 @@ var Chartarea = React.createClass({displayName: "Chartarea",
     return {};
   },
   render: function() {
-    // var svgContainer = d3.select("body").append("svg")
-    //                                     .attr("width", 200)
-    //                                     .attr("height", 200);
+    var message = "";
+    if(this.props.bampo && this.props.vol && analyze[this.props.vol]) getChart( analyze[this.props.vol][this.props.bampo] );
 
-    // //Draw the Circle
-    // var circle = svgContainer.append("circle")
-    //                          .attr("cx", 30)
-    //                          .attr("cy", 30)
-    //                          .attr("r", 20);
-    
-    if(this.props.bampo && this.props.vol) getChart( analyze[this.props.vol][this.props.bampo] );
-    console.log(this.props.vol, this.props.bampo);
-    return React.createElement("div", null
+    //console.log(this.props.vol, this.props.bampo);
+    return React.createElement("div", null, 
+    message
     );
   }
 });
@@ -2950,13 +2950,14 @@ var Bampomenu=require("./bampomenu.jsx");
 
 var Menu = React.createClass({displayName: "Menu",
   getInitialState:function() {
-    return {vol:"vol081"};
+    return {vol:"vol070"};
   },
   getBampoByVol: function(e){
+    d3.select("svg").remove();
     this.setState({vol:e.target.value});
   },
-  getTextByBampo: function(e){
-    this.props.getText(this.state.vol, e.target.value);
+  getTextByBampo: function(bampo){
+    this.props.getText(this.state.vol, bampo);
   },
   render: function() {
     return React.createElement("div", null, 
