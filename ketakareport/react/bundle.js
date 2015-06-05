@@ -6,70 +6,59 @@ runtime.boot("ketakareport",function(){
 	var Main=React.createElement(require("./src/main.jsx"));
 	ksana.mainComponent=React.render(Main,document.getElementById("main"));
 });
-},{"./src/main.jsx":"/Users/yu/ksana2015/ketakareport/src/main.jsx","ksana2015-webruntime":"/Users/yu/ksana2015/node_modules/ksana2015-webruntime/index.js","react":"react"}],"/Users/yu/ksana2015/ketakareport/src/analyze.js":[function(require,module,exports){
-var analyze = 
-{
- "vol078": require('./vol078.js'),
- "vol079": require('./vol079.js'),
- "vol080": require('./vol080.js'),
- "vol081": require('./vol081.js'),
- "vol082": require('./vol082.js')
-}
-module.exports = analyze;
-},{"./vol078.js":"/Users/yu/ksana2015/ketakareport/src/vol078.js","./vol079.js":"/Users/yu/ksana2015/ketakareport/src/vol079.js","./vol080.js":"/Users/yu/ksana2015/ketakareport/src/vol080.js","./vol081.js":"/Users/yu/ksana2015/ketakareport/src/vol081.js","./vol082.js":"/Users/yu/ksana2015/ketakareport/src/vol082.js"}],"/Users/yu/ksana2015/ketakareport/src/bampomenu.jsx":[function(require,module,exports){
+},{"./src/main.jsx":"/Users/yu/ksana2015/ketakareport/src/main.jsx","ksana2015-webruntime":"/Users/yu/ksana2015/node_modules/ksana2015-webruntime/index.js","react":"react"}],"/Users/yu/ksana2015/ketakareport/src/bampomenu.jsx":[function(require,module,exports){
 var React=require("react");
 var filelist=require("./filelist.js");
 var Bampomenu = React.createClass({displayName: "Bampomenu",
   getInitialState:function() {
-    return {};
+    return {selected:"select"};
   },
   doGetTextByBampo: function(e){
-    this.props.getTextByBampo(e);
+    var bampo = e.target.value;
+    this.setState({selected:bampo});
+    this.props.getTextByBampo(bampo);
+  },
+  componentWillReceiveProps: function(nextProps){
+    if(nextProps.vol !== this.props.vol){
+     this.setState({selected:"select"});
+    }
   },
   renderBampo: function(item){
     return(
     React.createElement("option", {value: item}, item)
-    )
+    )      
   },
   render: function() {
     var bampos = filelist[this.props.vol].map(this.renderBampo);
     return React.createElement("div", null, 
-      React.createElement("select", {onChange: this.doGetTextByBampo}, 
+      React.createElement("select", {onChange: this.doGetTextByBampo, value: this.state.selected}, 
         bampos
       )
     );
   }
 });
 module.exports=Bampomenu;
-
 },{"./filelist.js":"/Users/yu/ksana2015/ketakareport/src/filelist.js","react":"react"}],"/Users/yu/ksana2015/ketakareport/src/chartarea.jsx":[function(require,module,exports){
 var React = require("react");
 var getChart = require("./getChart.js");
-var analyze = require("./analyze.js");
+var volumes = require("./volumes.js");
 
 var Chartarea = React.createClass({displayName: "Chartarea",
   getInitialState:function() {
     return {};
   },
   render: function() {
-    // var svgContainer = d3.select("body").append("svg")
-    //                                     .attr("width", 200)
-    //                                     .attr("height", 200);
+    var message = "";
+    if(this.props.bampo && this.props.vol && volumes[this.props.vol]) getChart( volumes[this.props.vol][this.props.bampo] );
 
-    // //Draw the Circle
-    // var circle = svgContainer.append("circle")
-    //                          .attr("cx", 30)
-    //                          .attr("cy", 30)
-    //                          .attr("r", 20);
-    
-    if(this.props.bampo && this.props.vol) getChart( analyze[this.props.vol][this.props.bampo] );
-    console.log(this.props.vol, this.props.bampo);
-    return React.createElement("div", null
+    //console.log(this.props.vol, this.props.bampo);
+    return React.createElement("div", null, 
+    message
     );
   }
 });
 module.exports=Chartarea;
-},{"./analyze.js":"/Users/yu/ksana2015/ketakareport/src/analyze.js","./getChart.js":"/Users/yu/ksana2015/ketakareport/src/getChart.js","react":"react"}],"/Users/yu/ksana2015/ketakareport/src/filelist.js":[function(require,module,exports){
+},{"./getChart.js":"/Users/yu/ksana2015/ketakareport/src/getChart.js","./volumes.js":"/Users/yu/ksana2015/ketakareport/src/volumes.js","react":"react"}],"/Users/yu/ksana2015/ketakareport/src/filelist.js":[function(require,module,exports){
 var filelist = 
 {
  /*"vol001": [
@@ -2950,13 +2939,14 @@ var Bampomenu=require("./bampomenu.jsx");
 
 var Menu = React.createClass({displayName: "Menu",
   getInitialState:function() {
-    return {vol:"vol081"};
+    return {vol:"vol070"};
   },
   getBampoByVol: function(e){
+    d3.select("svg").remove();
     this.setState({vol:e.target.value});
   },
-  getTextByBampo: function(e){
-    this.props.getText(this.state.vol, e.target.value);
+  getTextByBampo: function(bampo){
+    this.props.getText(this.state.vol, bampo);
   },
   render: function() {
     return React.createElement("div", null, 
@@ -4173,6 +4163,607 @@ var vol082={
  }
 }
 module.exports=vol082;
+},{}],"/Users/yu/ksana2015/ketakareport/src/vol083.js":[function(require,module,exports){
+var vol083 = {
+  "lj0338-001": {
+    "pr": [
+      "yeshey",
+      "dhonden",
+      "Samdup",
+      "karma passang"
+    ],
+    "rate": [
+      [
+        "0.593",
+        "0.852",
+        "0.868",
+        "0.811"
+      ],
+      [
+        "0.234",
+        "0.211",
+        "0.315",
+        "0.386"
+      ]
+    ]
+  },
+  "lj0339-001": {
+    "pr": [
+      "karma passang",
+      "Samdup",
+      "yeshey"
+    ],
+    "rate": [
+      [
+        "0.727",
+        "0.765",
+        "0.400"
+      ],
+      [
+        "0.333",
+        "0.542",
+        "0.083"
+      ]
+    ]
+  },
+  "lj0340-001": {
+    "pr": [
+      "Samdup",
+      "karma passang",
+      "dhonden",
+      "yeshey"
+    ],
+    "rate": [
+      [
+        "0.888",
+        "0.762",
+        "0.717",
+        "0.678"
+      ],
+      [
+        "0.538",
+        "0.354",
+        "0.222",
+        "0.167"
+      ]
+    ]
+  },
+  "lj0341-001": {
+    "pr": [
+      "karma passang",
+      "Samdup",
+      "yeshey",
+      "dhonden"
+    ],
+    "rate": [
+      [
+        "0.758",
+        "0.855",
+        "0.594",
+        "0.859"
+      ],
+      [
+        "0.357",
+        "0.533",
+        "0.161",
+        "0.263"
+      ]
+    ]
+  },
+  "lj0342-001": {
+    "pr": [
+      "dhonden",
+      "Samdup",
+      "karma passang",
+      "yeshey"
+    ],
+    "rate": [
+      [
+        "0.862",
+        "0.899",
+        "0.806",
+        "0.889"
+      ],
+      [
+        "0.263",
+        "0.653",
+        "0.305",
+        "0.084"
+      ]
+    ]
+  },
+  "lj0343-001": {
+    "pr": [
+      "karma passang",
+      "Samdup",
+      "dhonden",
+      "yeshey"
+    ],
+    "rate": [
+      [
+        "0.595",
+        "0.823",
+        "0.741",
+        "0.600"
+      ],
+      [
+        "0.314",
+        "0.564",
+        "0.286",
+        "0.150"
+      ]
+    ]
+  },
+  "lj0344-001": {
+    "pr": [
+      "karma passang",
+      "Samdup",
+      "dhonden",
+      "yeshey"
+    ],
+    "rate": [
+      [
+        "0.778",
+        "0.868",
+        "1.000",
+        "0.750"
+      ],
+      [
+        "0.382",
+        "0.600",
+        "0.364",
+        "0.055"
+      ]
+    ]
+  },
+  "lj0345-001": {
+    "pr": [
+      "yeshey",
+      "Samdup",
+      "dhonden",
+      "karma passang"
+    ],
+    "rate": [
+      [
+        "0.875",
+        "0.827",
+        "0.898",
+        "0.827"
+      ],
+      [
+        "0.172",
+        "0.642",
+        "0.120",
+        "0.366"
+      ]
+    ]
+  },
+  "lj0346-001": {
+    "pr": [
+      "Samdup",
+      "samten tharchin",
+      "karma passang",
+      "yeshey"
+    ],
+    "rate": [
+      [
+        "0.855",
+        "0.798",
+        "0.845",
+        "0.738"
+      ],
+      [
+        "0.604",
+        "0.193",
+        "0.280",
+        "0.159"
+      ]
+    ]
+  },
+  "lj0347-001": {
+    "pr": [
+      "samten tharchin",
+      "Samdup",
+      "yeshey",
+      "karma passang"
+    ],
+    "rate": [
+      [
+        "0.808",
+        "0.962",
+        "0.769",
+        "1.000"
+      ],
+      [
+        "0.506",
+        "0.614",
+        "0.120",
+        "0.386"
+      ]
+    ]
+  },
+  "lj0348-001": {
+    "pr": [
+      "samten tharchin",
+      "Samdup",
+      "karma passang",
+      "yeshey"
+    ],
+    "rate": [
+      [
+        "0.759",
+        "0.915",
+        "0.733",
+        "0.750"
+      ],
+      [
+        "0.560",
+        "0.556",
+        "0.294",
+        "0.052"
+      ]
+    ]
+  },
+  "lj0349-001": {
+    "pr": [
+      "samten tharchin",
+      "Samdup",
+      "karma passang",
+      "yeshey"
+    ],
+    "rate": [
+      [
+        "0.861",
+        "0.856",
+        "0.791",
+        "0.809"
+      ],
+      [
+        "0.607",
+        "0.524",
+        "0.271",
+        "0.058"
+      ]
+    ]
+  },
+  "lj0350-001": {
+    "pr": [
+      "karma passang",
+      "samten tharchin",
+      "Samdup",
+      "yeshey"
+    ],
+    "rate": [
+      [
+        "0.937",
+        "0.874",
+        "0.922",
+        "0.786"
+      ],
+      [
+        "0.311",
+        "0.559",
+        "0.622",
+        "0.077"
+      ]
+    ]
+  },
+  "lj0351-001": {
+    "pr": [
+      "samten tharchin",
+      "Samdup",
+      "yeshey",
+      "karma passang"
+    ],
+    "rate": [
+      [
+        "0.845",
+        "0.897",
+        "0.769",
+        "0.847"
+      ],
+      [
+        "0.530",
+        "0.604",
+        "0.124",
+        "0.249"
+      ]
+    ]
+  }
+}
+module.exports=vol083;
+},{}],"/Users/yu/ksana2015/ketakareport/src/vol084.js":[function(require,module,exports){
+var vol084 = {
+  "lj0352-001": {
+    "pr": [
+      "lakdor",
+      "karnors",
+      "Benchen Dakpa",
+      "Samdup",
+      "dechendorji",
+      "ngodup"
+    ],
+    "rate": [
+      [
+        "1.152",
+        "1.612",
+        "1.014",
+        "1.031",
+        "1.071",
+        "1.000"
+      ],
+      [
+        "0.481",
+        "0.456",
+        "0.312",
+        "0.139",
+        "0.190",
+        "0.190"
+      ]
+    ]
+  },
+  "lj0353-001": {
+    "pr": [
+      "ngodup",
+      "lakdor",
+      "dechendorji",
+      "namgyal",
+      "karnors",
+      "Benchen Dakpa"
+    ],
+    "rate": [
+      [
+        "1.308",
+        "0.914",
+        "0.385",
+        "0.333",
+        "1.720",
+        "0.906"
+      ],
+      [
+        "0.159",
+        "0.299",
+        "0.047",
+        "0.019",
+        "0.402",
+        "0.449"
+      ]
+    ]
+  },
+  "lj0354-001": {
+    "pr": [
+      "Khenpo Namgyal",
+      "lakdor",
+      "dechendorji",
+      "karnors",
+      "Benchen Dakpa",
+      "ngodup",
+      "namgyal"
+    ],
+    "rate": [
+      [
+        "0.729",
+        "0.838",
+        "0.842",
+        "1.562",
+        "0.813",
+        "0.728",
+        "0.796"
+      ],
+      [
+        "0.138",
+        "0.373",
+        "0.181",
+        "0.173",
+        "0.375",
+        "0.083",
+        "0.031"
+      ]
+    ]
+  },
+  "lj0355-001": {
+    "pr": [
+      "Benchen Dakpa",
+      "ngodup",
+      "dechendorji",
+      "lakdor",
+      "namgyal"
+    ],
+    "rate": [
+      [
+        "0.798",
+        "0.809",
+        "0.721",
+        "0.754",
+        "0.600"
+      ],
+      [
+        "0.558",
+        "0.306",
+        "0.344",
+        "0.289",
+        "0.008"
+      ]
+    ]
+  },
+  "lj0356-001": {
+    "pr": [
+      "lakdor",
+      "Benchen Dakpa",
+      "ngodup",
+      "dechendorji"
+    ],
+    "rate": [
+      [
+        "0.743",
+        "0.868",
+        "0.774",
+        "0.500"
+      ],
+      [
+        "0.448",
+        "0.569",
+        "0.414",
+        "0.052"
+      ]
+    ]
+  },
+  "lj0357-001": {
+    "pr": [
+      "dechendorji",
+      "Benchen Dakpa",
+      "ngodup",
+      "lakdor"
+    ],
+    "rate": [
+      [
+        "0.950",
+        "0.816",
+        "1.000",
+        "0.786"
+      ],
+      [
+        "0.358",
+        "0.585",
+        "0.038",
+        "0.208"
+      ]
+    ]
+  },
+  "lj0358-001": {
+    "pr": [
+      "Benchen Dakpa",
+      "lakdor",
+      "dechendorji",
+      "ngodup"
+    ],
+    "rate": [
+      [
+        "0.828",
+        "0.807",
+        "0.777",
+        "0.887"
+      ],
+      [
+        "0.558",
+        "0.423",
+        "0.242",
+        "0.137"
+      ]
+    ]
+  },
+  "lj0359-001": {
+    "pr": [
+      "Benchen Dakpa",
+      "lakdor",
+      "ngodup",
+      "dechendorji"
+    ],
+    "rate": [
+      [
+        "0.641",
+        "0.901",
+        "0.857",
+        "0.594"
+      ],
+      [
+        "0.348",
+        "0.411",
+        "0.105",
+        "0.143"
+      ]
+    ]
+  },
+  "lj0359-002": {
+    "pr": [
+      "dechendorji",
+      "ngodup",
+      "lakdor",
+      "Benchen Dakpa"
+    ],
+    "rate": [
+      [
+        "0.792",
+        "0.712",
+        "0.819",
+        "0.831"
+      ],
+      [
+        "0.426",
+        "0.125",
+        "0.372",
+        "0.574"
+      ]
+    ]
+  },
+  "lj0359-003": {
+    "pr": [
+      "Benchen Dakpa",
+      "lakdor",
+      "ngodup",
+      "dechendorji"
+    ],
+    "rate": [
+      [
+        "0.836",
+        "0.821",
+        "0.859",
+        "0.632"
+      ],
+      [
+        "0.529",
+        "0.382",
+        "0.204",
+        "0.297"
+      ]
+    ]
+  },
+  "lj0360-001": {
+    "pr": [
+      "Benchen Dakpa",
+      "lakdor",
+      "ngodup",
+      "dechendorji"
+    ],
+    "rate": [
+      [
+        "0.832",
+        "0.745",
+        "0.703",
+        "0.672"
+      ],
+      [
+        "0.549",
+        "0.378",
+        "0.179",
+        "0.277"
+      ]
+    ]
+  },
+  "lj0361-001": {
+    "pr": [
+      "dechendorji",
+      "lakdor",
+      "Benchen Dakpa",
+      "ngodup"
+    ],
+    "rate": [
+      [
+        "0.673",
+        "0.739",
+        "0.787",
+        "0.673"
+      ],
+      [
+        "0.368",
+        "0.403",
+        "0.459",
+        "0.272"
+      ]
+    ]
+  }
+}
+module.exports=vol084;
 },{}],"/Users/yu/ksana2015/ketakareport/src/volmenu.jsx":[function(require,module,exports){
 var React=require("react");
 var filelist=require("./filelist.js");
@@ -4201,7 +4792,19 @@ var Volmenu = React.createClass({displayName: "Volmenu",
   }
 });
 module.exports=Volmenu;
-},{"./filelist.js":"/Users/yu/ksana2015/ketakareport/src/filelist.js","react":"react"}],"/Users/yu/ksana2015/node_modules/ksana-analyzer/configs.js":[function(require,module,exports){
+},{"./filelist.js":"/Users/yu/ksana2015/ketakareport/src/filelist.js","react":"react"}],"/Users/yu/ksana2015/ketakareport/src/volumes.js":[function(require,module,exports){
+var volumes = 
+{
+ "vol078": require('./vol078.js'),
+ "vol079": require('./vol079.js'),
+ "vol080": require('./vol080.js'),
+ "vol081": require('./vol081.js'),
+ "vol082": require('./vol082.js'),
+ "vol083": require('./vol083.js'),
+ "vol084": require('./vol084.js')
+}
+module.exports = volumes;
+},{"./vol078.js":"/Users/yu/ksana2015/ketakareport/src/vol078.js","./vol079.js":"/Users/yu/ksana2015/ketakareport/src/vol079.js","./vol080.js":"/Users/yu/ksana2015/ketakareport/src/vol080.js","./vol081.js":"/Users/yu/ksana2015/ketakareport/src/vol081.js","./vol082.js":"/Users/yu/ksana2015/ketakareport/src/vol082.js","./vol083.js":"/Users/yu/ksana2015/ketakareport/src/vol083.js","./vol084.js":"/Users/yu/ksana2015/ketakareport/src/vol084.js"}],"/Users/yu/ksana2015/node_modules/ksana-analyzer/configs.js":[function(require,module,exports){
 var tokenizers=require('./tokenizers');
 var normalizeTbl=null;
 var setNormalizeTable=function(tbl,obj) {
@@ -4300,6 +4903,7 @@ module.exports={getAPI:getAPI};
 var tibetan =function(s) {
 	//continuous tsheg grouped into same token
 	//shad and space grouped into same token
+	if (!s) return {tokens:[],offsets:[]};
 	var offset=0;
 	var tokens=[],offsets=[];
 	s=s.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
@@ -4331,10 +4935,11 @@ var isSpace=function(c) {
 var isCJK =function(c) {return ((c>=0x3000 && c<=0x9FFF) 
 || (c>=0xD800 && c<0xDC00) || (c>=0xFF00) ) ;}
 var simple1=function(s) {
+	if (!s) return {tokens:[],offsets:[]};
 	var offset=0;
 	var tokens=[],offsets=[];
 	s=s.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
-	arr=s.split('\n');
+	var arr=s.split('\n');
 
 	var pushtoken=function(t,off) {
 		var i=0;
@@ -4494,10 +5099,9 @@ module.exports=require("./kde");
 //   2015/1/2 , 
 //   move to ksana-database
 //   simplified by removing document support and socket.io support
+//   2015/5/18 , add RPC support, move common method to method.js
 
-
-
-var pool={},localPool={};
+var localPool={};
 var apppath="";
 var bsearch=require("./bsearch");
 var Kdb=require('ksana-jsonrom');
@@ -4505,270 +5109,30 @@ var kdbs=[]; //available kdb , id and absolute path
 var strsep="\uffff";
 var kdblisted=false;
 
-var _gets=function(paths,opts,cb) { //get many data with one call
+var method=require("./method");
 
-	if (!paths) return ;
-	if (typeof paths=='string') {
-		paths=[paths];
-	}
-	var engine=this, output=[];
-
-	var makecb=function(path){
-		return function(data){
-				if (!(data && typeof data =='object' && data.__empty)) output.push(data);
-				engine.get(path,opts,taskqueue.shift());
-		};
-	};
-
-	var taskqueue=[];
-	for (var i=0;i<paths.length;i++) {
-		if (typeof paths[i]=="null") { //this is only a place holder for key data already in client cache
-			output.push(null);
-		} else {
-			taskqueue.push(makecb(paths[i]));
-		}
-	};
-
-	taskqueue.push(function(data){
-		output.push(data);
-		cb.apply(engine.context||engine,[output,paths]); //return to caller
-	});
-
-	taskqueue.shift()({__empty:true}); //run the task
-}
-
-var getFileRange=function(i) {
-	var engine=this;
-
-	var filesegcount=engine.get(["filesegcount"]);
-	if (filesegcount) {
-		if (i==0) {
-			return {start:0,end:filesegcount[0]-1};
-		} else {
-			return {start:filesegcount[i-1],end:filesegcount[i]-1};
-		}
-	}
-	//old buggy code
-	var filenames=engine.get(["filenames"]);
-	var fileoffsets=engine.get(["fileoffsets"]);
-	var segoffsets=engine.get(["segoffsets"]);
-	var segnames=engine.get(["segnames"]);
-	var filestart=fileoffsets[i], fileend=fileoffsets[i+1]-1;
-
-	var start=bsearch(segoffsets,filestart,true);
-	//if (segOffsets[start]==fileStart) start--;
-	
-	//work around for jiangkangyur
-	//while (segNames[start+1]=="_") start++;
-
-  //if (i==0) start=0; //work around for first file
-	var end=bsearch(segoffsets,fileend,true);
-	return {start:start,end:end};
-}
-
-var absSegToFileSeg=function(absoluteseg) {
-	var filesegcount=this.get("filesegcount");
-	var s=absoluteseg;
-	var file=0;
-	while (s>filesegcount[file]) {
-		s-=filesegcount[file];
-		file++;
-	}
-	return {file:file,seg:s};
-}
-
-var fileSegToAbsSeg=function(file,seg) {
-	if (file==0)return seg;
-	return this.get("filesegcount")[file-1]+(seg);
-}
-
-//var vposToFileSeg=function(engine,vpos) {
-//    var segoffsets=engine.get("segoffsets");
-//    var fileoffsets=engine.get(["fileoffsets"]);
-//    var segnames=engine.get("segnames");
-//    var fileid=bsearch(fileoffsets,vpos+1,true);
-//    fileid--;
-//    var segid=bsearch(segoffsets,vpos+1,true);
-//	var range=engine.getFileRange(fileid);
-//	segid-=range.start;
-//    return {file:fileid,seg:segid};
-//}
-
-//return array of object of nfile nseg given segname
-var findSeg=function(segname) {
-	var segnames=this.get("segnames");
-	var out=[];
-	for (var i=0;i<segnames.length;i++) {
-		if (segnames[i]==segname) {
-			var fileseg=absSegToFileSeg.apply(this,[i]);
-			out.push({file:fileseg.file,seg:fileseg.seg,absseg:i});
-		}
-	}
-	return out;
-}
-var findFile=function(filename) {
-	var filenames=this.get("filenames");
-	for (var i=0;i<filenames.length;i++) {
-		if (filenames[i]===filename) return i;
-	}
-	return -1;
-}
-
-var getFileSegOffsets=function(i) {
-	var segoffsets=this.get("segoffsets");
-	var range=getFileRange.apply(this,[i]);
-	if (segoffsets.subarray) {
-		return segoffsets.subarray(range.start,range.end+1);
-	} else {
-		return segoffsets.slice(range.start,range.end+1);	
-	}
-	
-
-}
-var absSegFromVpos=function(vpos) { 
-	var segoffsets=this.get(["segoffsets"]);
-	var i=bsearch(segoffsets,vpos,true);
-	while (segoffsets[i]==vpos) i++;
-	return i;
-}
-
-var fileSegFromVpos=function(vpos) { 
-	var seg=absSegFromVpos.call(this,vpos);
-	return absSegToFileSeg.call(this,seg);
-}
-var fileSegToVpos=function(f,s) {
-	var segoffsets=this.get(["segoffsets"]);
-	var seg=fileSegToAbsSeg.call(this,f,s);
-	return segoffsets[seg-1];
-}
-
-var getFileSegNames=function(i) {
-	var range=getFileRange.apply(this,[i]);
-	var segnames=this.get("segnames");
-	return segnames.slice(range.start,range.end+1);
-}
-var localengine_get=function(path,opts,cb,context) {
-	var engine=this;
-	if (typeof opts=="function") {
-		context=cb;
-		cb=opts;
-		opts={recursive:false};
-	}
-	if (!path) {
-		if (cb) cb.apply(context,[null]);
-		return null;
-	}
-
-	if (typeof cb!="function") {
-		return engine.kdb.get(path,opts);
-	}
-
-	if (typeof path=="string") {
-		return engine.kdb.get([path],opts,cb,context);
-	} else if (typeof path[0] =="string") {
-		return engine.kdb.get(path,opts,cb,context);
-	} else if (typeof path[0] =="object") {
-		return _gets.apply(engine,[path,opts,cb,context]);
-	} else {
-		engine.kdb.get([],opts,function(data){
-			cb.apply(context,[data]);//return top level keys
-		},context);
-	}
-};	
-
-var getPreloadField=function(user) {
-	var preload=[["meta"],["filenames"],["fileoffsets"],["segnames"],["segoffsets"],["filesegcount"]];
-	//["tokens"],["postingslen"] kse will load it
-	if (user && user.length) { //user supply preload
-		for (var i=0;i<user.length;i++) {
-			if (preload.indexOf(user[i])==-1) {
-				preload.push(user[i]);
-			}
-		}
-	}
-	return preload;
-}
 var createLocalEngine=function(kdb,opts,cb,context) {
-	var engine={kdb:kdb, queryCache:{}, postingCache:{}, cache:{}};
-
+	var engine={kdb:kdb, queryCache:{}, postingCache:{}, cache:{}, TOC:{} };
 	if (typeof context=="object") engine.context=context;
-	engine.get=localengine_get;
-
-	engine.segOffset=segOffset;
-	engine.fileOffset=fileOffset;
-	engine.folderOffset=folderOffset;
-	engine.getFileSegNames=getFileSegNames;
-	engine.getFileSegOffsets=getFileSegOffsets;
-	engine.getFileRange=getFileRange;
-	engine.findSeg=findSeg;
-	engine.findFile=findFile;
-	engine.absSegToFileSeg=absSegToFileSeg;
-	engine.fileSegToAbsSeg=fileSegToAbsSeg;
-	engine.fileSegFromVpos=fileSegFromVpos;
-	engine.absSegFromVpos=absSegFromVpos;
-	engine.fileSegToVpos=fileSegToVpos;
-	
-	//engine.fileSegToVpos=fileSegToVpos;
-	//engine.vposToFileSeg=vposToFileSeg;
-	//only local engine allow getSync
-	//if (kdb.fs.getSync) engine.getSync=engine.kdb.getSync;
-	
+	method.setup(engine);
 	//speedy native functions
 	if (kdb.fs.mergePostings) {
 		engine.mergePostings=kdb.fs.mergePostings.bind(kdb.fs);
 	}
-	
 	var setPreload=function(res) {
 		engine.dbname=res[0].name;
 		//engine.customfunc=customfunc.getAPI(res[0].config);
 		engine.ready=true;
 	}
-
-	var preload=getPreloadField(opts.preload);
+	var preload=method.getPreloadField(opts.preload);
 	var opts={recursive:true};
-	//if (typeof cb=="function") {
-		_gets.apply(engine,[ preload, opts,function(res){
-			setPreload(res);
-			cb.apply(engine.context,[engine]);
-		}]);
-	//} else {
-	//	setPreload(_getSync.apply(engine,[preload,opts]));
-	//}
+	method.gets.apply(engine,[ preload, opts,function(res){
+		setPreload(res);
+		cb.apply(engine.context,[engine]);
+	}]);
 	return engine;
 }
 
-var segOffset=function(segname) {
-	var engine=this;
-	if (arguments.length>1) throw "argument : segname ";
-
-	var segNames=engine.get("segnames");
-	var segOffsets=engine.get("segoffsets");
-
-	var i=segNames.indexOf(segname);
-	return (i>-1)?segOffsets[i]:0;
-}
-var fileOffset=function(fn) {
-	var engine=this;
-	var filenames=engine.get("filenames");
-	var offsets=engine.get("fileoffsets");
-	var i=filenames.indexOf(fn);
-	if (i==-1) return null;
-	return {start: offsets[i], end:offsets[i+1]};
-}
-
-var folderOffset=function(folder) {
-	var engine=this;
-	var start=0,end=0;
-	var filenames=engine.get("filenames");
-	var offsets=engine.get("fileoffsets");
-	for (var i=0;i<filenames.length;i++) {
-		if (filenames[i].substring(0,folder.length)==folder) {
-			if (!start) start=offsets[i];
-			end=offsets[i];
-		} else if (start) break;
-	}
-	return {start:start,end:end};
-}
 
  //TODO delete directly from kdb instance
  //kdb.free();
@@ -4779,18 +5143,7 @@ var closeLocal=function(kdbid) {
 		delete localPool[kdbid];
 	}
 }
-var close=function(kdbid) {
-	var engine=pool[kdbid];
-	if (engine) {
-		engine.kdb.free();
-		delete pool[kdbid];
-	}
-}
 
-
-require("./listkdb")(function(_kdbs){
-	kdbs=_kdbs;
-});
 
 var getLocalTries=function(kdbfn,cb) {
 	kdbid=kdbfn.replace('.kdb','');
@@ -4807,6 +5160,7 @@ var getLocalTries=function(kdbfn,cb) {
 }
 
 var openLocalReactNative=function(kdbid,opts,cb,context) {
+
 	if (kdbid.indexOf(".kdb")==-1) kdbid+=".kdb";
 	new Kdb.open(kdbid,function(err,kdb){
 		if (err) {
@@ -4848,7 +5202,6 @@ var openLocalKsanagap=function(kdbid,opts,cb,context) {
 var openLocalNode=function(kdbid,opts,cb,context) {
 	var fs=require('fs');
 	var tries=getLocalTries(kdbid);
-
 	for (var i=0;i<tries.length;i++) {
 		if (fs.existsSync(tries[i])) {
 
@@ -4857,8 +5210,8 @@ var openLocalNode=function(kdbid,opts,cb,context) {
 					cb.apply(context||engine.content,[err]);
 				} else {
 					createLocalEngine(kdb,opts,function(engine){
-							localPool[kdbid]=engine;
-							cb.apply(context||engine.context,[0,engine]);
+						localPool[kdbid]=engine;
+						cb.apply(context||engine.context,[0,engine]);
 					},context);
 				}
 			});
@@ -4875,7 +5228,10 @@ var openLocalHtml5=function(kdbid,opts,cb,context) {
 	if (kdbfn.indexOf(".kdb")==-1) kdbfn+=".kdb";
 	new Kdb.open(kdbfn,function(err,handle){
 		if (err) {
-			cb.apply(context,[err]);
+			var remoteurl=window.location.origin+window.location.pathname+kdbid;
+			if (kdbid.indexOf("/")>-1) remoteurl=window.location.origin+'/'+kdbid;
+			return kde_remote(remoteurl,opts,cb,context);
+			//cb.apply(context,[err]);
 		} else {
 			createLocalEngine(handle,opts,function(engine){
 				localPool[kdbid]=engine;
@@ -4884,14 +5240,21 @@ var openLocalHtml5=function(kdbid,opts,cb,context) {
 		}
 	});
 }
+
+var kde_remote=require("./kde_remote");
+
 //omit cb for syncronize open
-var openLocal=function(kdbid,opts,cb,context)  {
+var open=function(kdbid,opts,cb,context)  {
+	if (kdbid.indexOf("http")==0) {
+		return kde_remote(kdbid,opts,cb,context);
+	}
+
 	if (typeof opts=="function") { //no opts
 		if (typeof cb=="object") context=cb;
 		cb=opts;
 		opts={};
 	}
-
+	
 	var engine=localPool[kdbid];
 	if (engine) {
 		if (cb) cb.apply(context||engine.context,[0,engine]);
@@ -4915,21 +5278,149 @@ var setPath=function(path) {
 }
 
 var enumKdb=function(cb,context){
-	if (kdbs.length) return kdbs.map(function(k){return k[0]});
+	require("./listkdb")(function(files){
+		kdbs=files;
+		if (cb) cb.call(context, kdbs.map(function(k){return k[0]}) );
+	});
+}
 
-	if (!kdblisted) {
-		require("./listkdb")(function(files){
-			kdbs=files;
-			cb.call(context, kdbs.map(function(k){return k[0]}) );
+var API={open:open,setPath:setPath, close:closeLocal, enumKdb:enumKdb, bsearch:bsearch,
+kdbs:kdbs};
+
+var platform=require("./platform").getPlatform();
+if (platform=="node-webkit" || platform=="node") {
+	enumKdb();
+} else {
+	API.rpc=require("./rpc_kde"); //for browser only
+}
+module.exports=API;
+},{"./bsearch":"/Users/yu/ksana2015/node_modules/ksana-database/bsearch.js","./kde_remote":"/Users/yu/ksana2015/node_modules/ksana-database/kde_remote.js","./listkdb":"/Users/yu/ksana2015/node_modules/ksana-database/listkdb.js","./method":"/Users/yu/ksana2015/node_modules/ksana-database/method.js","./platform":"/Users/yu/ksana2015/node_modules/ksana-database/platform.js","./rpc_kde":"/Users/yu/ksana2015/node_modules/ksana-database/rpc_kde.js","fs":false,"ksana-jsonrom":"/Users/yu/ksana2015/node_modules/ksana-jsonrom/index.js"}],"/Users/yu/ksana2015/node_modules/ksana-database/kde_remote.js":[function(require,module,exports){
+var pool={};
+var strsep="\uffff";
+var method=require("./method");
+
+
+var getRemote=function(path,opts,cb) {
+
+	if (typeof opts==="function") {
+		cb=opts;
+		opts={};
+	}
+
+	opts=opts||{};
+	
+	var $kde=require("./rpc_kde");
+
+	var engine=this;
+	var kdbid=engine.kdb;
+	kdbid=kdbid.substr(window.location.origin.length+1).replace(".kdb","");	
+
+	if (typeof opts=="function") {
+		cb=opts;
+		opts={recursive:false};
+	}
+	opts.recursive=opts.recursive||false;
+	if (typeof path=="string") path=[path];
+
+	if (path[0] instanceof Array) { //multiple paths
+		var paths=[],output=[];
+		for (var i=0;i<path.length;i++) {
+			var cachepath=path[i].join(strsep);
+			var data=engine.cache[cachepath];
+			if (typeof data!="undefined") {
+				paths.push(null);//  place holder for LINE 28
+				output.push(data); //put cached data into output
+			} else{
+				engine.fetched++;
+				paths.push(path[i]); //need to ask server
+				output.push(null); //data is unknown yet
+			}
+		}
+		//now ask server for unknown datum
+		engine.traffic++;
+		var newopts={recursive:!!opts.recursive, address:opts.address,
+			key:paths,db:kdbid};
+		$kde.get(newopts,function(datum){
+			//merge the server result with cached 
+			for (var i=0;i<output.length;i++) {
+				if (datum[i] && paths[i]) {
+					var cachekey=paths[i].join(strsep);
+					engine.cache[cachekey]=datum[i];
+					output[i]=datum[i];
+				}
+			}
+			if (cb) cb.apply(engine.context,[output]);	
 		});
-		kdblisted=true;
+	} else { //single path
+		var cachepath=path.join(strsep);
+		var data=engine.cache[cachepath];
+		if (typeof data!="undefined") {
+			if (cb) cb.apply(engine.context,[data]);
+			return data;//in cache , return immediately
+		} else {
+			engine.traffic++;
+			engine.fetched++;
+			var opts={key:path,recursive:!!opts.recursive,db:kdbid};
+			$kde.get(opts,function(data){
+				engine.cache[cachepath]=data;
+				if (cb) cb.apply(engine.context,[data]);	
+			});
+		}
 	}
 }
 
+var createRemoteEngine=function(kdb,opts,cb,context) {
 
+	var engine={kdb:kdb, queryCache:{}, postingCache:{}, cache:{}, TOC:{}, fetched:0, traffic:0};
+	if (typeof context=="object") engine.context=context;
+	method.setup(engine);
+	engine.get=getRemote;
 
-module.exports={open:openLocal,setPath:setPath, close:closeLocal, enumKdb:enumKdb, bsearch:bsearch};
-},{"./bsearch":"/Users/yu/ksana2015/node_modules/ksana-database/bsearch.js","./listkdb":"/Users/yu/ksana2015/node_modules/ksana-database/listkdb.js","./platform":"/Users/yu/ksana2015/node_modules/ksana-database/platform.js","fs":false,"ksana-jsonrom":"/Users/yu/ksana2015/node_modules/ksana-jsonrom/index.js"}],"/Users/yu/ksana2015/node_modules/ksana-database/listkdb.js":[function(require,module,exports){
+	var setPreload=function(res) {
+		engine.dbname=res[0].name;
+		//engine.customfunc=customfunc.getAPI(res[0].config);
+		engine.ready=true;
+	}
+	var preload=method.getPreloadField(opts.preload);
+	var opts={recursive:true};
+	method.gets.apply(engine,[ preload, opts,function(res){
+		setPreload(res);
+		cb.apply(engine.context,[engine]);
+	}]);
+	return engine;
+}
+
+var openRemote=function(kdbid,opts,cb,context) {
+	if (typeof opts=="function") {
+		cb=opts;
+		context=cb;
+		opts={};
+	}
+
+	var engine=pool[kdbid];
+	if (engine) {
+		if (cb) cb.apply(context||engine.context,[0,engine]);
+		return engine;
+	}
+	console.log("open remote",kdbid);
+
+	createRemoteEngine(kdbid,opts,function(engine){
+		pool[kdbid]=engine;
+		cb.apply(context||engine.context,[0,engine]);
+	},context);
+
+	pool[kdbid]=engine;
+}
+
+var close=function(kdbid) {
+	var engine=pool[kdbid];
+	if (engine) {
+		delete pool[kdbid];
+	}
+}
+
+module.exports=openRemote;
+},{"./method":"/Users/yu/ksana2015/node_modules/ksana-database/method.js","./rpc_kde":"/Users/yu/ksana2015/node_modules/ksana-database/rpc_kde.js"}],"/Users/yu/ksana2015/node_modules/ksana-database/listkdb.js":[function(require,module,exports){
 /* return array of dbid and absolute path*/
 //var html5fs=require("./html5fs");
 
@@ -4938,28 +5429,46 @@ var listkdb_html5=function(cb,context) {
 			cb.call(this,kdbs);
 	},context||this);		
 }
-
-var listkdb_node=function(cb,context){
+var listkdb_rpc=function() {
 	var fs=require("fs");
-	var path=require("path")
-	var parent=path.resolve(process.cwd(),"..");
-	var files=fs.readdirSync(parent);
+	var path=require("path");
+	var dir=process.cwd();
+	var files=fs.readdirSync(dir);
+	var output=filterkdb(files,dir);
+	return output;
+}
+var filterkdb=function(files,parent){
 	var output=[];
+	var fs=require("fs");
+	var path=require("path");
 	files.map(function(f){
 		var subdir=parent+path.sep+f;
-		var stat=fs.statSync(subdir );
+		var stat=fs.statSync(subdir);
 		if (stat.isDirectory()) {
 			var subfiles=fs.readdirSync(subdir);
 			for (var i=0;i<subfiles.length;i++) {
 				var file=subfiles[i];
 				var idx=file.indexOf(".kdb");
 				if (idx>-1&&idx==file.length-4) {
-					output.push([ file.substr(0,file.length-4), subdir+path.sep+file]);
+					var fn=subdir+path.sep+file;
+					fn=fn.replace(/\\/g,"/");
+					output.push([ file.substr(0,file.length-4), fn]);
 				}
 			}
 		}
-	})
-	cb.call(context,output);
+	});
+	return output;
+}	
+
+var listkdb_node=function(cb,context){
+	var fs=require("fs");
+	var path=require("path")
+	var parent=path.resolve(process.cwd(),"..");
+	var files=fs.readdirSync(parent);
+	var output=filterkdb(files,parent);
+
+	if (cb) cb.call(context,output);
+	return output;
 }
 var fileNameOnly=function(fn) {
 	var at=fn.lastIndexOf("/");
@@ -4981,9 +5490,8 @@ var listkdb_ksanagap=function(cb,context) {
 		};	
 		cb.call(context,output);	
 	}
-
 	if (kfs.listApps.length==1) {
-		formatapp(JSON.parse(kfs.listApps()));
+		formatoutput(JSON.parse(kfs.listApps()));
 	} else {
 		kfs.listApps(function(apps){
 			formatoutput(JSON.parse(apps));
@@ -5001,15 +5509,329 @@ var listkdb=function(cb,context) {
 		listkdb_ksanagap(cb,context);
 	}
 }
+
+listkdb.sync=listkdb_rpc;
 module.exports=listkdb;
-},{"./platform":"/Users/yu/ksana2015/node_modules/ksana-database/platform.js","fs":false,"path":false}],"/Users/yu/ksana2015/node_modules/ksana-database/platform.js":[function(require,module,exports){
+},{"./platform":"/Users/yu/ksana2015/node_modules/ksana-database/platform.js","fs":false,"path":false}],"/Users/yu/ksana2015/node_modules/ksana-database/method.js":[function(require,module,exports){
+var bsearch=require("./bsearch");
+var gets=function(paths,opts,cb) { //get many data with one call
+
+	if (!paths) return ;
+	if (typeof paths=='string') {
+		paths=[paths];
+	}
+	var engine=this, output=[];
+
+	var makecb=function(path){
+		return function(data){
+				if (!(data && typeof data =='object' && data.__empty)) output.push(data);
+				engine.get(path,opts,taskqueue.shift());
+		};
+	};
+
+	var taskqueue=[];
+	for (var i=0;i<paths.length;i++) {
+		if (typeof paths[i]=="null") { //this is only a place holder for key data already in client cache
+			output.push(null);
+		} else {
+			taskqueue.push(makecb(paths[i]));
+		}
+	};
+
+	taskqueue.push(function(data){
+		output.push(data);
+		cb.apply(engine.context||engine,[output,paths]); //return to caller
+	});
+
+	taskqueue.shift()({__empty:true}); //run the task
+}
+
+
+var localengine_get=function(path,opts,cb,context) {
+	var engine=this;
+	if (typeof opts=="function") {
+		context=cb;
+		cb=opts;
+		opts={recursive:false};
+	}
+	if (!path) {
+		if (cb) cb.apply(context,[null]);
+		return null;
+	}
+
+	if (typeof cb!="function") {
+		return engine.kdb.get(path,opts);
+	}
+
+	if (typeof path=="string") {
+		return engine.kdb.get([path],opts,cb,context);
+	} else if (typeof path[0] =="string") {
+		return engine.kdb.get(path,opts,cb,context);
+	} else if (typeof path[0] =="object") {
+		return gets.apply(engine,[path,opts,cb,context]);
+	} else {
+		engine.kdb.get([],opts,function(data){
+			cb.apply(context,[data]);//return top level keys
+		},context);
+	}
+};	
+var getFileRange=function(i) {
+	var engine=this;
+
+	var filesegcount=engine.get(["filesegcount"]);
+	if (filesegcount) {
+		if (i==0) {
+			return {start:0,end:filesegcount[0]-1};
+		} else {
+			return {start:filesegcount[i-1],end:filesegcount[i]-1};
+		}
+	}
+	//old buggy code
+	var filenames=engine.get(["filenames"]);
+	var fileoffsets=engine.get(["fileoffsets"]);
+	var segoffsets=engine.get(["segoffsets"]);
+	var segnames=engine.get(["segnames"]);
+	var filestart=fileoffsets[i], fileend=fileoffsets[i+1]-1;
+
+	var start=bsearch(segoffsets,filestart,true);
+	//if (segOffsets[start]==fileStart) start--;
+	
+	//work around for jiangkangyur
+	//while (segNames[start+1]=="_") start++;
+
+  //if (i==0) start=0; //work around for first file
+	var end=bsearch(segoffsets,fileend,true);
+	return {start:start,end:end};
+}
+
+var absSegToFileSeg=function(absoluteseg) {
+	var filesegcount=this.get("filesegcount");
+	var s=absoluteseg;
+	var file=0;
+	while (s>filesegcount[file]) {
+		file++;
+	}
+	s=Math.abs(filesegcount[file-1]-s);
+	return {file:file,seg:s};
+}
+
+var fileSegToAbsSeg=function(file,seg) {
+	if (file==0)return seg;
+	return this.get("filesegcount")[file-1]+(seg);
+}
+
+//var vposToFileSeg=function(engine,vpos) {
+//    var segoffsets=engine.get("segoffsets");
+//    var fileoffsets=engine.get(["fileoffsets"]);
+//    var segnames=engine.get("segnames");
+//    var fileid=bsearch(fileoffsets,vpos+1,true);
+//    fileid--;
+//    var segid=bsearch(segoffsets,vpos+1,true);
+//	var range=engine.getFileRange(fileid);
+//	segid-=range.start;
+//    return {file:fileid,seg:segid};
+//}
+var indexOfSorted_str = function (array, obj, near) { 
+  var low = 0,
+  high = array.length;
+  while (low < high) {
+    var mid = (low + high) >> 1;
+    if (array[mid]==obj) return mid;
+    (array[mid].localeCompare(obj)<0) ? low = mid + 1 : high = mid;
+  }
+  if (near) return low;
+  else if (array[low]==obj) return low;else return -1;
+};
+var searchSeg=function(segname,near) {
+	var i=bsearch(this.get("segnames"),segname,near);
+	if (i>-1) {
+		var fileseg=absSegToFileSeg.apply(this,[i]);
+		return {file:fileseg.file,seg:fileseg.seg,absseg:i};
+	}
+	return null;
+}
+
+//return array of object of nfile nseg given segname
+var findSeg=function(segname,max) {
+	meta=this.get("meta");
+	if (meta.sortedSegNames) {
+		return findSeg_sorted(segname);
+	}
+	var segnames=this.get("segnames");
+	var out=[];
+	for (var i=0;i<segnames.length;i++) {
+		if (segnames[i]==segname) {
+			var fileseg=absSegToFileSeg.apply(this,[i]);
+			out.push({file:fileseg.file,seg:fileseg.seg,absseg:i});
+			if (out.length>=max) break;
+		}
+	}
+	return out;
+}
+var findFile=function(filename) {
+	var filenames=this.get("filenames");
+	for (var i=0;i<filenames.length;i++) {
+		if (filenames[i]===filename) return i;
+	}
+	return -1;
+}
+
+var getFileSegOffsets=function(i) {
+	var segoffsets=this.get("segoffsets");
+	var range=getFileRange.apply(this,[i]);
+	if (segoffsets.subarray) {
+		return segoffsets.subarray(range.start,range.end+1);
+	} else {
+		return segoffsets.slice(range.start,range.end+1);	
+	}
+}
+var absSegFromVpos=function(vpos) { 
+	var segoffsets=this.get(["segoffsets"]);
+	var i=bsearch(segoffsets,vpos,true);
+	while (segoffsets[i]==vpos) i++;
+	return i;
+}
+
+var myAbsSegToFileSeg=function(absoluteseg) {
+     var filesegcount=this.get("filesegcount");
+     var s=absoluteseg;
+     var file=0 ,f=0;     
+     while(s>=filesegcount[file]) {file++}
+     if(file!=0) {
+          var seg=s-filesegcount[file-1];
+          return {file:file,seg: seg};
+     } else return {file:0,seg:absoluteseg};
+}
+
+var fileSegFromVpos=function(vpos) { 
+	var seg=absSegFromVpos.call(this,vpos);
+	//return absSegToFileSeg.call(this,seg);
+	return myAbsSegToFileSeg.call(this,seg);
+}
+var fileSegToVpos=function(f,s) {
+	var segoffsets=this.get(["segoffsets"]);
+	var seg=fileSegToAbsSeg.call(this,f,s);
+	return segoffsets[seg-1];
+}
+
+var getFileSegNames=function(i) {
+	var range=getFileRange.apply(this,[i]);
+	var segnames=this.get("segnames");
+	return segnames.slice(range.start,range.end+1);
+}
+
+var getPreloadField=function(user) {
+	var preload=[["meta"],["filenames"],["fileoffsets"],["segnames"],["segoffsets"],["filesegcount"]];
+	//["tokens"],["postingslen"] kse will load it
+	if (user && user.length) { //user supply preload
+		for (var i=0;i<user.length;i++) {
+			if (preload.indexOf(user[i])==-1) {
+				preload.push(user[i]);
+			}
+		}
+	}
+	return preload;
+}
+
+
+var segOffset=function(segname) {
+	var engine=this;
+	if (arguments.length>1) throw "argument : segname ";
+
+	var segNames=engine.get("segnames");
+	var segOffsets=engine.get("segoffsets");
+
+	var i=segNames.indexOf(segname);
+	return (i>-1)?segOffsets[i]:0;
+}
+var fileOffset=function(fn) {
+	var engine=this;
+	var filenames=engine.get("filenames");
+	var offsets=engine.get("fileoffsets");
+	var i=filenames.indexOf(fn);
+	if (i==-1) return null;
+	return {start: offsets[i], end:offsets[i+1]};
+}
+
+var folderOffset=function(folder) {
+	var engine=this;
+	var start=0,end=0;
+	var filenames=engine.get("filenames");
+	var offsets=engine.get("fileoffsets");
+	for (var i=0;i<filenames.length;i++) {
+		if (filenames[i].substring(0,folder.length)==folder) {
+			if (!start) start=offsets[i];
+			end=offsets[i];
+		} else if (start) break;
+	}
+	return {start:start,end:end};
+}
+var getTOCNames=function() {
+	return engine.get("meta").tocs;
+}
+var getTOC=function(opts,cb,context) {
+	var engine=this;
+	opts=opts||{};
+	var tocname=opts.tocname;
+	var rootname=opts.rootname||opts.tocname;
+	if (!tocname) return;
+
+	var toc=engine.TOC[tocname];
+	if (toc) {
+		cb.call(context,toc);
+		return toc;
+	}
+
+	var keys=[["fields",tocname],["fields",tocname+"_depth"],["fields",tocname+"_vpos"]];
+	engine.get(keys,{recursive:true},function(){
+	  var texts=engine.get(["fields",tocname]);
+	  var depths=engine.get(["fields",tocname+"_depth"]);
+	  var voffs=engine.get(["fields",tocname+"_vpos"]);
+
+	  var out=[{d:0,t:rootname}];
+	  if (texts) for (var i=0;i<texts.length;i++) {
+	      out.push({t:texts[i],d:depths[i], vpos:voffs[i]});
+	  }
+
+	  engine.TOC[tocname]=out;
+	  cb.call(context,out);
+	  return out; 		
+	});
+}
+
+var setup=function(engine) {
+	engine.get=localengine_get;
+	engine.segOffset=segOffset;
+	engine.fileOffset=fileOffset;
+	engine.folderOffset=folderOffset;
+	engine.getFileSegNames=getFileSegNames;
+	engine.getFileSegOffsets=getFileSegOffsets;
+	engine.getFileRange=getFileRange;
+	engine.findSeg=findSeg;
+	engine.searchSeg=searchSeg;
+	engine.findFile=findFile;
+	engine.absSegToFileSeg=absSegToFileSeg;
+	engine.fileSegToAbsSeg=fileSegToAbsSeg;
+	engine.fileSegFromVpos=fileSegFromVpos;
+	engine.absSegFromVpos=absSegFromVpos;
+	engine.fileSegToVpos=fileSegToVpos;
+	engine.getTOC=getTOC;
+	engine.getTOCNames=getTOCNames;
+}
+
+module.exports={setup:setup,getPreloadField:getPreloadField,gets:gets};
+},{"./bsearch":"/Users/yu/ksana2015/node_modules/ksana-database/bsearch.js"}],"/Users/yu/ksana2015/node_modules/ksana-database/platform.js":[function(require,module,exports){
 var getPlatform=function() {
 	if (typeof ksanagap=="undefined") {
 		try {
 			require("react-native");
 			platform="react-native";
 		} catch (e) {
-			platform="node";	
+			if (typeof process=="undefined") {
+				platform="chrome";
+			} else {
+				platform="node";		
+			}
 		}
 	} else {
 		platform=ksanagap.platform;
@@ -5017,7 +5839,78 @@ var getPlatform=function() {
 	return platform;
 }
 module.exports={getPlatform:getPlatform};
-},{"react-native":"react-native"}],"/Users/yu/ksana2015/node_modules/ksana-jsonrom/html5read.js":[function(require,module,exports){
+},{"react-native":"react-native"}],"/Users/yu/ksana2015/node_modules/ksana-database/rpc.js":[function(require,module,exports){
+/*
+	this is for browser, a simple wrapper for socket.io rpc
+	
+	for each call to server, create a unique id
+	when server return, get the slot by unique id, and invoke callbacks.
+*/
+function GUID () {
+  var S4 = function ()    {    return Math.floor(        Math.random() * 0x10000  ).toString(16);  };
+  return (   S4() + S4() + "-" + S4() + "-" +  S4() + "-" + S4() + "-" +S4() + S4() + S4()    );
+}
+
+var RPCs={}; //*  key: unique calling id  */
+
+var socket = io.connect(window.location.host);
+
+var returnfromserver=function(res) {
+	var slot=RPCs[res.fid];
+	
+	if (!slot) {
+		throw "invalid fid "+res.fid;
+		return;
+	}
+	
+	if (res.success) {
+		if (slot.successCB)  slot.successCB(res.err,res.response);
+	} else {
+		if (slot.errorCB)  slot.errorCB(res.err,res.response);
+	}
+	delete RPCs[res.fid]; //drop the slot
+}
+
+var pchost={
+	exec: function(successCB, errorCB, service, action, params) {
+		var fid=GUID();
+		//create a slot to hold
+		var slot={  fid:fid, successCB:successCB, errorCB:errorCB ,params:params, action:action, service:service};
+		RPCs[fid]=slot;
+		socket.emit('rpc',  { service: service, action:action, params: params , fid:fid });
+	}
+}
+
+socket.on( 'rpc', returnfromserver );	 
+window.host=pchost;
+module.exports=pchost;
+},{}],"/Users/yu/ksana2015/node_modules/ksana-database/rpc_kde.js":[function(require,module,exports){
+var host=require("./rpc");
+
+var makeinf=function(name) {
+	return (
+		function(opts,callback) {
+			host.exec(callback,0,"kde",name,opts);
+		});
+}
+
+var API={};
+//TODO , create a cache object on client side to save network trafic on
+//same getRaw
+API.get=makeinf("get");
+API.list=makeinf("list");
+
+//API.closeAll=makeinf("closeAll");
+//exports.version='0.0.13'; //this is a quick hack
+
+host.exec(function(err,data){
+	//console.log('version',err,data)
+	exports.version=data;
+},0,"kde","version",{});
+
+
+module.exports=API;
+},{"./rpc":"/Users/yu/ksana2015/node_modules/ksana-database/rpc.js"}],"/Users/yu/ksana2015/node_modules/ksana-jsonrom/html5read.js":[function(require,module,exports){
 
 /* emulate filesystem on html5 browser */
 /* emulate filesystem on html5 browser */
@@ -6928,6 +7821,7 @@ var _search=function(engine,q,opts,cb,context) {
 			cb=opts;
 			opts={};
 		}
+		if (!opts) opts={};
 		opts.q=q;
 		opts.dbid=engine;
 		kde.open(opts.dbid,function(err,db){
@@ -6983,7 +7877,7 @@ var api={
 	search:_search
 	,highlightSeg:_highlightSeg
 	,highlightFile:_highlightFile
-	,excerpt:require("./excerpt")
+	,excerpt:require("./excerpt")	
 }
 module.exports=api;
 },{"./bsearch":"/Users/yu/ksana2015/node_modules/ksana-search/bsearch.js","./excerpt":"/Users/yu/ksana2015/node_modules/ksana-search/excerpt.js","./search":"/Users/yu/ksana2015/node_modules/ksana-search/search.js","ksana-analyzer":"/Users/yu/ksana2015/node_modules/ksana-analyzer/index.js","ksana-database":"/Users/yu/ksana2015/node_modules/ksana-database/index.js"}],"/Users/yu/ksana2015/node_modules/ksana-search/plist.js":[function(require,module,exports){
@@ -9097,7 +9991,7 @@ var boot=function(appId,opts,cb) {
 		timer=setInterval(function(){
 			if (ksana.ready){
 				clearInterval(timer);
-				if (ksana.js && ksana.js.files && ksana.js.files.length) {
+				if ( (opts.chromeFileSystem) && ksana.js && ksana.js.files && ksana.js.files.length) {
 					require("./installkdb")(ksana.js,cb);
 				} else {
 					cb();		
@@ -9215,15 +10109,19 @@ var kfs={readDir:readDir,listApps:listApps};
 
 module.exports=kfs;
 },{}],"/Users/yu/ksana2015/node_modules/ksana2015-webruntime/kfs_html5.js":[function(require,module,exports){
-var readDir=function(){
-	return "[]";
+
+var readDir=function(cb,context){
+	require("./html5fs").readdir(cb,context);
 }
 var listApps=function(){
 	return "[]";
 }
 module.exports={readDir:readDir,listApps:listApps};
-},{}],"/Users/yu/ksana2015/node_modules/ksana2015-webruntime/ksanagap.js":[function(require,module,exports){
+},{"./html5fs":"/Users/yu/ksana2015/node_modules/ksana2015-webruntime/html5fs.js"}],"/Users/yu/ksana2015/node_modules/ksana2015-webruntime/ksanagap.js":[function(require,module,exports){
 var appname="installer";
+if (typeof ksana=="undefined") {
+	window.ksana={platform:"chrome"};
+}
 var switchApp=function(path) {
 	var fs=require("fs");
 	path="../"+path;
@@ -9271,6 +10169,42 @@ var jsonp=function(url,dbid,callback,context) {
   document.getElementsByTagName('head')[0].appendChild(script); 
 }
 
+
+var loadKsanajs=function(){
+	if (typeof process!="undefined" && !process.browser) {
+		var ksanajs=require("fs").readFileSync("./ksana.js","utf8").trim();
+		downloader=require("./downloader");
+		//ksana.js=JSON.parse(ksanajs.substring(14,ksanajs.length-1));
+		rootPath=process.cwd();
+		rootPath=require("path").resolve(rootPath,"..").replace(/\\/g,"/")+'/';
+		ksana.ready=true;
+	} else{
+		var url=window.location.origin+window.location.pathname.replace("index.html","")+"ksana.js";
+		jsonp(url,appname,function(data){
+			ksana.js=data;
+			ksana.ready=true;
+		});
+	}
+}
+
+loadKsanajs();
+
+var boot=function(appId,cb) {
+	if (typeof appId=="function") {
+		cb=appId;
+		appId="unknownapp";
+	}
+
+	ksana.appId=appId;
+	var timer=setInterval(function(){
+			if (ksana.ready){
+				clearInterval(timer);
+				cb();
+			}
+		});
+}
+
+
 var ksanagap={
 	platform:"node-webkit",
 	startDownload:downloader.startDownload,
@@ -9284,22 +10218,7 @@ var ksanagap={
 	username:username, //not support on PC
 	useremail:username,
 	runtime_version:runtime_version,
-	
-}
-
-if (typeof process!="undefined" && !process.browser) {
-	var ksanajs=require("fs").readFileSync("./ksana.js","utf8").trim();
-	downloader=require("./downloader");
-	//ksana.js=JSON.parse(ksanajs.substring(14,ksanajs.length-1));
-	rootPath=process.cwd();
-	rootPath=require("path").resolve(rootPath,"..").replace(/\\/g,"/")+'/';
-	ksana.ready=true;
-} else{
-	var url=window.location.origin+window.location.pathname.replace("index.html","")+"ksana.js";
-	jsonp(url,appname,function(data){
-		ksana.js=data;
-		ksana.ready=true;
-	});
+	boot:boot
 }
 module.exports=ksanagap;
 },{"./downloader":"/Users/yu/ksana2015/node_modules/ksana2015-webruntime/downloader.js","fs":false,"path":false}],"/Users/yu/ksana2015/node_modules/ksana2015-webruntime/livereload.js":[function(require,module,exports){
@@ -9570,6 +10489,4 @@ mkdirP.sync = function sync (p, mode, made) {
 module.exports = mkdirP.mkdirp = mkdirP.mkdirP = mkdirP;
 
 },{}]},{},["/Users/yu/ksana2015/ketakareport/index.js"])
-
-
 //# sourceMappingURL=bundle.js.map
