@@ -4,3 +4,4 @@ body{margin:30px;}
 .hl {color:red;}
 .delete{color:red;text-decoration: line-through;}
 .add{color: green;}
+.inline{display: inline;}
