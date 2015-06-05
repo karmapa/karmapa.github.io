@@ -58,7 +58,19 @@ var Chartarea = React.createClass({displayName: "Chartarea",
   }
 });
 module.exports=Chartarea;
-},{"./getChart.js":"/Users/yu/ksana2015/ketakareport/src/getChart.js","./volumes.js":"/Users/yu/ksana2015/ketakareport/src/volumes.js","react":"react"}],"/Users/yu/ksana2015/ketakareport/src/filelist.js":[function(require,module,exports){
+},{"./getChart.js":"/Users/yu/ksana2015/ketakareport/src/getChart.js","./volumes.js":"/Users/yu/ksana2015/ketakareport/src/volumes.js","react":"react"}],"/Users/yu/ksana2015/ketakareport/src/chief.js":[function(require,module,exports){
+var chief = {
+	vol078:"T.Gawa",
+	vol079:"Palden Lama",
+	vol080:"",
+	vol081:"T.Gawa",
+	vol082:"gelek",
+	vol083:"Palden Lama",
+	vol084:"gelek"
+};
+
+module.exports = chief;
+},{}],"/Users/yu/ksana2015/ketakareport/src/filelist.js":[function(require,module,exports){
 var filelist = 
 {
  /*"vol001": [
@@ -2909,10 +2921,44 @@ var getChart = function(obj){
 
 }
 module.exports = getChart;
-},{}],"/Users/yu/ksana2015/ketakareport/src/main.jsx":[function(require,module,exports){
+},{}],"/Users/yu/ksana2015/ketakareport/src/infoarea.jsx":[function(require,module,exports){
+var React = require("react");
+var chief = require("./chief.js");
+var volumes = require("./volumes.js");
+// 
+var Infoarea = React.createClass({displayName: "Infoarea",
+  getInitialState:function() {
+    return {};
+  },
+  renderScore: function(obj) {
+    var out=[];
+    for(var i=0; i<obj.pr.length; i++) {
+      var score = (parseFloat(obj.rate[0][i])*100 + parseFloat(obj.rate[1][i])*100) / 2;
+      out.push(React.createElement("div", {className: "inline"}, 
+        obj.pr[i], " : ", score.toFixed(2), "   "
+      )
+      );
+    }
+    return out;
+  },
+  render: function() {
+    var score = [];
+    if(this.props.bampo && this.props.vol && volumes[this.props.vol]){
+      score = this.renderScore( volumes[this.props.vol][this.props.bampo] );
+    }  
+    return React.createElement("div", null, 
+    "chief: ", chief[this.props.vol], 
+    React.createElement("br", null), 
+    score
+    );
+  }
+});
+module.exports=Infoarea;
+},{"./chief.js":"/Users/yu/ksana2015/ketakareport/src/chief.js","./volumes.js":"/Users/yu/ksana2015/ketakareport/src/volumes.js","react":"react"}],"/Users/yu/ksana2015/ketakareport/src/main.jsx":[function(require,module,exports){
 var React=require("react");
 var Menu=require("./menu.jsx");
 var Chartarea=require("./chartarea.jsx");
+var Infoarea=require("./infoarea.jsx");
 var kse=require("ksana-search");
 var maincomponent = React.createClass({displayName: "maincomponent",
   getInitialState:function() {
@@ -2927,12 +2973,13 @@ var maincomponent = React.createClass({displayName: "maincomponent",
     //<Textarea vol={this.state.vol} bampo={this.state.bampo}/>
     return React.createElement("div", null, 
       React.createElement(Menu, {getText: this.getText}), 
+      React.createElement(Infoarea, {vol: this.state.vol, bampo: this.state.bampo}), 
       React.createElement(Chartarea, {vol: this.state.vol, bampo: this.state.bampo})
     );
   }
 });
 module.exports=maincomponent;
-},{"./chartarea.jsx":"/Users/yu/ksana2015/ketakareport/src/chartarea.jsx","./menu.jsx":"/Users/yu/ksana2015/ketakareport/src/menu.jsx","ksana-search":"/Users/yu/ksana2015/node_modules/ksana-search/index.js","react":"react"}],"/Users/yu/ksana2015/ketakareport/src/menu.jsx":[function(require,module,exports){
+},{"./chartarea.jsx":"/Users/yu/ksana2015/ketakareport/src/chartarea.jsx","./infoarea.jsx":"/Users/yu/ksana2015/ketakareport/src/infoarea.jsx","./menu.jsx":"/Users/yu/ksana2015/ketakareport/src/menu.jsx","ksana-search":"/Users/yu/ksana2015/node_modules/ksana-search/index.js","react":"react"}],"/Users/yu/ksana2015/ketakareport/src/menu.jsx":[function(require,module,exports){
 var React=require("react");
 var Volmenu=require("./volmenu.jsx");
 var Bampomenu=require("./bampomenu.jsx");
