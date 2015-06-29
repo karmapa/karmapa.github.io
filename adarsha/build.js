@@ -16277,7 +16277,7 @@ var showtext = React.createClass({displayName: 'showtext',
       if(that.state.clickedpb.indexOf(m1)>-1){
         var imgName=that.getImgName(m1);
         var corresPage=that.getCorresPage(m1);
-        link='<img src="banner/next.png"></img></span><br></br><a href="#" data-pb="'+m1+'">'+m1+
+        link='</span><br></br><a href="#" data-pb="'+m1+'">'+m1+
         '</a>&nbsp;(Derge:'+corresPage+')<img class="sourceimage" data-img="'+m1+'" width="100%" src="http://res.cloudinary.com/www-dharma-treasure-org/image/upload/lijiang/'+imgName+'.jpg"/><br></br>'
         +'<span class="textwithimage">';
         nextpagekeepcrlf=true;
