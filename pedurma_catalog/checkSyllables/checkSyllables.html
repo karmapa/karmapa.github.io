@@ -15,7 +15,10 @@
 		var text=document.getElementById("sutra").value;
 		text=text.replace(/[\u0f20-\u0fff]+/g,function(m){
 			var invalid=validSyllables.indexOf(m)==-1;
-			if(invalid) return "<span style='color:red'>"+m+"</span>"
+			if(invalid) {
+				if((m.substr(m.length-2) == "འི" || m.substr(m.length-2) == "འོ"))	return "<span style='color:orange'>"+m+"</span>";	
+				return "<span style='color:red'>"+m+"</span>";
+			}
 			return m;
 		});
 		document.getElementById("out").innerHTML=text;
