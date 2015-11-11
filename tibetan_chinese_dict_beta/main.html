@@ -1,0 +1,52 @@
+<html>
+	<head>
+		<title>大圓滿辭典</title>
+		<meta charset="UTF-8">
+		<script src="ui.js"></script>
+		<script src="search.js"></script>
+		<script src="firebase.js"></script>
+		<script src="connectdatabase.js"></script>
+		<script src="transtabletojson.js"></script>
+		<script src="connectdatabase.js"></script>
+		<link rel="stylesheet" href="css/style.css">
+	</head>
+
+	<body>
+	<div id="wrapper">
+	
+		<div id='top' class="mainlogo">
+			<div>Dzogchen Dictionary</div>
+			<button onClick="newEntry()">New Entry</button>
+			<button onClick='edit()'>Edit</button>
+		</div>	
+
+		<div id="search">
+		
+<section class="container">
+	
+    <form class="searchbar">
+      <input id="entryinput" onInput="doentrySearch(this.value)" type='search' name='q' placeholder="辭條..." autocomplete="off"/>
+      <input id="abbinput" onInput="doabbSearch(this.value)" type='search' name='q' placeholder="略語..." autocomplete="off"/>
+    
+    <div id = 'entrylist'>  
+      <ul id="display1" class="search-ac">
+      </ul>
+    </div>  
+    
+    </form>
+
+ </section>
+  		</div>
+		
+		<div class='right'>
+	 
+	 <div id="display2" class="entrydetails"></div>
+
+		</div>
+	
+
+	</div>
+
+	</body>
+
+</html>
