@@ -15,7 +15,7 @@
 	<div id="wrapper">
 	
 		<div id='top' class="mainlogo">
-			<div>Dzogchen Dictionary</div>
+			<div>Darma Treasure Dictionary</div>
 			<button onClick="newEntry()">New Entry</button>
 			<button onClick='edit()'>Edit</button>
 		</div>	
@@ -46,6 +46,19 @@
 	
 
 	</div>
+	<script>
+	var checkterms=function(){
+		if(terms==undefined){
+			setTimeout(function(){
+				return checkterms();
+			},500);
+		}else{
+			document.getElementById("display1").innerHTML="<strong>Loading Complete!</strong>";
+		}
+	}
+	document.getElementById("display1").innerHTML="<strong>Loading Database......</strong>";
+	checkterms();
+	</script>
 
 	</body>
 
