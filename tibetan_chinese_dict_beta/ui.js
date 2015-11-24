@@ -2,8 +2,8 @@ var newEntry=function(){
 	var n=drawtable("new");
 	var newtable="<button onClick='addRow()'>Add Row</button>"+"<button onClick='delRow()'>Delete Row</button>"
 				+"<button onClick='save_edit()'>Save</button>"+"<button onClick='cancel()'>Cancel</button>"
-				+"<span id='termtitle'>Entry name:<span style='font-size:large' id='showentry' contenteditable='true'>New Entry</span> "
-				+"Page:<span id='showpage' contenteditable='true'>New Entry page</span>"+"</span>"+"<div>"
+				+"<span id='showentry' class='showentry' contenteditable='true'>New Entry</span> "
+				+"<span id='showpage' class='showpage' contenteditable='true'>New Entry page</span>"+"<div>"
 				+n.replace(/<td>/g,"<td contenteditable='true'>").replace(/details/,"edited_details")+"</div>";
 	document.getElementById("display2").innerHTML=newtable;
 	addRow();
@@ -16,7 +16,7 @@ var showentry=function(term){
 }
 
 var doentrySearch=function(tofind){
-	if(tofind){
+	if(tofind.length>1){
 	var arr=entrySearch(tofind);
 	document.getElementById("display1").innerHTML=arr.map(showentry).join("<br/>");
 	}
@@ -24,7 +24,7 @@ var doentrySearch=function(tofind){
 
 
 var doabbSearch=function(tofind){
-	if(tofind){
+	if(tofind.length>1){
 		var arr=abbSearch(tofind);
 		document.getElementById("display1").innerHTML=arr.map(showentry).join("<br/>");
 	}	
@@ -78,9 +78,9 @@ var drawtable = function(obj){
 								   + tdstart + syn2 + tdend + tdstart + syn3 + tdend + tdstart + src + tdend + "</tr>";
 		}
     }
-    localStorage.undo ="<span id='termtitle'><span style='font-size:50px' id='showentry'>"+obj.entry+
-    					"</span>"+"<span id='showpage'>"+obj.page+"</span>"+"</span>"+"<div>"+
-    					"<button onClick='edit()'>Edit</button>"+ tablecontent + tableend + "</div>";
+    localStorage.undo ="<span id='termtitle'><span id='showentry' class='Entry'>"+obj.entry+
+    					"</span>"+"<span id='showpage' class='Page'>"+obj.page+"</span>"+"</span>"+"<div>"+
+    					tablecontent + tableend + "</div>";
     return localStorage.undo;
 }
 
@@ -125,7 +125,7 @@ var save_edit=function(){
 	var table=document.getElementById("edited_details").innerHTML;
 	var title=document.getElementById("termtitle").innerHTML;
 	trans_obj();
-	var savetable="<span id='termtitle'>"+title+"</span>"+"<div><button onClick='edit()'>Edit</button>"+"<table id='details'>"+
+	var savetable="<span id='termtitle'>"+title+"</span>"+"<div>"+"<table id='details'>"+
 					table.replace(/<td contenteditable="true" id="editable">/g,"<td>")+"</div>";
 	localStorage.undo=savetable;
 	document.getElementById("display2").innerHTML=savetable;

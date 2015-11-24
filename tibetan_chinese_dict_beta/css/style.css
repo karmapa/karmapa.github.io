@@ -24,24 +24,52 @@ ol, ul {
   float: left;
   margin: 0 auto;
   width: 258px;
-  height: 830px;
-}
-.right {
-  margin-top: 10px;
-  margin-left: 20px;
-  margin-right: 20px;
-  margin-bottom: 10px;
+  height: 90%;
 }
 .entrydetails {
-  width: 65%;
+  float: right;
+  width: 75%;
   height: 85%;
-  margin-top: 5px;
-  margin-left: 10px;
+  margin-top: 20px;
+  margin-right: 60px;
   overflow: auto;
 }
 .entrydetails button {
-  margin-left: 5px;
+  float: right;
+  margin-top: 16px;
+  margin-right: 20px;
+  background: #e1e6e3;
+  background-image: -webkit-linear-gradient(top, #e1e6e3, #428082);
+  background-image: -moz-linear-gradient(top, #e1e6e3, #428082);
+  background-image: -ms-linear-gradient(top, #e1e6e3, #428082);
+  background-image: -o-linear-gradient(top, #e1e6e3, #428082);
+  background-image: linear-gradient(to bottom, #e1e6e3, #428082);
+  -webkit-border-radius: 8;
+  -moz-border-radius: 8;
+  border-radius: 8px;
+  -webkit-box-shadow: 1px 3px 16px #666666;
+  -moz-box-shadow: 1px 3px 16px #666666;
+  box-shadow: 1px 3px 16px #666666;
+  font-family: Courier New;
+  color: #6b2d6b;
+  font-size: 14px;
+  font-weight: 600;
+  border: solid #8a4e20 1px;
+  padding: 1px 6px 1px 6px;
+  text-decoration: none;
 }
+.showentry {
+  font-size: 20px;
+  border:2px #FFAC55 solid;
+  padding:5px;
+ 
+}
+.showpage {
+  font-size: 20px;
+  border:2px #FFAC55 solid;
+  padding:5px;
+}
+
 
 
 /* mainlogo */
@@ -55,7 +83,7 @@ ol, ul {
   color: #FFD700;
   margin: 0 0 0 15px;
   height: 35px;
-  width: 400px;
+  width: 580px;
   font-family: Fixed, monospace;
   font-size: 42px;
   font-weight: 100;
@@ -65,8 +93,35 @@ ol, ul {
 }
 .mainlogo button {
   float: right;
-  margin: 30px 25px 5px 5px;
+  margin: 26px 25px 7px 5px;
+  background: #e1e6e3;
+  background-image: -webkit-linear-gradient(top, #e1e6e3, #428082);
+  background-image: -moz-linear-gradient(top, #e1e6e3, #428082);
+  background-image: -ms-linear-gradient(top, #e1e6e3, #428082);
+  background-image: -o-linear-gradient(top, #e1e6e3, #428082);
+  background-image: linear-gradient(to bottom, #e1e6e3, #428082);
+  -webkit-border-radius: 8;
+  -moz-border-radius: 8;
+  border-radius: 8px;
+  -webkit-box-shadow: 1px 3px 16px #666666;
+  -moz-box-shadow: 1px 3px 16px #666666;
+  box-shadow: 1px 3px 16px #666666;
+  font-family: Courier New;
+  font-weight: 600;
+  color: #6b2d6b;
+  font-size: 14px;
+  border: solid #8a4e20 1px;
+  padding: 1px 6px 1px 6px;
+  text-decoration: none;
 }
+
+.entrydetails span {
+  line-height: 35px;
+  margin-left: 40px;
+  font-family: Courier;
+}
+
+
 /* end mainlogo */
 
 /* searchbar */
@@ -79,16 +134,16 @@ ol, ul {
 }
 .searchbar {
   position: relative;
-  margin: 0 auto;
-  width: 250px;
+  margin: 0 5px;
+  width: 20%;
   height: 100%;
 }
 .searchbar input {
   font-family: monospace;
   font-weight: 600;
-  font-size: 18px;
+  font-size: 27px;
   color: #672D2D;
-  height:25px;
+  height:35px;
   width: 250px;
   padding: 3px 12px 0 16px;
   border: 1px solid;
@@ -103,7 +158,7 @@ ol, ul {
 }
 .searchbar input:focus {
   font-family: monospace;
-  font-size: 18px;
+  font-size:  27px;
   font-weight: 600;
   outline: 0;
   padding: 0 12px 0 16px;
@@ -116,7 +171,7 @@ ol, ul {
 }
 ::-webkit-input-placeholder { 
   font-style: italic;
-  font-size: 18px;
+  font-size: 23px;
   font-family: BiauKai,DFKai-sb;
   letter-spacing: 1px;
   padding: 0 12px 8px 0;
@@ -127,44 +182,44 @@ ol, ul {
 /* entry list */
 #entrylist {
   width: 250px;
-  height: 820px;
+  height: 90%;
   overflow-x: hidden;
   overflow-y: auto;
 }
 /* end entry list */
 
 /* details */
-
 table {
-  float: left;
+  width: 135%;
   margin-top: 30px;
-  margin-left: 20px;
-  margin-right: 15px;
-  margin-bottom: 2px;
-  border-collapse: separate;
-  border-spacing: 8;
-  width: 1250px;
-  height: 83%;
+  border-spacing: 10px;
 }
 table th {
-  width: 150px;
-  height: 40px;
-  vertical-align: center;
   font-family: DFKai-sb,BiauKai;
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 500;
-  text-align: center;
   border-bottom: 3px solid orange;
 }
 table td {
-  width: 150px;
-  vertical-align: text-top;
-  padding: 3px;
-  padding-bottom: 70px;
-  font-size: 17px;
-  font-weight: 550;
+  padding-bottom: 30px;
+  font-size: 35px;
+  font-weight: 600;
   text-align: center;
-  overflow: auto;
+}
+#tibdef {
+  width: 25%;
+}
+#chidef {
+  width: 23%;
+}
+#abb{
+  width: 6%;
+}
+#syn {
+  width: 8%;
+}
+#source {
+  width: 5%;
 }
 
 #chi {
@@ -172,7 +227,12 @@ table td {
   font-size: 25px;
   font-weight: 550;
 }
-
+.Entry {
+  font-size: 50px;
+}
+.Page {
+  font-size: 20px;
+}
 /* end details */
 
 body {
@@ -183,7 +243,13 @@ body {
   padding:0;
 }
 
-
+.loading {
+  margin-top: 25px;
+  margin-left: 7px;
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 30px;
+}
 
 .search-ac:before {
   display: none;
@@ -212,7 +278,7 @@ body {
 }
 .search-ac li {
   display: block;
-  font-size: 25px;
+  font-size: 30px;
   font-weight: 600;
 }
 .search-ac li p {
@@ -285,6 +351,6 @@ body {
 }
 
 #editable{
-  border:3px #FFAC55 solid;
+  border:2px #FFAC55 solid;
   padding:5px;
 }
