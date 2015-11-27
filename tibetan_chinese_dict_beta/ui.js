@@ -24,10 +24,10 @@ var doentrySearch=function(tofind){
 
 
 var doabbSearch=function(tofind){
-	if(tofind.length>1){
+	if(tofind.length==1){ 
 		var arr=abbSearch(tofind);
 		document.getElementById("display1").innerHTML=arr.map(showentry).join("<br/>");
-	}	
+	}
 }
 
 var showdetails=function(tofind,i){
