@@ -115,9 +115,12 @@ ol, ul {
 }
 
 .entrydetails span {
-  line-height: 35px;
-  margin-left: 40px;
+  line-height: 53px;
+  margin-left: 30px;
   font-family: Courier;
+}
+.termtitle {
+  padding-top: 5px;
 }
 
 
@@ -259,6 +262,7 @@ table td {
 }
 .Entry {
   font-size: 50px;
+  padding-top: 5px;
 }
 .Page {
   font-size: 20px;
