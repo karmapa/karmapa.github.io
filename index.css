@@ -14,7 +14,11 @@ body{
 #content img{border-radius: 100%;
 	width: 200px;
 	height: 200px;}
-#headline{letter-spacing:8px;}
+
+#headline{
+	letter-spacing:8px;
+	font-size:47px;
+}
 
 #content{
 	/*padding: 10px;*/
@@ -30,6 +34,10 @@ body{
 	margin-bottom: -100px;
 	background:rgba(187,255,238,0.5) none repeat scroll !important;
 	/*rgba(187,255,238,0.5) none repeat scroll !important;  #BBFFEE     */
+}
+
+#title{
+	font-size:32px;
 }
 
 a{color: #BBFFEE;}
