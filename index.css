@@ -23,6 +23,7 @@ body{
 #content{
 	/*padding: 10px;*/
 	background:rgba(0,0,0,0.3) none repeat scroll !important;	
+	padding-top: 64px;
 	padding-bottom: 50px;
 	margin-bottom: 100px;
 }
@@ -36,8 +37,17 @@ body{
 	/*rgba(187,255,238,0.5) none repeat scroll !important;  #BBFFEE     */
 }
 
-#title{
+.title{
 	font-size:32px;
+	padding-top: 32px;
+}
+
+.br2top{
+	padding-top: 32px;
+}
+
+.br3bottom{
+	padding-bottom: 96px;
 }
 
 a{color: #BBFFEE;}
