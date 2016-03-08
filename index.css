@@ -18,13 +18,14 @@ body{
 #headline{
 	letter-spacing:8px;
 	font-size:47px;
+	padding-top: 32px;
 }
 
 #content{
 	/*padding: 10px;*/
 	background:rgba(0,0,0,0.3) none repeat scroll !important;	
 	padding-top: 64px;
-	padding-bottom: 50px;
+	padding-bottom: 146px;
 	margin-bottom: 100px;
 }
 
@@ -40,14 +41,6 @@ body{
 .title{
 	font-size:32px;
 	padding-top: 32px;
-}
-
-.br2top{
-	padding-top: 32px;
-}
-
-.br3bottom{
-	padding-bottom: 96px;
 }
 
 a{color: #BBFFEE;}
