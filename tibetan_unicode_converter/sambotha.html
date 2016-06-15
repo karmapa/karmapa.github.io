@@ -4,7 +4,18 @@
 </head>
 <script src="jszip.min.js"></script>
 <script src="sambotha.js"></script>
+<script src="node_modules/jquery/dist/jquery.js"></script>
+<script src="bootstrap-filestyle.min.js"></script>
+<style>
+.buttonText {
+	padding: 2px 3px 2px 3px;
+	cursor: pointer;
+	border-radius: 5px;
+	border: 2px solid #DDDDDD;
+}
+</style>
 <script>
+$(":file").filestyle();
 var r = new FileReader();
 function act() {
 	var file = fileInput.files[0]
@@ -31,6 +42,6 @@ function act() {
 }
 </script>
 <h1>Sambotha to unicode converter</h1>
-<input type="file" id="fileInput" onchange=act() accept='.docx'>
+<input type="file" id="fileInput" class="filestyle" data-classButton="btn btn-primary" data-input="true" data-buttonText="Choose file" onchange=act() accept='.docx'>
 <a id=downLink></a>
 <hr><div style="font-size:18pt;font-family:Microsoft Himalaya;" id=output></div>

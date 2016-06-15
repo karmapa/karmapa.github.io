@@ -5,7 +5,18 @@
 <script src="ansitable.js"></script>
 <script src="html.js"></script>
 <script src="parse.js"></script>
+<script src="node_modules/jquery/dist/jquery.js"></script>
+<script src="bootstrap-filestyle.min.js"></script>
+<style>
+.buttonText {
+	padding: 2px 3px 2px 3px;
+	cursor: pointer;
+	border-radius: 5px;
+	border: 2px solid #DDDDDD;
+}
+</style>
 <script>
+$(":file").filestyle();
 var r = new FileReader();
 function act() {
 	var file = fileInput.files[0]
@@ -26,6 +37,6 @@ function act() {
 }
 </script>
 <h1>TibetDoc to unicode converter</h1>
-<input type="file" id="fileInput" onchange=act() accept='.dct'>
+<input type="file" id="fileInput" class="filestyle" data-classButton="btn btn-primary" data-input="true" data-buttonText="Choose file" onchange=act() accept='.dct'>
 <a id=downLink></a>
 <hr><pre_><font id="a"><pre_>
