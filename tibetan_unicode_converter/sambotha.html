@@ -30,7 +30,7 @@ function act() {
 		data = jsonToHtml(doc)
 
 		output.innerHTML = data
-		data = '<meta charset=utf-8>\n' + data
+		data = data.replace(/<.+?>/g, '').replace(/^\r?\n/g, '');
 		var b = new Blob([data], { encoding:'utf-8',type:'text/html' });
 		var url = URL.createObjectURL(b);
 		downLink.href = url
