@@ -1,4 +1,0 @@
-tibetan
-=======
-
-Tibetan processing module
