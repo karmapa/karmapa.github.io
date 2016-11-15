@@ -105,9 +105,9 @@ m_consonant.put('-ṣ', '\u0f65');
 m_consonant.put('s', '\u0f66');
 m_consonant.put('h', '\u0f67');
 m_consonant.put('kṣ', '\u0f69');
-m_consonant.put('W', '\u0f5d');
 m_consonant.put('Y', '\u0f61');
 m_consonant.put('R', '\u0f6a');
+m_consonant.put('ṛa', '\u0f6c');
 m_consonant.put('f', '\u0f55\u0f39');
 m_consonant.put('v', '\u0f56\u0f39');
 
@@ -614,6 +614,7 @@ m_tib_top.put('\u0f67', 'h');
 m_tib_top.put('\u0f68', 'a');
 m_tib_top.put('\u0f69', 'kṣ');
 m_tib_top.put('\u0f6a', 'R');
+m_tib_top.put('\u0f6c', 'ṛa');
 
 // subjoined letters
 var m_tib_subjoined = new newHashMap();
@@ -657,7 +658,7 @@ m_tib_subjoined.put('\u0fb5', 'ṣ');
 m_tib_subjoined.put('\u0fb6', 's');
 m_tib_subjoined.put('\u0fb7', 'h');
 m_tib_subjoined.put('\u0fb8', 'a');
-m_tib_subjoined.put('\u0fb9', 'kṣ');
+m_tib_subjoined.put('\u0fb9', 'ksh');
 m_tib_subjoined.put('\u0fba', 'W');
 m_tib_subjoined.put('\u0fbb', 'Y');
 m_tib_subjoined.put('\u0fbc', 'R');
@@ -866,6 +867,7 @@ m_tokens_start.put('c', 2);
 m_tokens_start.put('n', 2);
 m_tokens_start.put('o', 2);
 m_tokens_start.put('p', 2);
+m_tokens_start.put('ṛ', 2);
 m_tokens_start.put('u', 2);
 m_tokens_start.put('\r', 2);
 
@@ -905,6 +907,7 @@ m_tokens.add('ng');
 m_tokens.add('ny');
 m_tokens.add('oṃ');
 m_tokens.add('ph');
+m_tokens.add('ṛa');
 m_tokens.add('sh');
 m_tokens.add('th');
 m_tokens.add('ts');
