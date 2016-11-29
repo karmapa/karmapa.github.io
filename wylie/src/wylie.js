@@ -106,10 +106,8 @@ m_consonant.put('s', '\u0f66');
 m_consonant.put('h', '\u0f67');
 m_consonant.put('kṣ', '\u0f69');
 m_consonant.put('Y', '\u0f61');
-m_consonant.put('R', '\u0f6a');
-m_consonant.put('ṛa', '\u0f6c');
-m_consonant.put('f', '\u0f55\u0f39');
-m_consonant.put('v', '\u0f56\u0f39');
+m_consonant.put('r', '\u0f6a');
+m_consonant.put('ṛ', '\u0f6c');
 
 // subjoined letters
 var m_subjoined = new newHashMap();
@@ -167,14 +165,14 @@ m_subjoined.put('-ṣ', '\u0fb5');
 m_subjoined.put('s', '\u0fb6');
 m_subjoined.put('h', '\u0fb7');
 m_subjoined.put('a', '\u0fb8');
-m_subjoined.put('W', '\u0fba');
-m_subjoined.put('Y', '\u0fbb');
-m_subjoined.put('R', '\u0fbc');
+m_subjoined.put('w', '\u0fba');
+m_subjoined.put('y', '\u0fbb');
+m_subjoined.put('r', '\u0fbc');
 
 // vowels
 var m_vowel = new newHashMap();
 m_vowel.put('a', '\u0f68');
-m_vowel.put('A', '\u0f71');
+m_vowel.put('ā', '\u0f71');
 m_vowel.put('i', '\u0f72');
 m_vowel.put('ī', '\u0f71\u0f72');
 m_vowel.put('u', '\u0f74');
@@ -191,11 +189,9 @@ var m_final_uni = new newHashMap();
 m_final_uni.put('M', '\u0f7e');
 m_final_uni.put('~M`', '\u0f82');
 m_final_uni.put('~M', '\u0f83');
-m_final_uni.put('X', '\u0f37');
-m_final_uni.put('~X', '\u0f35');
 m_final_uni.put('H', '\u0f7f');
 m_final_uni.put('྄', '\u0f84');
-m_final_uni.put('^', '\u0f39');
+m_final_uni.put('༹', '\u0f39');
 
 // final symbols organized by class
 var m_final_class = new newHashMap();
@@ -228,16 +224,16 @@ m_other.put('¦', '\u0f0f');
 m_other.put('￤', '\u0f10');
 m_other.put('|', '\u0f11');
 m_other.put('_', ' ');
-m_other.put('=', '\u0f34');
+m_other.put('༴', '\u0f34');
 m_other.put('{', '\u0f3c');
 m_other.put('}', '\u0f3d');
-m_other.put('(', '\u0f3e');
-m_other.put(')', '\u0f3f');
+m_other.put(')', '\u0f3e');
+m_other.put('(', '\u0f3f');
 m_other.put('oṃ', '\u0f00');
 m_other.put('ȳ', '\u0f01');
 m_other.put('uṃ', '\u0f02');
 m_other.put('uɱ', '\u0f03');
-m_other.put('ḵa', '\u0f6b');
+m_other.put('ḵ', '\u0f6b');
 m_other.put('`', '\u0f85');
 
 // special characters: flag those if they occur out of context
@@ -613,8 +609,8 @@ m_tib_top.put('\u0f66', 's');
 m_tib_top.put('\u0f67', 'h');
 m_tib_top.put('\u0f68', 'a');
 m_tib_top.put('\u0f69', 'kṣ');
-m_tib_top.put('\u0f6a', 'R');
-m_tib_top.put('\u0f6c', 'ṛa');
+m_tib_top.put('\u0f6a', 'r');
+m_tib_top.put('\u0f6c', 'ṛ');
 
 // subjoined letters
 var m_tib_subjoined = new newHashMap();
@@ -659,9 +655,9 @@ m_tib_subjoined.put('\u0fb6', 's');
 m_tib_subjoined.put('\u0fb7', 'h');
 m_tib_subjoined.put('\u0fb8', 'a');
 m_tib_subjoined.put('\u0fb9', 'ksh');
-m_tib_subjoined.put('\u0fba', 'W');
-m_tib_subjoined.put('\u0fbb', 'Y');
-m_tib_subjoined.put('\u0fbc', 'R');
+m_tib_subjoined.put('\u0fba', 'w');
+m_tib_subjoined.put('\u0fbb', 'y');
+m_tib_subjoined.put('\u0fbc', 'r');
 
 // vowel signs:
 // a-chen is not here because that's a top character, not a vowel sign.
@@ -669,7 +665,7 @@ m_tib_subjoined.put('\u0fbc', 'R');
 // easily handled by a global replace in toWylie(), b/c they turn into subjoined "r"/"l".
 
 var m_tib_vowel = new newHashMap();
-m_tib_vowel.put('\u0f71', 'A');
+m_tib_vowel.put('\u0f71', 'ā');
 m_tib_vowel.put('\u0f72', 'i');
 m_tib_vowel.put('\u0f73', 'ī');
 m_tib_vowel.put('\u0f74', 'u');
@@ -678,34 +674,30 @@ m_tib_vowel.put('\u0f7a', 'e');
 m_tib_vowel.put('\u0f7b', 'ai');
 m_tib_vowel.put('\u0f7c', 'o');
 m_tib_vowel.put('\u0f7d', 'au');
-m_tib_vowel.put('\u0f80', '-i');
+m_tib_vowel.put('\u0f80', 'î');
 
 // long (Skt) vowels
 var m_tib_vowel_long = new newHashMap();
 m_tib_vowel_long.put('i', 'ī');
 m_tib_vowel_long.put('u', 'ū');
-m_tib_vowel_long.put('-i', '-I');
+m_tib_vowel_long.put('î', 'î');
 
 // final symbols => wylie
 var m_tib_final_wylie = new newHashMap();
-m_tib_final_wylie.put('\u0f7e', 'M');
-m_tib_final_wylie.put('\u0f82', '~M`');
-m_tib_final_wylie.put('\u0f83', '~M');
-m_tib_final_wylie.put('\u0f37', 'X');
-m_tib_final_wylie.put('\u0f35', '~X');
-m_tib_final_wylie.put('\u0f39', '^');
-m_tib_final_wylie.put('\u0f7f', 'H');
+m_tib_final_wylie.put('\u0f7e', 'ṃ');
+m_tib_final_wylie.put('\u0f82', 'ṁ');
+m_tib_final_wylie.put('\u0f83', 'ḿ');
+m_tib_final_wylie.put('\u0f39', '༹');
+m_tib_final_wylie.put('\u0f7f', 'ḥ');
 m_tib_final_wylie.put('\u0f84', '྄');
 
 // final symbols by class
 var m_tib_final_class = new newHashMap();
-m_tib_final_class.put('\u0f7e', 'M');
-m_tib_final_class.put('\u0f82', 'M');
-m_tib_final_class.put('\u0f83', 'M');
-m_tib_final_class.put('\u0f37', 'X');
-m_tib_final_class.put('\u0f35', 'X');
-m_tib_final_class.put('\u0f39', '^');
-m_tib_final_class.put('\u0f7f', 'H');
+m_tib_final_class.put('\u0f7e', 'ṃ');
+m_tib_final_class.put('\u0f82', 'ṃ');
+m_tib_final_class.put('\u0f83', 'ḿ');
+m_tib_final_class.put('\u0f39', '༹');
+m_tib_final_class.put('\u0f7f', 'ḥ');
 m_tib_final_class.put('\u0f84', '྄');
 
 // special characters introduced by ^
@@ -721,7 +713,7 @@ m_tib_other.put('\u0f01', 'ȳ');
 m_tib_other.put('\u0f02', 'uṃ');
 m_tib_other.put('\u0f03', 'uɱ');
 m_tib_other.put('\u0f0b', ' ');
-m_tib_other.put('\u0f0c', '*');
+m_tib_other.put('\u0f0c', ' ');
 m_tib_other.put('\u0f0d', '/');
 m_tib_other.put('\u0f0e', '//');
 m_tib_other.put('\u0f0f', '¦');
@@ -737,12 +729,12 @@ m_tib_other.put('\u0f26', '6');
 m_tib_other.put('\u0f27', '7');
 m_tib_other.put('\u0f28', '8');
 m_tib_other.put('\u0f29', '9');
-m_tib_other.put('\u0f34', '=');
+m_tib_other.put('\u0f34', '༴');
 m_tib_other.put('\u0f3c', '{');
 m_tib_other.put('\u0f3d', '}');
-m_tib_other.put('\u0f3e', '(');
-m_tib_other.put('\u0f3f', ')');
-m_tib_other.put('\u0f6b', 'ḵa');
+m_tib_other.put('\u0f3e', ')');
+m_tib_other.put('\u0f3f', '(');
+m_tib_other.put('\u0f6b', 'ḵ');
 m_tib_other.put('\u0f85', '`');
 
 // all these stacked consonant combinations don't need "+"s in them
@@ -860,14 +852,12 @@ m_tokens_start.put('-', 4);
 m_tokens_start.put('ṭ', 2);
 m_tokens_start.put('a', 2);
 m_tokens_start.put('k', 2);
-m_tokens_start.put('ḵ', 2);
 m_tokens_start.put('t', 3);
 m_tokens_start.put('s', 2);
 m_tokens_start.put('c', 2);
 m_tokens_start.put('n', 2);
 m_tokens_start.put('o', 2);
 m_tokens_start.put('p', 2);
-m_tokens_start.put('ṛ', 2);
 m_tokens_start.put('u', 2);
 m_tokens_start.put('\r', 2);
 
@@ -883,7 +873,6 @@ m_tokens.add('bh');
 m_tokens.add('dh');
 m_tokens.add('dzh');
 m_tokens.add('gh');
-m_tokens.add('ḵa');
 m_tokens.add('kṣ');
 m_tokens.add('tsh');
 m_tokens.add('~M`');
@@ -907,7 +896,6 @@ m_tokens.add('ng');
 m_tokens.add('ny');
 m_tokens.add('oṃ');
 m_tokens.add('ph');
-m_tokens.add('ṛa');
 m_tokens.add('sh');
 m_tokens.add('th');
 m_tokens.add('ts');
@@ -2031,7 +2019,7 @@ function toWylie(str, warns, escape) {
     }
      out += ']';
   }
-  return out;
+  return out.replace(/\+/g, '');
 }
 var fromWylieWithWildcard = function(wy) {
   wy = wy.replace(/\./g,'．');
