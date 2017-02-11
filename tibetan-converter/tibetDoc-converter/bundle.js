@@ -28569,7 +28569,7 @@
 	              { className: 'appDownLoad' },
 	              _react2.default.createElement(
 	                'a',
-	                { href: 'https://drive.google.com//uc?export=download&id=0B9GraSYa0W12YjJUVFlHU09wMFU', target: '_blank' },
+	                { href: 'https://drive.google.com//uc?export=download&id=0B9GraSYa0W12bXZ5RHFGQksyTVk', target: '_blank' },
 	                _react2.default.createElement(
 	                  'div',
 	                  { className: 'downLoadButton' },
@@ -28579,7 +28579,7 @@
 	              ),
 	              _react2.default.createElement(
 	                'a',
-	                { href: 'https://drive.google.com//uc?export=download&id=0B9GraSYa0W12WEZPd1pEQXBVdkk', target: '_blank' },
+	                { href: 'https://drive.google.com//uc?export=download&id=0B9GraSYa0W12TTBvQVRadmhCY28', target: '_blank' },
 	                _react2.default.createElement(
 	                  'div',
 	                  { className: 'downLoadButton' },
