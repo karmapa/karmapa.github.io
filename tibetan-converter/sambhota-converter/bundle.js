@@ -28570,7 +28570,7 @@
 	              { className: 'appDownLoad' },
 	              _react2.default.createElement(
 	                'a',
-	                { href: 'https://drive.google.com//uc?export=download&id=0B9GraSYa0W12SExweE1oN3luTnc', target: '_blank' },
+	                { href: 'https://drive.google.com//uc?export=download&id=0B9GraSYa0W12RXROZzFQcW41bnM', target: '_blank' },
 	                _react2.default.createElement(
 	                  'div',
 	                  { className: 'downLoadButton' },
@@ -28580,7 +28580,7 @@
 	              ),
 	              _react2.default.createElement(
 	                'a',
-	                { href: 'https://drive.google.com//uc?export=download&id=0B9GraSYa0W12UkM1Y19RVl8xbm8', target: '_blank' },
+	                { href: 'https://drive.google.com//uc?export=download&id=0B9GraSYa0W12WUFtanU5Q3Q4V28', target: '_blank' },
 	                _react2.default.createElement(
 	                  'div',
 	                  { className: 'downLoadButton' },
@@ -28646,7 +28646,7 @@
 	                        _react2.default.createElement(
 	                          'span',
 	                          null,
-	                          ': dharma.treasure.corp@gmail.com'
+	                          ': support@dharma-treasure.org'
 	                        )
 	                      ),
 	                      _react2.default.createElement(
