@@ -28569,7 +28569,7 @@
 	              { className: 'appDownLoad' },
 	              _react2.default.createElement(
 	                'a',
-	                { href: 'https://drive.google.com//uc?export=download&id=0B9GraSYa0W12dkdqRzN0VFV1Qm8', target: '_blank' },
+	                { href: 'https://s3-ap-southeast-1.amazonaws.com/karmapa-converter/tibetDoc-converter-darwin-x64-v0.0.3.zip', target: '_blank' },
 	                _react2.default.createElement(
 	                  'div',
 	                  { className: 'downLoadButton' },
@@ -28579,7 +28579,7 @@
 	              ),
 	              _react2.default.createElement(
 	                'a',
-	                { href: 'https://drive.google.com//uc?export=download&id=0B9GraSYa0W12bWItaE1jMldIcHM', target: '_blank' },
+	                { href: 'https://s3-ap-southeast-1.amazonaws.com/karmapa-converter/tibetDoc-converter-win32-x64-v0.0.3.zip', target: '_blank' },
 	                _react2.default.createElement(
 	                  'div',
 	                  { className: 'downLoadButton' },
