@@ -28584,7 +28584,7 @@
 	                  'div',
 	                  { className: 'downLoadButton' },
 	                  _react2.default.createElement('i', { className: 'fa fa-cloud-download fa-lg', 'aria-hidden': 'true' }),
-	                  ' PC'
+	                  ' Windows'
 	                )
 	              )
 	            ),
