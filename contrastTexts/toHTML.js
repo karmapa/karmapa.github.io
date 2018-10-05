@@ -58,7 +58,7 @@ for (i=0; i < newText.length; i++) {
 
 					if (i+1 < k) {
 						autoNum = autoNum + 1;
-						toHtmlText = toHtmlText + ('<span class="' + newText.substring(i+1,k) + '" onClick="tagSelect(' + newText.substring(i+1,k) + ', event)">');
+						toHtmlText = toHtmlText + ('<span class="' + newText.substring(i+1,k) + '" onClick="tagSelect(\'' + newText.substring(i+1,k) + '\', event)">');
 						divStart = k+1 ;
 						checkFlag = 0;
 					}

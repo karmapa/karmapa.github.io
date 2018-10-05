@@ -40,8 +40,11 @@ function SizeTosmall() {
 }
 
 function tagSelect(num, event) {
+
+  let tagNum = num.toString();
+
   $('span').removeClass("highlight");
-  $('[class*="' + num + '"]').addClass('highlight');
+  $('[class="' + tagNum + '"]').addClass('highlight');
 
   var thisParDiv = event.target.parentNode.id;
   let otherDiv = '';
@@ -74,4 +77,4 @@ function readTextRight(fileName) {
       }
     });
   });
-}
+};
