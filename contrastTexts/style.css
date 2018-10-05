@@ -66,3 +66,7 @@ span:hover {
   background-color: rgba(221, 102, 98, 0.7);
   /* background-color: rgba(106, 173, 108, 0.8); */
 }
+
+.highlight:hover {
+  background-color: rgba(221, 102, 98, 0.7);
+}
