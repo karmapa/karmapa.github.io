@@ -41,6 +41,8 @@ function SizeTosmall() {
 
 function tagSelect(num, event) {
 
+  document.getElementById('alertArea').innerHTML = '';
+
   let tagNum = num.toString();
 
   $('span').removeClass("highlight");
@@ -52,7 +54,7 @@ function tagSelect(num, event) {
 
   const el = document.getElementById(otherDiv);
   const elmt = el.getElementsByClassName('highlight')[0];
-  'undefined' !== typeof elmt? elmt.scrollIntoView():'';
+  'undefined' !== typeof elmt? elmt.scrollIntoView({block: "center"}):document.getElementById('alertArea').innerHTML = '　　無同步詞彙　　';
 };
 
 function readTextLeft(fileName) {
