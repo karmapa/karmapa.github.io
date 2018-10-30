@@ -1,11 +1,131 @@
-.blackIcon {
+body {
+  font-size: 20px;
+}
+
+div,p,ul,ol,li,form,dd,dl,dt,nav,header {
+  margin:0; padding:0; list-style:none;
+}
+
+.notYet, .notYet a {
+  color: grey !important;
+  text-decoration: none;
+}
+
+.notYet, .notYet a:hover {
+  background: transparent !important;
+}
+
+.notYet::after {
+  content: "（ 待建立 ）";
+}
+
+span:hover {
+  cursor: pointer;
+}
+
+nav {
+  background: rgb(138, 145, 115);
+  color: #fff;
+  height: 75px;
+}
+
+nav .navbar-brand {
+  margin-right: 60px;
+}
+
+nav .navbar-nav .nav-link {
+  color: #fff !important;
+  font-size: 1.2em;
+}
+
+nav .navbar-nav li {
+  border-bottom: 5px solid rgba(185, 221, 212, 0.4);
+}
+
+/** indexWrap **/
+
+#indexWrap {
+  /* padding: 50px; */
+}
+
+#indexWrap  .versions {
+  width: 100%;
+}
+
+#indexWrap  .versions .version {
+  display: inline-block;
+  border: 1px solid rgb(188, 201, 193);
+  margin: 15px;
+  width: calc((100% - 15px*6)/3);
+  padding: 20px;
+  font-size: 1.3em;
+  text-align: center;
+  overflow: auto;
+  position: relative;
+}
+
+#indexWrap .yetCover {
+  color: #ffffff;
+  position: absolute;
+  background: rgba(0, 0, 0, 0.7);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: table;
+  width: 100%;
+  height: 100%;
+}
+
+
+#indexWrap .yetCover h1 {
+  text-align: center;
+  display: table-cell;
+  vertical-align: middle;
+}
+
+
+}
+
+#indexWrap .yetCover::after {
+  content: "建構中";
+  color: #fff;
+}
+
+#indexWrap  .title {
+  font-size: 1.4em;
+  font-weight: bolder;
+  border-bottom: 1px solid rgb(168, 176, 176);
+  margin-bottom: 10px;
+}
+
+#indexWrap  ul {
+  list-style: none;
+}
+
+#indexWrap  li {
+  margin-bottom: 10px;
+}
+
+
+/** contraWrap **/
+
+#contraWrap {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 90px);
+  padding-bottom: 20px;
+  padding-top: 20px;
+}
+
+#contraWrap .blackIcon {
   height: 20px;
   width: 20px;
   background: black;
   border: 1px solid rgb(131, 127, 127);
 }
 
-.whiteIcon {
+#contraWrap .whiteIcon {
   height: 20px;
   width: 20px;
   margin-left: 2px;
@@ -13,7 +133,7 @@
   border: 1px solid rgb(131, 127, 127);
 }
 
-#alertArea {
+#contraWrap #alertArea {
   margin-right: 20px;
   padding-top: 8px;
   font-weight: 400;
@@ -21,18 +141,11 @@
   color: #ffffff;
 }
 
-#wrapper {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  padding-bottom: 20px;
-}
-
-#header {
+#contraWrap #header {
   flex: initial;
 }
 
-#content {
+#contraWrap #content {
   flex: 1;
   border: 1px solid black;
   display: flex;
@@ -40,41 +153,43 @@
   margin-bottom: 20px;
   overflow: hidden;
   font-size: 1.2em;
+  clear: both;
 }
 
-#header, #content {
+#contraWrap #header, #contraWrap #content {
   margin: 0 30px;
 }
 
-#header .title {
+#contraWrap #header .title {
   font-size: 50px;
   text-align:center;
 }
 
-#header .title .subTitle {
+#contraWrap #header .title .subTitle {
   font-size: 20px;
 }
 
-#content #left, #content #right {
+#contraWrap #content #left, #contraWrap #content #right {
   flex: 1;
   padding: 25px;
   overflow: auto;
 }
 
-#content #right {
+#contraWrap #content #right {
   border-left: 1px solid black;
 }
 
-span:hover {
-  cursor: pointer;
+#contraWrap span:hover {
   background-color: rgba(209, 200, 199, 0.24);
 }
 
-.highlight {
+#contraWrap .highlight {
   background-color: rgba(221, 102, 98, 0.7);
   /* background-color: rgba(106, 173, 108, 0.8); */
 }
 
-.highlight:hover {
+#contraWrap .highlight:hover {
   background-color: rgba(221, 102, 98, 0.7);
 }
+
+/** uploadWrap **/

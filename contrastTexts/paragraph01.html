@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+  <script type="text/javascript" src="main.js"></script>
+  <script src="jquery-3.3.1.min.js"></script>
+  <script type="text/javascript">
+    window.onload = function() {
+      readTextLeft('v1s1to3.html');
+      readTextRight('v2s1to3.html');
+    }
+  </script>
+  <style>
+    .intro {
+      font-size: 120%;
+      color: red;
+    }
+  </style>
+  <title></title>
+</head>
+
+<body>
+  <div id="wrapper">
+    <div id="header">
+      <p>
+        <button onClick="SizeToLarge()" style="font-size:20px"><i class="fa">&#xf031;</i> 字體放大</button>
+        <button onClick="SizeTosmall()" style="font-size:20px"><i style="font-size:16px" class="fa">&#xf031;</i><span style="font-size:16px"> 字體縮小</span></button>
+
+        <button onClick="changeStyle1()" class="whiteIcon"></button>
+        <button onClick="changeStyle2()" class="blackIcon"></button>
+      </p>
+
+      <p class="title">淨行品 <span class="subTitle">字詞標記比對</span></p>
+
+      <div class="btn-group float-right" role="group" aria-label="Basic example">
+        <div id="alertArea"></div>
+        <button type="button" class="btn btn-secondary" onClick="readTextRight('v2s1to3.html')">八十華嚴</button>
+        <button type="button" class="btn btn-secondary" onClick="readTextRight('v3s1to3.html')">六十華嚴</button>
+      </div>
+    </div>
+    <div id="content">
+      <div id="left">
+      </div>
+      <div id="right">
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
